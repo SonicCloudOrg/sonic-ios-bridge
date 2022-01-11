@@ -2,11 +2,9 @@ package org.cloud.sonic.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.dd.plist.NSDictionary;
-import com.dd.plist.NSObject;
-import com.dd.plist.PropertyListFormatException;
-import com.dd.plist.PropertyListParser;
+import com.dd.plist.*;
 import org.cloud.sonic.common.Tool;
+import org.cloud.sonic.model.Device;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 import org.xml.sax.SAXException;
@@ -84,11 +82,21 @@ public class PlistService {
 //        outputStream.flush();
 //    }
 
-    private static int getSize(int readLen) throws IOException {
+    private static int getSize() throws IOException {
+        byte[] header = new byte[16];
+        inputStream.read(header);
+        ByteBuffer buffer = ByteBuffer.allocate(16);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(header);
+        return buffer.getInt(0) - 16;
+    }
+
+
+    private static int getSize2(int readLen) throws IOException {
         byte[] header = new byte[readLen];
         inputStream.read(header);
         ByteBuffer buffer = ByteBuffer.allocate(readLen);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.order(ByteOrder.BIG_ENDIAN);
         buffer.put(header);
         return buffer.getInt(0);
     }
@@ -100,63 +108,131 @@ public class PlistService {
         return (NSDictionary) parse;
     }
 
-    private static NSDictionary receiveMsg(int headerLen) throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
-        int length;
-        if (isFirstPack || headerLen == 16) {
-            length = getSize(16);
-            length -= 16;
-            isFirstPack = false;
-        } else {
-            length = getSize(4);
-        }
-        return getNsDictionary(length);
+    private static NSDictionary receiveMsg() throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+        byte[] res = new byte[4];
+        inputStream.read(res);
+        ByteBuffer readB = ByteBuffer.allocate(res.length);
+        readB.order(ByteOrder.BIG_ENDIAN);
+        readB.put(res);
+        int aInt = readB.getInt(0);
+        byte[] body = new byte[aInt];
+        inputStream.read(body);
+        NSObject parse = PropertyListParser.parse(body);
+        System.out.println(parse.toXMLPropertyList());
+        return (NSDictionary) parse;
     }
 
-    private static void sendMsg(byte[] bytes, int msgType) throws IOException {
+    private static ByteBuffer buildByteMsg(byte[] bytes) throws IOException {
+        int len = (16 + bytes.length);
         int version = 1;
-        int request = msgType != -1 ? msgType : 8;
+        int request = 8;
         int tag = 1;
-        ByteBuffer buffer;
-        if (isFirstPack) {
-            int len = (16 + bytes.length);
-            buffer = ByteBuffer.allocate(len);
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
-            buffer.putInt(0, len);
-            buffer.putInt(4, version);
-            buffer.putInt(8, request);
-            buffer.putInt(12, tag);
-            int i = 16;
-            for (byte aByte : bytes) {
-                buffer.put(i++, aByte);
-            }
-        } else {
-            buffer = ByteBuffer.allocate(bytes.length);
-            buffer.order(ByteOrder.BIG_ENDIAN);
-            buffer.putInt(0, bytes.length);
-            int i = 0;
-            for (byte aByte : bytes) {
-                buffer.put(i++, aByte);
-            }
+        ByteBuffer buffer = ByteBuffer.allocate(len);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putInt(0, len);
+        buffer.putInt(4, version);
+        buffer.putInt(8, request);
+        buffer.putInt(12, tag);
+        int i = 16;
+        for (byte aByte : bytes) {
+            buffer.put(i++, aByte);
         }
-        outputStream.write(buffer.array());
+        return buffer;
     }
 
     private static NSDictionary sendAndReceiveMsg() throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
         NSDictionary root = new NSDictionary();
         root.put("MessageType", "ListDevices");
-        root.put("ClientVersionString", "sonic-ios-bridge");
+        root.put("ClientVersionString", "libusbmuxd 1.1.0");
         root.put("ProgName", "sonic-ios-bridge");
         root.put("kLibUSBMuxVersion", "3");
         String s = root.toXMLPropertyList();
-        sendMsg(s.getBytes(Charset.forName("UTF-8")),-1);
-        return receiveMsg(4);
+        outputStream.write(buildByteMsg(s.getBytes(Charset.forName("UTF-8"))).array());
+        int size = getSize();
+        NSDictionary dico = getNsDictionary(size);
+        return dico;
+    }
+
+    private static NSDictionary connectDevice(int id, int port) throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+        NSDictionary root = new NSDictionary();
+        root.put("MessageType", "Connect");
+//        root.put("ClientVersionString", "sonic-ios-bridge");
+        root.put("ProgName", "sonic-ios-bridge");
+        root.put("DeviceID", new NSNumber(id));
+        root.put("PortNumber", new NSNumber(swapPortNumber(port)));
+        String s = root.toXMLPropertyList();
+        outputStream.write(buildByteMsg(s.getBytes(Charset.forName("UTF-8"))).array());
+        int size = getSize();
+        NSDictionary dico = getNsDictionary(size);
+        return dico;
+    }
+
+    private static NSDictionary sendAndReceiveMsg2() throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+        NSDictionary root = new NSDictionary();
+        root.put("Request", "GetValue");
+//        root.put("Key", "ProductVersion");
+        root.put("Domain", "com.apple.mobile.iTunes");
+        root.put("Label", "sonic-ios-bridge");
+//        root.put("ProgName", "sonic-ios-bridge");
+//        root.put("kLibUSBMuxVersion", "3");
+        String s = root.toXMLPropertyList();
+        byte[] bytes = s.getBytes(Charset.forName("UTF-8"));
+        ByteBuffer buffer = ByteBuffer.allocate(
+                4);
+        buffer.order(ByteOrder.BIG_ENDIAN);
+        buffer.putInt(bytes.length);
+        outputStream.write(buffer.array());
+        buffer = ByteBuffer.allocate(
+                bytes.length);
+        buffer.order(ByteOrder.BIG_ENDIAN);
+        buffer.put(bytes);
+        outputStream.write(bytes);
+//        sendMsg(s.getBytes(Charset.forName("UTF-8")), -1);
+        return receiveMsg();
+    }
+
+//    private static NSDictionary sendAndReceiveMsg2() throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+//        NSDictionary root = new NSDictionary();
+//        root.put("Request", "QueryType");
+////        root.put("Key", "ProductVersion");
+////        root.put("Domain", "com.apple.mobile.iTunes");
+////        root.put("Label", "sonic-ios-bridge");
+////        root.put("ProgName", "sonic-ios-bridge");
+////        root.put("kLibUSBMuxVersion", "3");
+//        String s = root.toXMLPropertyList();
+//        byte[] bytes = s.getBytes(Charset.forName("UTF-8"));
+//        ByteBuffer buffer = ByteBuffer.allocate(
+//                4);
+//        buffer.order(ByteOrder.BIG_ENDIAN);
+//        buffer.putInt(bytes.length);
+//        outputStream.write(buffer.array());
+//        buffer = ByteBuffer.allocate(
+//                bytes.length);
+//        buffer.order(ByteOrder.BIG_ENDIAN);
+//        buffer.put(bytes);
+//        outputStream.write(bytes);
+////        sendMsg(s.getBytes(Charset.forName("UTF-8")), -1);
+//        return receiveMsg();
+//    }
+
+    protected static int swapPortNumber(int port) {
+        return ((port << 8) & 0xFF00) | (port >> 8);
     }
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
         connect();
-        String[] a = sendAndReceiveMsg().allKeys();
-        for(String b:a){
-            System.out.println(b);
-        }
+        NSArray a = (NSArray) sendAndReceiveMsg().get("DeviceList");
+        NSDictionary b = (NSDictionary) a.objectAtIndex(0);
+        Device c = b.get("Properties").toJavaObject(Device.class);
+//        System.out.println(b.get("Properties").toXMLPropertyList());
+//        System.out.println(c);
+//        connect();
+//        isFirstPack = true;
+        System.out.println(connectDevice(c.getDeviceID(), 62078).toXMLPropertyList());
+//        sendAndReceiveMsg2()
+//        isFirstPack = true;
+        sendAndReceiveMsg2().toXMLPropertyList();
+//
+
     }
 }
