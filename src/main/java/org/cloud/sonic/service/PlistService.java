@@ -215,6 +215,23 @@ public class PlistService {
 //        return receiveMsg();
 //    }
 
+    private static NSDictionary sendAndReceiveMsg3() throws IOException, PropertyListFormatException, ParseException, ParserConfigurationException, SAXException {
+        NSDictionary root = new NSDictionary();
+        root.put("MessageType", "ReadPairRecord");
+        root.put("ClientVersionString", "libusbmuxd 1.1.0");
+        root.put("PairRecordID", "2c11c8a67c7f92e0b74d49242f4f35b1ce29cc9a");
+//        root.put("Key", "ProductVersion");
+//        root.put("Domain", "com.apple.mobile.iTunes");
+//        root.put("Label", "sonic-ios-bridge");
+        root.put("ProgName", "sonic-ios-bridge");
+        root.put("kLibUSBMuxVersion", "3");
+        String s = root.toXMLPropertyList();
+        outputStream.write(buildByteMsg(s.getBytes(Charset.forName("UTF-8"))).array());
+        int size = getSize();
+        NSDictionary dico = getNsDictionary(size);
+        return dico;
+    }
+
     protected static int swapPortNumber(int port) {
         return ((port << 8) & 0xFF00) | (port >> 8);
     }
@@ -224,6 +241,7 @@ public class PlistService {
         NSArray a = (NSArray) sendAndReceiveMsg().get("DeviceList");
         NSDictionary b = (NSDictionary) a.objectAtIndex(0);
         Device c = b.get("Properties").toJavaObject(Device.class);
+        System.out.println(b.toXMLPropertyList());
 //        System.out.println(b.get("Properties").toXMLPropertyList());
 //        System.out.println(c);
 //        connect();
@@ -232,6 +250,10 @@ public class PlistService {
 //        sendAndReceiveMsg2()
 //        isFirstPack = true;
         sendAndReceiveMsg2().toXMLPropertyList();
+//        connect();
+//        System.out.println(1);
+//        sendAndReceiveMsg3().toXMLPropertyList();
+//        System.out.println(2);
 //
 
     }
