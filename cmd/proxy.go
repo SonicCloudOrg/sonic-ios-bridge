@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -13,7 +9,6 @@ import (
 
 var port, target string
 
-// proxyCmd represents the proxy command
 var proxyCmd = &cobra.Command{
 	Use:   "proxy",
 	Short: "Proxy port/unix path to local port.",
