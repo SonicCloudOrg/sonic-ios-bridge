@@ -8,7 +8,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "sib",
-	Short: "A brief description of your application",
+	Short: "Bridge of iOS Devices by usbmuxd",
 }
 
 // Execute error

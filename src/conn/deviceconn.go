@@ -26,7 +26,7 @@ type DeviceConnectInterface interface {
 	HandShake(version []int, pairRecord PairRecord) (err error)
 	Reader(length int) (data []byte, err error)
 	Writer(data []byte) (err error)
-	Connect() net.Conn
+	GetConn() net.Conn
 	Close() error
 }
 
@@ -64,7 +64,7 @@ func (conn *DeviceConnection) HandShake(version []int, pairRecord PairRecord) (e
 }
 
 func (conn *DeviceConnection) Reader(length int) (data []byte, err error) {
-	c := conn.Connect()
+	c := conn.GetConn()
 	err = c.SetReadDeadline(time.Now().Add(DeviceConnectTimeout))
 	if err != nil {
 		return nil, err
@@ -72,36 +72,37 @@ func (conn *DeviceConnection) Reader(length int) (data []byte, err error) {
 	data = make([]byte, 0, length)
 	for len(data) < length {
 		buf := make([]byte, length-len(data))
-		_n, _err := 0, error(nil)
-		if _n, _err = c.Read(buf); _err != nil && _n == 0 {
-			return nil, _err
+		chunk, err1 := 0, error(nil)
+		if chunk, err1 = c.Read(buf); err1 != nil && chunk == 0 {
+			return nil, err1
 		}
-		data = append(data, buf[:_n]...)
+		//append chunks
+		data = append(data, buf[:chunk]...)
 	}
 	return
 }
 
 func (conn *DeviceConnection) Writer(data []byte) (err error) {
-	c := conn.Connect()
+	c := conn.GetConn()
 	err = c.SetWriteDeadline(time.Now().Add(DeviceConnectTimeout))
 	if err != nil {
 		return err
 	}
-
-	for totalSent := 0; totalSent < len(data); {
-		var sent int
-		if sent, err = c.Write(data[totalSent:]); err != nil {
+	for length := 0; length < len(data); {
+		var s int
+		if s, err = c.Write(data[length:]); err != nil {
 			return err
 		}
-		if sent == 0 {
+		if s == 0 {
 			return err
 		}
-		totalSent += sent
+		//computed
+		length += s
 	}
 	return
 }
 
-func (conn *DeviceConnection) Connect() net.Conn {
+func (conn *DeviceConnection) GetConn() net.Conn {
 	if conn.sslConnect != nil {
 		return conn.sslConnect
 	}
