@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -14,21 +15,12 @@ const (
 	UnixSocketAddress    = "/var/run/usbmuxd"
 )
 
-type DeviceConnectInterface interface {
-	DisableSessionSSL()
-	Send(message []byte) error
-	Reader() io.Reader
-	Writer() io.Writer
-	Connect() net.Conn
-	Close() error
-}
-
 type DeviceConnection struct {
 	encryptedConnect   net.Conn
 	unencryptedConnect net.Conn
 }
 
-func NewDeviceConnection(socketToConnectTo string) (*DeviceConnection, error) {
+func NewDeviceConnection() (*DeviceConnection, error) {
 	conn := &DeviceConnection{}
 	return conn, conn.connect()
 }
@@ -52,4 +44,43 @@ func (conn *DeviceConnection) connect() (err error) {
 		return fmt.Errorf("fail to connect socket: %w", err)
 	}
 	return
+}
+
+type DeviceConnectInterface interface {
+	DisableSessionSSL()
+	Send(message []byte) error
+	Reader() io.Reader
+	Writer() io.Writer
+	Connect() net.Conn
+	Close() error
+}
+
+type sslConnection struct {
+	conn    net.Conn
+	sslConn *tls.Conn
+	timeout time.Duration
+}
+
+func (conn *DeviceConnection) DisableSessionSSL() {
+	panic("implement me")
+}
+
+func (conn *DeviceConnection) Send(message []byte) error {
+	panic("implement me")
+}
+
+func (conn *DeviceConnection) Reader() io.Reader {
+	panic("implement me")
+}
+
+func (conn *DeviceConnection) Writer() io.Writer {
+	panic("implement me")
+}
+
+func (conn *DeviceConnection) Connect() net.Conn {
+	panic("implement me")
+}
+
+func (conn *DeviceConnection) Close() error {
+	panic("implement me")
 }
