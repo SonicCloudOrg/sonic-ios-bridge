@@ -5,37 +5,38 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 )
 
+var port, target string
+
 // proxyCmd represents the proxy command
 var proxyCmd = &cobra.Command{
 	Use:   "proxy",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Args: cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("proxy called %s %s",args[0],args[1])
+	Short: "Proxy port/unix path to local port.",
+	Args:  cobra.MaximumNArgs(2),
+	RunE: func(cmd *cobra.Command, args []string) error{
+		if len(args) == 0 {
+			if len(port) != 0 && len(target) != 0 {
+				fmt.Printf("proxy called %s %s", port, target)
+				return nil
+			} else {
+				return errors.New("missing arg(s)")
+			}
+		} else if len(args) < 2 {
+			return errors.New("missing arg(s)")
+		} else {
+			fmt.Printf("proxy called %s %s", args[0], args[1])
+			return nil
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(proxyCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// proxyCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// proxyCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	proxyCmd.Flags().StringVarP(&port, "port", "p", "", "local port")
+	proxyCmd.Flags().StringVarP(&target, "target", "t", "", "target port/unix path")
 }
