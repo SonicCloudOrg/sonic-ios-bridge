@@ -3,6 +3,7 @@ package conn
 import (
 	"crypto/tls"
 	"fmt"
+	"io"
 	"net"
 	"runtime"
 	"time"
@@ -23,9 +24,9 @@ type DeviceConnection struct {
 
 type DeviceConnectInterface interface {
 	DisableSessionSSL()
-	HandShake(version []int, pairRecord PairRecord) (err error)
-	Reader(length int) (data []byte, err error)
-	Writer(data []byte) (err error)
+	EnableSessionSSL(version []int, pairRecord PairRecord) error
+	Reader() io.Reader
+	Writer() io.Writer
 	GetConn() net.Conn
 	Close() error
 }
@@ -37,7 +38,17 @@ func (conn *DeviceConnection) DisableSessionSSL() {
 	return
 }
 
-func (conn *DeviceConnection) HandShake(version []int, pairRecord PairRecord) (err error) {
+func (conn *DeviceConnection) EnableSessionSSL(version []int, pairRecord PairRecord) error{
+	tlsConn, err := conn.createTLSClient(version,pairRecord)
+	if err != nil {
+		return err
+	}
+	conn.unencryptedConnect = conn.sslConnect
+	conn.sslConnect = net.Conn(tlsConn)
+	return nil
+}
+
+func (conn *DeviceConnection) createTLSClient(version []int, pairRecord PairRecord) (*tls.Conn, error) {
 	minVersion := uint16(tls.VersionTLS11)
 	maxVersion := uint16(tls.VersionTLS11)
 	if version[0] > 10 {
@@ -46,7 +57,7 @@ func (conn *DeviceConnection) HandShake(version []int, pairRecord PairRecord) (e
 	}
 	cert5, err := tls.X509KeyPair(pairRecord.HostCertificate, pairRecord.HostPrivateKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
@@ -58,48 +69,17 @@ func (conn *DeviceConnection) HandShake(version []int, pairRecord PairRecord) (e
 	tlsConn := tls.Client(conn.sslConnect, conf)
 	err = tlsConn.Handshake()
 	if err = tlsConn.Handshake(); err != nil {
-		return err
-	}
-	return
-}
-
-func (conn *DeviceConnection) Reader(length int) (data []byte, err error) {
-	c := conn.GetConn()
-	err = c.SetReadDeadline(time.Now().Add(DeviceConnectTimeout))
-	if err != nil {
 		return nil, err
 	}
-	data = make([]byte, 0, length)
-	for len(data) < length {
-		buf := make([]byte, length-len(data))
-		chunk, err1 := 0, error(nil)
-		if chunk, err1 = c.Read(buf); err1 != nil && chunk == 0 {
-			return nil, err1
-		}
-		//append chunks
-		data = append(data, buf[:chunk]...)
-	}
-	return
+	return tlsConn, nil
 }
 
-func (conn *DeviceConnection) Writer(data []byte) (err error) {
-	c := conn.GetConn()
-	err = c.SetWriteDeadline(time.Now().Add(DeviceConnectTimeout))
-	if err != nil {
-		return err
-	}
-	for length := 0; length < len(data); {
-		var s int
-		if s, err = c.Write(data[length:]); err != nil {
-			return err
-		}
-		if s == 0 {
-			return err
-		}
-		//computed
-		length += s
-	}
-	return
+func (conn *DeviceConnection) Reader() io.Reader {
+	return conn.sslConnect
+}
+
+func (conn *DeviceConnection) Writer() io.Writer {
+	return conn.sslConnect
 }
 
 func (conn *DeviceConnection) GetConn() net.Conn {
@@ -112,11 +92,6 @@ func (conn *DeviceConnection) GetConn() net.Conn {
 func (conn *DeviceConnection) Close() error {
 	if conn.sslConnect != nil {
 		if err := conn.sslConnect.Close(); err != nil {
-			return fmt.Errorf("close connect error: %s", err)
-		}
-	}
-	if conn.unencryptedConnect != nil {
-		if err := conn.unencryptedConnect.Close(); err != nil {
 			return fmt.Errorf("close connect error: %s", err)
 		}
 	}
