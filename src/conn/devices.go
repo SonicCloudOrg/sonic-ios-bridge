@@ -2,6 +2,7 @@ package conn
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"howett.net/plist"
 	"strings"
@@ -69,10 +70,11 @@ func (deviceList DeviceList) ToString() string {
 	return s.String()
 }
 
-func (deviceList DeviceList) ToJson() map[string]interface{} {
+func (deviceList DeviceList) ToJson() string {
 	devices := make([]string, len(deviceList.DeviceList))
 	for i, e := range deviceList.DeviceList {
 		devices[i] = e.Properties.SerialNumber
 	}
-	return map[string]interface{}{"list": devices}
+	result, _ := json.Marshal(map[string]interface{}{"list": devices})
+	return string(result)
 }
