@@ -7,8 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var json, detail bool
-
 var devicesCmd = &cobra.Command{
 	Use:   "devices",
 	Short: "Get iOS device list",
@@ -18,7 +16,7 @@ var devicesCmd = &cobra.Command{
 			fmt.Errorf("devices called fail : %w", err)
 		}
 		list, _ := usb.ListDevices()
-		if json {
+		if isJson {
 			fmt.Println(list.ToJson())
 		} else {
 			fmt.Println(list.ToString())
@@ -28,6 +26,6 @@ var devicesCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(devicesCmd)
-	devicesCmd.Flags().BoolVarP(&json, "json", "j", false, "output format json")
-	devicesCmd.Flags().BoolVarP(&detail, "detail", "d", false, "output every device's detail")
+	devicesCmd.Flags().BoolVarP(&isJson, "json", "j", false, "output format json")
+	devicesCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail")
 }

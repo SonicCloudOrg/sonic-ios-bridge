@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var isJson, isDetail bool
+
 var rootCmd = &cobra.Command{
 	Use:   "sib",
 	Short: "Bridge of iOS Devices by usbmuxd",

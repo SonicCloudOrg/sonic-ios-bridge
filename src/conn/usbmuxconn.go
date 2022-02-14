@@ -38,6 +38,10 @@ type UsbMuxHeader struct {
 	Tag     uint32
 }
 
+func (usbMuxClient *UsbMuxClient) GetDeviceConn() DeviceConnectInterface {
+	return usbMuxClient.deviceConnection
+}
+
 func (usbMuxClient *UsbMuxClient) Send(msg interface{}) error {
 	if usbMuxClient.deviceConnection == nil {
 		return io.EOF
@@ -81,18 +85,17 @@ func writeHeader(length int, tag uint32, writer io.Writer) error {
 	return binary.Write(writer, binary.LittleEndian, header)
 }
 
+//https://github.com/alibaba/taobao-iphone-device/blob/main/tidevice/_usbmux.py
 func (usbMuxClient *UsbMuxClient) decode(r io.Reader) (UsbMuxMessage, error) {
 	var usbMuxHeader UsbMuxHeader
 	err := binary.Read(r, binary.LittleEndian, &usbMuxHeader)
 	if err != nil {
 		return UsbMuxMessage{}, err
 	}
-	//https://github.com/alibaba/taobao-iphone-device/blob/main/tidevice/_usbmux.py
 	payLoadBytes := make([]byte, usbMuxHeader.Length-16)
 	n, err := io.ReadFull(r, payLoadBytes)
 	if err != nil {
 		return UsbMuxMessage{}, fmt.Errorf("error decode msg %d : %w", n, err)
 	}
-
 	return UsbMuxMessage{usbMuxHeader, payLoadBytes}, nil
 }
