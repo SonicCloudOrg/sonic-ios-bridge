@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/conn"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/tool"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
@@ -18,12 +19,13 @@ var listenCmd = &cobra.Command{
 				usbMuxClient, err1 := conn.NewUsbMuxClient()
 				defer usbMuxClient.GetDeviceConn().Close()
 				if err1 != nil {
-					fmt.Errorf("fail to connect usbMux : %w", err1)
+					tool.NewErrorPrint(tool.ErrConnect, "usbMux", err1)
 					continue
 				}
 				receiveFun, err2 := usbMuxClient.Listen()
 				if err2 != nil {
-					fmt.Errorf("fail to send listen : %w", err2)
+					tool.NewErrorPrint(tool.ErrSendCommand, "listen", err2)
+					break
 				}
 				for {
 					msg, err := receiveFun()

@@ -3,7 +3,7 @@ package conn
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/tool"
 	"howett.net/plist"
 	"strings"
 )
@@ -45,23 +45,23 @@ func NewListDevicesMessage() ListDevicesMessage {
 func (usbMuxClient *UsbMuxClient) ListDevices() (DeviceList, error) {
 	err := usbMuxClient.Send(NewListDevicesMessage())
 	if err != nil {
-		return DeviceList{}, fmt.Errorf("Failed sending to usbmux requesting devicelist: %v", err)
+		return DeviceList{}, tool.NewErrorPrint(tool.ErrSendCommand, "listDevices", err)
 	}
-	response, err := usbMuxClient.ReadMessage()
+	resp, err := usbMuxClient.ReadMessage()
 	if err != nil {
-		return DeviceList{}, fmt.Errorf("Failed getting devicelist: %v", err)
+		return DeviceList{}, tool.NewErrorPrint(tool.ErrReadingMsg, "deviceList", err)
 	}
-	return DeviceListForBytes(response.Payload), nil
+	return deviceListForBytes(resp.Payload), nil
 }
 
-func DeviceListForBytes(plistBytes []byte) DeviceList {
+func deviceListForBytes(plistBytes []byte) DeviceList {
 	decoder := plist.NewDecoder(bytes.NewReader(plistBytes))
 	var deviceList DeviceList
 	decoder.Decode(&deviceList)
 	return deviceList
 }
 
-func DeviceForBytes(plistBytes []byte) iDevice {
+func deviceForBytes(plistBytes []byte) iDevice {
 	decoder := plist.NewDecoder(bytes.NewReader(plistBytes))
 	var device iDevice
 	decoder.Decode(&device)

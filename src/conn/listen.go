@@ -1,6 +1,8 @@
 package conn
 
-import "fmt"
+import (
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/tool"
+)
 
 type ListenMessage struct {
 	MessageType         string
@@ -31,15 +33,15 @@ func (usbMuxClient *UsbMuxClient) Listen() (func() (iDevice, error), error) {
 	if err != nil {
 		return nil, err
 	}
-	if !UsbMuxRespForBytes(resp.Payload).IsSuccess() {
-		return nil, fmt.Errorf("failed to send listen command : %w", err)
+	if !usbMuxRespForBytes(resp.Payload).IsSuccess() {
+		return nil, tool.NewErrorPrint(tool.ErrSendCommand, "listen", err)
 	}
 	return func() (iDevice, error) {
 		usb, err := usbMuxClient.ReadMessage()
 		if err != nil {
 			return iDevice{}, err
 		}
-		return DeviceForBytes(usb.Payload), nil
+		return deviceForBytes(usb.Payload), nil
 	}, nil
 
 }

@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	ProgramName = "sonic-ios-bridge"
+	BundleId      = "sib.conn"
+	ProgramName   = "sonic-ios-bridge"
 	ClientVersion = "sonic-ios-bridge-1.0.0"
 )
 
@@ -70,7 +71,7 @@ func (usbMuxClient *UsbMuxClient) ReadMessage() (UsbMuxMessage, error) {
 
 //https://github.com/danielpaulus/go-ios
 func (usbMuxClient *UsbMuxClient) encode(message interface{}, writer io.Writer) error {
-	bytes := TransToPlistBytes(message)
+	bytes := transToPlistBytes(message)
 	err := writeHeader(len(bytes), usbMuxClient.tag, writer)
 	if err != nil {
 		return err
