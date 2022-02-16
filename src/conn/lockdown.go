@@ -66,6 +66,7 @@ func (usbMuxClient *UsbMuxClient) ConnectLockdown(deviceID int) (*LockDownConnec
 	if err != nil {
 		return &LockDownConnection{}, err
 	}
+	//bug
 	if !usbMuxRespForBytes(resp.Payload).IsSuccess() {
 		return &LockDownConnection{"", NewPlistCodec(), usbMuxClient.deviceConnection}, fmt.Errorf("fail connect to lockdown")
 	}
