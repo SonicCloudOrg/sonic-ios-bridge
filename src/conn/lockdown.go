@@ -45,7 +45,10 @@ func NewLockdownConnection(device iDevice) (*LockDownConnection, error) {
 	if err != nil {
 		return nil, err
 	}
-	lockdownConnection, _ := usbMuxClient.ConnectLockdown(device.DeviceID)
+	lockdownConnection, err := usbMuxClient.ConnectLockdown(device.DeviceID)
+	if err != nil {
+		return nil, err
+	}
 	_, err = lockdownConnection.StartSession(pairRecord)
 	if err != nil {
 		return nil, fmt.Errorf("startSession fail: %w", err)
@@ -64,7 +67,7 @@ func (usbMuxClient *UsbMuxClient) ConnectLockdown(deviceID int) (*LockDownConnec
 		return &LockDownConnection{}, err
 	}
 	if !usbMuxRespForBytes(resp.Payload).IsSuccess() {
-		return &LockDownConnection{"", NewPlistCodec(), usbMuxClient.deviceConnection}, nil
+		return &LockDownConnection{"", NewPlistCodec(), usbMuxClient.deviceConnection}, fmt.Errorf("fail connect to lockdown")
 	}
 	return nil, fmt.Errorf("fail connect to lockdown")
 }
@@ -113,7 +116,7 @@ func GetValueFromDevice(device iDevice) (map[string]interface{}, error) {
 		return map[string]interface{}{}, err
 	}
 	defer lockdownConnection.Close()
-	err = lockdownConnection.Send(NewGetValue(""))
+	err = lockdownConnection.Send(NewGetValue("", "ProductVersion"))
 	if err != nil {
 		return map[string]interface{}{}, err
 	}
@@ -127,7 +130,7 @@ func GetValueFromDevice(device iDevice) (map[string]interface{}, error) {
 	}
 	plist, ok := plist["Value"].(map[string]interface{})
 	if !ok {
-		return plist, fmt.Errorf("Failed converting lockdown response:%+v", plist)
+		return plist, err
 	}
 	return plist, err
 }

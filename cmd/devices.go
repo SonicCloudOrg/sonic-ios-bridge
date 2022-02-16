@@ -11,14 +11,17 @@ import (
 var devicesCmd = &cobra.Command{
 	Use:   "devices",
 	Short: "Get iOS device list",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error{
 		usb, err := conn.NewUsbMuxClient()
 		if err != nil {
 			tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
 		}
 		list, _ := usb.ListDevices()
 		d:=list.DeviceList[0]
-		c,_:=conn.GetValueFromDevice(d)
+		c,err:=conn.GetValueFromDevice(d)
+		if err != nil {
+			return err
+		}
 		fmt.Println(c)
 		data := tool.Data(list)
 		if isJson {
@@ -26,6 +29,7 @@ var devicesCmd = &cobra.Command{
 		} else {
 			fmt.Println(data.ToString())
 		}
+		return nil
 	},
 }
 
