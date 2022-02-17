@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var isJson, isDetail bool
+var isJson, isDetail, isFormat bool
 
 var rootCmd = &cobra.Command{
 	Use:   "sib",

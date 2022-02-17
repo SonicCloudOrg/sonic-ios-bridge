@@ -13,9 +13,11 @@ type DeviceList struct {
 }
 
 type iDevice struct {
-	DeviceID    int        `json:"deviceId"`
-	MessageType string     `json:"messageType"`
-	Properties  DeviceProp `json:"properties"`
+	DeviceID     int          `json:"deviceId"`
+	MessageType  string       `json:"messageType"`
+	Properties   DeviceProp   `json:"properties"`
+	Status       string       `json:"status"`
+	DeviceDetail DeviceDetail `json:"deviceDetail"`
 }
 
 type DeviceProp struct {
@@ -42,6 +44,14 @@ func NewListDevicesMessage() ListDevicesMessage {
 	return msg
 }
 
+func (device *iDevice) GetStatus() string {
+	if device.MessageType == "Attached" {
+		return "online"
+	} else {
+		return "offline"
+	}
+}
+
 func (usbMuxClient *UsbMuxClient) ListDevices() (DeviceList, error) {
 	err := usbMuxClient.Send(NewListDevicesMessage())
 	if err != nil {
@@ -58,27 +68,40 @@ func deviceListForBytes(plistBytes []byte) DeviceList {
 	decoder := plist.NewDecoder(bytes.NewReader(plistBytes))
 	var deviceList DeviceList
 	decoder.Decode(&deviceList)
+	for i, d := range deviceList.DeviceList {
+		deviceList.DeviceList[i].Status = d.GetStatus()
+	}
 	return deviceList
 }
+
+var deviceIdMap = make(map[int]string)
 
 func deviceForBytes(plistBytes []byte) iDevice {
 	decoder := plist.NewDecoder(bytes.NewReader(plistBytes))
 	var device iDevice
 	decoder.Decode(&device)
+	device.Status = device.GetStatus()
+	if len(device.Properties.SerialNumber) > 0 {
+		deviceIdMap[device.DeviceID] = device.Properties.SerialNumber
+	} else {
+		device.Properties.SerialNumber = deviceIdMap[device.DeviceID]
+		delete(deviceIdMap, device.DeviceID)
+	}
 	return device
 }
 
 func (device iDevice) ToString() string {
 	var s strings.Builder
-	if len(device.Properties.SerialNumber) > 0 {
-		s.WriteString(device.Properties.SerialNumber + " online")
-	} else {
-		s.WriteString(device.Properties.SerialNumber + " offline")
-	}
+	s.WriteString(device.Properties.SerialNumber + " " + device.Status)
 	return s.String()
 }
 
 func (device iDevice) ToJson() string {
+	result, _ := json.Marshal(device)
+	return string(result)
+}
+
+func (device iDevice) ToFormat() string {
 	result, _ := json.MarshalIndent(device, "", "\t")
 	return string(result)
 }
@@ -86,12 +109,17 @@ func (device iDevice) ToJson() string {
 func (deviceList DeviceList) ToString() string {
 	var s strings.Builder
 	for _, e := range deviceList.DeviceList {
-		s.WriteString(e.Properties.SerialNumber + " online")
+		s.WriteString(e.Properties.SerialNumber + " " + e.Status)
 	}
 	return s.String()
 }
 
 func (deviceList DeviceList) ToJson() string {
+	result, _ := json.Marshal(deviceList)
+	return string(result)
+}
+
+func (deviceList DeviceList) ToFormat() string {
 	result, _ := json.MarshalIndent(deviceList, "", "\t")
 	return string(result)
 }

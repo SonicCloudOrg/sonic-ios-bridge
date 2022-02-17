@@ -2,10 +2,11 @@ package conn
 
 import (
 	"fmt"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/tool"
 	"net"
 )
 
-const LockdownPort uint16 = 62078
+const LockdownPort = 62078
 
 type LockDownConnection struct {
 	sessionID        string
@@ -19,18 +20,18 @@ type ConnectMessage struct {
 	MessageType         string
 	ProgName            string
 	DeviceID            uint32
-	PortNumber          uint16
+	PortNumber          int
 	LibUSBMuxVersion    uint32 `plist:"kLibUSBMuxVersion"`
 }
 
-func NewConnectMessage(deviceID int, portNumber uint16) ConnectMessage {
+func NewConnectMessage(deviceID int, port int) ConnectMessage {
 	data := ConnectMessage{
 		MessageType:         "Connect",
 		BundleID:            BundleId,
 		ClientVersionString: ClientVersion,
 		ProgName:            ProgramName,
 		DeviceID:            uint32(deviceID),
-		PortNumber:          portNumber,
+		PortNumber:          ((port << 8) & 0xFF00) | (port >> 8),
 		LibUSBMuxVersion:    3,
 	}
 	return data
@@ -66,11 +67,10 @@ func (usbMuxClient *UsbMuxClient) ConnectLockdown(deviceID int) (*LockDownConnec
 	if err != nil {
 		return &LockDownConnection{}, err
 	}
-	//bug
-	if !usbMuxRespForBytes(resp.Payload).IsSuccess() {
-		return &LockDownConnection{"", NewPlistCodec(), usbMuxClient.deviceConnection}, fmt.Errorf("fail connect to lockdown")
+	if usbMuxRespForBytes(resp.Payload).IsSuccess() {
+		return &LockDownConnection{"", NewPlistCodec(), usbMuxClient.deviceConnection}, nil
 	}
-	return nil, fmt.Errorf("fail connect to lockdown")
+	return nil, tool.NewErrorPrint(tool.ErrConnect, "lockdown", nil)
 }
 
 func NewLockDownConnection(deviceConnect DeviceConnectInterface) *LockDownConnection {
@@ -109,29 +109,4 @@ func (lockDownConn *LockDownConnection) ReadMessage() ([]byte, error) {
 
 func (lockDownConn *LockDownConnection) GetConn() net.Conn {
 	return lockDownConn.deviceConnection.GetConn()
-}
-
-func GetValueFromDevice(device iDevice) (map[string]interface{}, error) {
-	lockdownConnection, err := NewLockdownConnection(device)
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	defer lockdownConnection.Close()
-	err = lockdownConnection.Send(NewGetValue("", "ProductVersion"))
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	resp, err := lockdownConnection.ReadMessage()
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	plist, err := parsePlist(resp)
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	plist, ok := plist["Value"].(map[string]interface{})
-	if !ok {
-		return plist, err
-	}
-	return plist, err
 }

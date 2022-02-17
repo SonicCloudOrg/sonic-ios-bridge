@@ -3,15 +3,15 @@ package tool
 type Data interface {
 	ToJson() string
 	ToString() string
+	ToFormat() string
 }
 
-func Format(d Data, s string) string {
-	switch s {
-	case "json":
-		return d.ToJson()
-	case "string":
-		return d.ToString()
-	default:
-		return ""
+func Format(d Data, isFormat, isJson bool) string {
+	if isFormat {
+		return d.ToFormat()
 	}
+	if isJson {
+		return d.ToJson()
+	}
+	return d.ToString()
 }
