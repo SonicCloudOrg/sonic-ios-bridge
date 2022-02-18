@@ -57,6 +57,7 @@ func (usbMuxClient *UsbMuxClient) ListDevices() (DeviceList, error) {
 	if err != nil {
 		return DeviceList{}, tool.NewErrorPrint(tool.ErrSendCommand, "listDevices", err)
 	}
+	defer usbMuxClient.GetDeviceConn().Close()
 	resp, err := usbMuxClient.ReadMessage()
 	if err != nil {
 		return DeviceList{}, tool.NewErrorPrint(tool.ErrReadingMsg, "deviceList", err)

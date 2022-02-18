@@ -5,6 +5,7 @@ import (
 )
 
 type DeviceDetail struct {
+	GenerationName            string `json:"generationName,omitempty"`
 	DeviceName                string `json:"deviceName,omitempty"`
 	DeviceColor               string `json:"deviceColor,omitempty"`
 	DeviceClass               string `json:"deviceClass,omitempty"`
@@ -82,5 +83,6 @@ func (device *iDevice) GetDetail() (*DeviceDetail, error) {
 	data, _ := json.Marshal(values)
 	detail := &DeviceDetail{}
 	json.Unmarshal(data, detail)
+	detail.GenerationName = detail.GetGenerationName()
 	return detail, nil
 }
