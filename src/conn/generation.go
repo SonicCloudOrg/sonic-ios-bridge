@@ -1,5 +1,10 @@
 package conn
 
+import (
+	"fmt"
+	"net/http"
+)
+
 var generationMap = map[string]string{
 	"AirPods1,1":    "AirPods (1st generation)",
 	"AirPods1,2":    "AirPods (2nd generation)",
@@ -25,4 +30,9 @@ func (deviceDetail *DeviceDetail) GetGenerationName() string {
 	} else {
 		return ""
 	}
+}
+
+func UpdateFromWiki() {
+	resp, _ := http.Get("https://www.theiphonewiki.com/wiki/Models")
+	fmt.Println(resp.Body)
 }
