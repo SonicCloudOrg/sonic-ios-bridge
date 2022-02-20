@@ -2,6 +2,7 @@ package conn
 
 import (
 	"encoding/json"
+	"github.com/Masterminds/semver"
 )
 
 type DeviceDetail struct {
@@ -88,4 +89,21 @@ func (device *iDevice) GetDetail() (*DeviceDetail, error) {
 	json.Unmarshal(data, detail)
 	detail.GenerationName = detail.GetGenerationName()
 	return detail, nil
+}
+
+func (device *iDevice) GetProductVersion() (string, error) {
+	values, err := GetValueFromDevice(*device, "", "ProductVersion")
+	if err != nil {
+		return "", err
+	}
+	return values.(string), nil
+}
+
+func (device *iDevice) GetSemverProductVersion() (*semver.Version, error) {
+	values, err := device.GetProductVersion()
+	if err != nil {
+		return &semver.Version{}, err
+	}
+	version, err := semver.NewVersion(values)
+	return version, err
 }

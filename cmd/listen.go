@@ -39,7 +39,7 @@ var listenCmd = &cobra.Command{
 					if device.Status == "online" && isDetail {
 						detail, err1 := device.GetDetail()
 						if err1 != nil {
-							fmt.Errorf("get %s device detail fail : %w", device.Properties.SerialNumber, err1)
+							fmt.Errorf("get udId %s device detail fail : %w", device.Properties.SerialNumber, err1)
 							continue
 						}
 						device.DeviceDetail = *detail
