@@ -12,8 +12,10 @@ type DeviceDetail struct {
 	ProductVersion            string `json:"productVersion,omitempty"`
 	ProductType               string `json:"productType,omitempty"`
 	ProductName               string `json:"productName,omitempty"`
+	PasswordProtected         bool   `json:"passwordProtected,omitempty"`
 	ModelNumber               string `json:"modelNumber,omitempty"`
 	SerialNumber              string `json:"serialNumber,omitempty"`
+	SIMStatus                 string `json:"simStatus,omitempty"`
 	PhoneNumber               string `json:"phoneNumber,omitempty"`
 	CPUArchitecture           string `json:"cpuArchitecture,omitempty"`
 	ProtocolVersion           string `json:"protocolVersion,omitempty"`
@@ -24,6 +26,7 @@ type DeviceDetail struct {
 	WiFiAddress               string `json:"wifiAddress,omitempty"`
 	WirelessBoardSerialNumber string `json:"wirelessBoardSerialNumber,omitempty"`
 	BluetoothAddress          string `json:"bluetoothAddress,omitempty"`
+	BuildVersion              string `json:"buildVersion,omitempty"`
 }
 
 type GetValueRequest struct {
