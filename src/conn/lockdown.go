@@ -73,10 +73,6 @@ func (usbMuxClient *UsbMuxClient) ConnectLockdown(deviceID int) (*LockDownConnec
 	return nil, tool.NewErrorPrint(tool.ErrConnect, "lockdown", nil)
 }
 
-func NewLockDownConnection(deviceConnect DeviceConnectInterface) *LockDownConnection {
-	return &LockDownConnection{deviceConnection: deviceConnect, plistCodec: NewPlistCodec()}
-}
-
 func (lockDownConn *LockDownConnection) Close() {
 	lockDownConn.StopSession()
 	lockDownConn.deviceConnection.Close()
