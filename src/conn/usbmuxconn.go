@@ -3,6 +3,7 @@ package conn
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/tool"
 	"io"
 )
 
@@ -99,4 +100,32 @@ func (usbMuxClient *UsbMuxClient) decode(r io.Reader) (UsbMuxMessage, error) {
 		return UsbMuxMessage{}, fmt.Errorf("error decode msg %d : %w", n, err)
 	}
 	return UsbMuxMessage{usbMuxHeader, payLoadBytes}, nil
+}
+
+func (usbMuxClient *UsbMuxClient) Connect(deviceId int, port int) error {
+	msg := NewConnectMessage(deviceId, port)
+	usbMuxClient.Send(msg)
+	resp, err := usbMuxClient.ReadMessage()
+	if err != nil {
+		return err
+	}
+	response := usbMuxRespForBytes(resp.Payload)
+	if response.IsSuccess() {
+		return nil
+	}
+	return tool.NewErrorPrint(tool.ErrConnect, "service", nil)
+}
+
+func (usbMuxClient *UsbMuxClient) ConnectStartService(deviceID int, resp StartServiceResp, pairRecord PairRecord) error {
+	err := usbMuxClient.Connect(deviceID, int(resp.Port))
+	if err != nil {
+		return err
+	}
+	if resp.EnableServiceSSL {
+		err1 := usbMuxClient.deviceConnection.EnableSessionSSL(pairRecord)
+		if err1 != nil {
+			return err1
+		}
+	}
+	return nil
 }
