@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/conn"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/tool"
-
+	giDevice "github.com/electricbubble/gidevice"
 	"github.com/spf13/cobra"
 )
 
@@ -16,22 +17,32 @@ var devicesCmd = &cobra.Command{
 		if isDetail && (!isJson && !isFormat) {
 			return errors.New("detail flag must use with json flag or format flag")
 		}
-		usb, err := conn.NewUsbMuxClient()
+		usb, err := giDevice.NewUsbmux()
 		if err != nil {
 			tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
 		}
-		list, _ := usb.ListDevices()
+		list, _ := usb.Devices()
 		if isDetail {
-			for i, d := range list.DeviceList {
-				detail, err1 := d.GetDetail()
+			for _, d := range list {
+				detail, err1 := d.GetValue("","")
+
 				if err1 != nil {
-					return fmt.Errorf("get %s device detail fail : %w", d.Properties.SerialNumber, err1)
+					return fmt.Errorf("get %s device detail fail : %w", d.Properties().SerialNumber, err1)
 				}
-				list.DeviceList[i].DeviceDetail = *detail
+				data, _ := json.Marshal(detail)
+				d1 := &conn.DeviceDetail{}
+				json.Unmarshal(data, d1)
+
+				data2, _ := json.Marshal(d)
+				d2 := &conn.Device{}
+				json.Unmarshal(data2, d2)
+				fmt.Println(d1)
+				fmt.Println(d2)
 			}
 		}
-		data := tool.Data(list)
-		fmt.Println(tool.Format(data, isFormat, isJson))
+		//fmt.Println(list.(string))
+		//data := tool.Data(list)
+		//fmt.Println(tool.Format(data, isFormat, isJson))
 		return nil
 	},
 }

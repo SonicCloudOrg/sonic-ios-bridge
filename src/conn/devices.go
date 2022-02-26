@@ -12,6 +12,17 @@ type DeviceList struct {
 	DeviceList []iDevice `json:"deviceList"`
 }
 
+type Device struct {
+	DeviceID        int          `json:"deviceId"`
+	ConnectionSpeed int          `json:"connectionSpeed"`
+	ConnectionType  string       `json:"connectionType"`
+	LocationID      int          `json:"locationId"`
+	ProductID       int          `json:"productId"`
+	SerialNumber    string       `json:"serialNumber"`
+	Status          string       `json:"status"`
+	DeviceDetail    DeviceDetail `json:"deviceDetail"`
+}
+
 type iDevice struct {
 	DeviceID     int          `json:"deviceId"`
 	MessageType  string       `json:"messageType"`
