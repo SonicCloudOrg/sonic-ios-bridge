@@ -22,9 +22,10 @@ var devicesCmd = &cobra.Command{
 			tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
 		}
 		list, _ := usbMuxClient.Devices()
-		if isDetail {
-			for _, d := range list {
-				detail, err1 := d.GetValue("","")
+		var deviceList []conn.Device
+		for _, d := range list {
+			if isDetail {
+				detail, err1 := d.GetValue("", "")
 
 				if err1 != nil {
 					return fmt.Errorf("get %s device detail fail : %w", d.Properties().SerialNumber, err1)
@@ -34,14 +35,17 @@ var devicesCmd = &cobra.Command{
 				json.Unmarshal(data, d1)
 
 				data2, _ := json.Marshal(d.Properties())
-				d2 := &conn.Device{}
-				d2.DeviceDetail = *d1
+				d2 := &conn.Device{DeviceDetail: *d1}
 				json.Unmarshal(data2, d2)
-				result,_:=json.Marshal(d2)
-				fmt.Println(string(result))
+				//dresult, _ := json.Marshal(d2)
+				deviceList = append(deviceList,*d2)
+				//fmt.Println(string(dresult))
 			}
 		}
-		//fmt.Println(list.(string))
+		result:=make(map[string]interface{})
+		result["deviceList"] = deviceList
+		r, _ := json.Marshal(result)
+		fmt.Println(string(r))
 		//data := tool.Data(list)
 		//fmt.Println(tool.Format(data, isFormat, isJson))
 		return nil
