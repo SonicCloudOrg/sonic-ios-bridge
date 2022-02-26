@@ -17,11 +17,11 @@ var devicesCmd = &cobra.Command{
 		if isDetail && (!isJson && !isFormat) {
 			return errors.New("detail flag must use with json flag or format flag")
 		}
-		usb, err := giDevice.NewUsbmux()
+		usbMuxClient, err := giDevice.NewUsbmux()
 		if err != nil {
 			tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
 		}
-		list, _ := usb.Devices()
+		list, _ := usbMuxClient.Devices()
 		if isDetail {
 			for _, d := range list {
 				detail, err1 := d.GetValue("","")
@@ -33,11 +33,12 @@ var devicesCmd = &cobra.Command{
 				d1 := &conn.DeviceDetail{}
 				json.Unmarshal(data, d1)
 
-				data2, _ := json.Marshal(d)
+				data2, _ := json.Marshal(d.Properties())
 				d2 := &conn.Device{}
+				d2.DeviceDetail = *d1
 				json.Unmarshal(data2, d2)
-				fmt.Println(d1)
-				fmt.Println(d2)
+				result,_:=json.Marshal(d2)
+				fmt.Println(string(result))
 			}
 		}
 		//fmt.Println(list.(string))
