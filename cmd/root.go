@@ -7,10 +7,24 @@ import (
 )
 
 var isJson, isDetail, isFormat bool
+var udid string
 
 var rootCmd = &cobra.Command{
 	Use:   "sib",
 	Short: "Bridge of iOS Devices by usbmuxd",
+	Long:`
+   ▄▄▄▄      ▄▄▄▄    ▄▄▄   ▄▄   ▄▄▄▄▄▄      ▄▄▄▄
+ ▄█▀▀▀▀█    ██▀▀██   ███   ██   ▀▀██▀▀    ██▀▀▀▀█
+ ██▄       ██    ██  ██▀█  ██     ██     ██▀
+  ▀████▄   ██    ██  ██ ██ ██     ██     ██
+      ▀██  ██    ██  ██  █▄██     ██     ██▄
+ █▄▄▄▄▄█▀   ██▄▄██   ██   ███   ▄▄██▄▄    ██▄▄▄▄█
+  ▀▀▀▀▀      ▀▀▀▀    ▀▀   ▀▀▀   ▀▀▀▀▀▀      ▀▀▀▀
+
+      Bridge of iOS Devices by usbmuxd.
+          Author: SonicCloudOrg
+https://github.com/SonicCloudOrg/sonic-ios-bridge
+`,
 }
 
 // Execute error
@@ -19,8 +33,4 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
-}
-
-func init() {
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
