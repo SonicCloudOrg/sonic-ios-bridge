@@ -19,35 +19,28 @@ var devicesCmd = &cobra.Command{
 		}
 		usbMuxClient, err := giDevice.NewUsbmux()
 		if err != nil {
-			tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
+			return tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
 		}
-		list, _ := usbMuxClient.Devices()
-		var deviceList []conn.Device
+		list, err1 := usbMuxClient.Devices()
+		if err1 != nil {
+			return tool.NewErrorPrint(tool.ErrSendCommand, "listDevices", err1)
+		}
+		var deviceList conn.DeviceList
 		for _, d := range list {
+			deviceByte, _ := json.Marshal(d.Properties())
+			device := &conn.Device{}
 			if isDetail {
-				detail, err1 := d.GetValue("", "")
-
-				if err1 != nil {
-					return fmt.Errorf("get %s device detail fail : %w", d.Properties().SerialNumber, err1)
+				detail, err2 := conn.GetDetail(d)
+				if err2 != nil {
+					return err2
 				}
-				data, _ := json.Marshal(detail)
-				d1 := &conn.DeviceDetail{}
-				json.Unmarshal(data, d1)
-
-				data2, _ := json.Marshal(d.Properties())
-				d2 := &conn.Device{DeviceDetail: *d1}
-				json.Unmarshal(data2, d2)
-				//dresult, _ := json.Marshal(d2)
-				deviceList = append(deviceList,*d2)
-				//fmt.Println(string(dresult))
+				device.DeviceDetail = *detail
 			}
+			json.Unmarshal(deviceByte, device)
+			deviceList.DeviceList = append(deviceList.DeviceList, *device)
 		}
-		result:=make(map[string]interface{})
-		result["deviceList"] = deviceList
-		r, _ := json.Marshal(result)
-		fmt.Println(string(r))
-		//data := tool.Data(list)
-		//fmt.Println(tool.Format(data, isFormat, isJson))
+		data := tool.Data(deviceList)
+		fmt.Println(tool.Format(data, isFormat, isJson))
 		return nil
 	},
 }

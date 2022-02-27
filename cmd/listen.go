@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/conn"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/tool"
+	giDevice "github.com/electricbubble/gidevice"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
@@ -18,41 +20,41 @@ var listenCmd = &cobra.Command{
 		if isDetail && (!isJson && !isFormat) {
 			return errors.New("detail flag must use with json flag or format flag")
 		}
+		usbMuxClient, err := giDevice.NewUsbmux()
+		if err != nil {
+			return tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
+		}
+		model := make(chan giDevice.Device)
+		shutDownFun, err2 := usbMuxClient.Listen(model)
+		if err2 != nil {
+			return tool.NewErrorPrint(tool.ErrSendCommand, "listen", err2)
+		}
 		go func() {
 			for {
-				usbMuxClient, err1 := conn.NewUsbMuxClient()
-				defer usbMuxClient.GetDeviceConn().Close()
-				if err1 != nil {
-					tool.NewErrorPrint(tool.ErrConnect, "usbMux", err1)
-					continue
-				}
-				receiveFun, err2 := usbMuxClient.Listen()
-				if err2 != nil {
-					tool.NewErrorPrint(tool.ErrSendCommand, "listen", err2)
+				gDevice := <-model
+				if err != nil {
 					break
 				}
-				for {
-					device, err := receiveFun()
-					if err != nil {
-						break
+				deviceByte, _ := json.Marshal(gDevice)
+				device := &conn.Device{}
+				json.Unmarshal(deviceByte, device)
+				if device.Status == "online" && isDetail {
+					detail, err1 := conn.GetDetail(gDevice)
+					if err1 != nil {
+						continue
 					}
-					if device.Status == "online" && isDetail {
-						detail, err1 := device.GetDetail()
-						if err1 != nil {
-							fmt.Errorf("get udId %s device detail fail : %w", device.Properties.SerialNumber, err1)
-							continue
-						}
-						device.DeviceDetail = *detail
-					}
-					data := tool.Data(device)
-					fmt.Println(tool.Format(data, isFormat, isJson))
+					device.DeviceDetail = *detail
 				}
+				fmt.Println(device)
+				data := tool.Data(device)
+				fmt.Println(tool.Format(data, isFormat, isJson))
 			}
 		}()
-		//syscall.SIGKILL or syscall.SIGTERM ? SIGTERM can use defer
+
 		signalSetting := make(chan os.Signal, syscall.SIGTERM)
 		signal.Notify(signalSetting, os.Interrupt)
 		<-signalSetting
+		shutDownFun()
 		return nil
 	},
 }
