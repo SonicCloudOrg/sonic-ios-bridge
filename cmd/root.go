@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra/doc"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -31,10 +29,6 @@ https://github.com/SonicCloudOrg/sonic-ios-bridge
 // Execute error
 func Execute() {
 	err := rootCmd.Execute()
-	err1 := doc.GenMarkdownTree(rootCmd, "/")
-	if err1 != nil {
-		log.Fatal(err1)
-	}
 	if err != nil {
 		os.Exit(1)
 	}
