@@ -7,6 +7,7 @@ import (
 )
 
 var isJson, isDetail, isFormat bool
+var udid string
 
 var rootCmd = &cobra.Command{
 	Use:   "sib",

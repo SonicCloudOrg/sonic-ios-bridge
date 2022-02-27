@@ -16,6 +16,15 @@ var xcuitestCmd = &cobra.Command{
 	},
 }
 
+var (
+	wdaBundleID string
+	wdaPort int
+	mjpegPort int
+	autoProxy bool
+)
+
 func init() {
 	rootCmd.AddCommand(xcuitestCmd)
+	xcuitestCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
+	xcuitestCmd.MarkFlagRequired("udid")
 }

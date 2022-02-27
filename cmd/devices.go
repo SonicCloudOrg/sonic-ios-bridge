@@ -26,29 +26,58 @@ var devicesCmd = &cobra.Command{
 		if err1 != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
 		}
-		var deviceList entity.DeviceList
-		for _, d := range list {
-			deviceByte, _ := json.Marshal(d.Properties())
-			device := &entity.Device{}
-			if isDetail {
-				detail, err2 := entity.GetDetail(d)
-				if err2 != nil {
-					return err2
+		if len(udid) == 0 {
+			var deviceList entity.DeviceList
+			for _, d := range list {
+				deviceByte, _ := json.Marshal(d.Properties())
+				device := &entity.Device{}
+				if isDetail {
+					detail, err2 := entity.GetDetail(d)
+					if err2 != nil {
+						return err2
+					}
+					device.DeviceDetail = *detail
 				}
-				device.DeviceDetail = *detail
+				json.Unmarshal(deviceByte, device)
+				device.Status = device.GetStatus()
+				deviceList.DeviceList = append(deviceList.DeviceList, *device)
 			}
-			json.Unmarshal(deviceByte, device)
-			device.Status = device.GetStatus()
-			deviceList.DeviceList = append(deviceList.DeviceList, *device)
+			data := util.ResultData(deviceList)
+			fmt.Println(util.Format(data, isFormat, isJson))
+		} else {
+			if len(list) != 0 {
+				device := &entity.Device{}
+				for _, d := range list {
+					if d.Properties().SerialNumber == udid {
+						deviceByte, _ := json.Marshal(d.Properties())
+						if isDetail {
+							detail, err2 := entity.GetDetail(d)
+							if err2 != nil {
+								return err2
+							}
+							device.DeviceDetail = *detail
+						}
+						json.Unmarshal(deviceByte, device)
+						break
+					}
+				}
+				if device.SerialNumber != "" {
+					data := util.ResultData(device)
+					fmt.Println(util.Format(data, isFormat, isJson))
+				}else{
+					return fmt.Errorf("device no found")
+				}
+			} else {
+				return fmt.Errorf("no device connected")
+			}
 		}
-		data := util.ResultData(deviceList)
-		fmt.Println(util.Format(data, isFormat, isJson))
 		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(devicesCmd)
+	devicesCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	devicesCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")
 	devicesCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
 	devicesCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail, use with json flag or format flag")
