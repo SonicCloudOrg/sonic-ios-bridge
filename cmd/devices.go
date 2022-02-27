@@ -58,6 +58,7 @@ var devicesCmd = &cobra.Command{
 							device.DeviceDetail = *detail
 						}
 						json.Unmarshal(deviceByte, device)
+						device.Status = device.GetStatus()
 						break
 					}
 				}
