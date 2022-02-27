@@ -1,4 +1,4 @@
-package conn
+package entity
 
 var generationMap = map[string]string{
 	"AirPods1,1":    "AirPods (1st generation)",

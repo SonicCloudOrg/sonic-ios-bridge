@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/SonicCloudOrg/sonic-ios-bridge/src/conn"
-	"github.com/SonicCloudOrg/sonic-ios-bridge/src/tool"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
 	"github.com/spf13/cobra"
 	"os"
@@ -15,19 +15,20 @@ import (
 
 var listenCmd = &cobra.Command{
 	Use:   "listen",
-	Short: "listener for devices status",
+	Short: "Listener for devices status",
+	Long: "Listener for devices status",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if isDetail && (!isJson && !isFormat) {
 			return errors.New("detail flag must use with json flag or format flag")
 		}
 		usbMuxClient, err := giDevice.NewUsbmux()
 		if err != nil {
-			return tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
+			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
 		}
 		model := make(chan giDevice.Device)
 		shutDownFun, err2 := usbMuxClient.Listen(model)
 		if err2 != nil {
-			return tool.NewErrorPrint(tool.ErrSendCommand, "listen", err2)
+			return util.NewErrorPrint(util.ErrSendCommand, "listen", err2)
 		}
 
 		shutDown := make(chan os.Signal, syscall.SIGTERM)
@@ -37,7 +38,7 @@ var listenCmd = &cobra.Command{
 			select {
 			case d := <-model:
 				deviceByte, _ := json.Marshal(d.Properties())
-				device := &conn.Device{}
+				device := &entity.Device{}
 				json.Unmarshal(deviceByte, device)
 				if len(device.SerialNumber) > 0 {
 					deviceIdMap[device.DeviceID] = device.SerialNumber
@@ -47,14 +48,14 @@ var listenCmd = &cobra.Command{
 				}
 				device.Status = device.GetStatus()
 				if device.Status == "online" && isDetail {
-					detail, err1 := conn.GetDetail(d)
+					detail, err1 := entity.GetDetail(d)
 					if err1 != nil {
 						continue
 					}
 					device.DeviceDetail = *detail
 				}
-				data := tool.Data(device)
-				fmt.Println(tool.Format(data, isFormat, isJson))
+				data := util.ResultData(device)
+				fmt.Println(util.Format(data, isFormat, isJson))
 			case <-shutDown:
 				shutDownFun()
 				return nil
@@ -66,7 +67,7 @@ var listenCmd = &cobra.Command{
 
 func init() {
 	devicesCmd.AddCommand(listenCmd)
-	listenCmd.Flags().BoolVarP(&isJson, "json", "j", false, "output for json")
-	listenCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "output for json and format")
+	listenCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")
+	listenCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
 	listenCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail, use with json flag or format flag")
 }

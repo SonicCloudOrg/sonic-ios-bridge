@@ -1,12 +1,12 @@
-package tool
+package util
 
-type Data interface {
+type ResultData interface {
 	ToJson() string
 	ToString() string
 	ToFormat() string
 }
 
-func Format(d Data, isFormat, isJson bool) string {
+func Format(d ResultData, isFormat, isJson bool) string {
 	if isFormat {
 		return d.ToFormat()
 	}
