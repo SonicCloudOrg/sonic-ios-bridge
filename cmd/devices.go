@@ -17,32 +17,31 @@ var devicesCmd = &cobra.Command{
 		if isDetail && (!isJson && !isFormat) {
 			return errors.New("detail flag must use with json flag or format flag")
 		}
-		usb, err := giDevice.NewUsbmux()
+		usbMuxClient, err := giDevice.NewUsbmux()
 		if err != nil {
-			tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
+			return tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
 		}
-		list, _ := usb.Devices()
-		if isDetail {
-			for _, d := range list {
-				detail, err1 := d.GetValue("","")
-
-				if err1 != nil {
-					return fmt.Errorf("get %s device detail fail : %w", d.Properties().SerialNumber, err1)
+		list, err1 := usbMuxClient.Devices()
+		if err1 != nil {
+			return tool.NewErrorPrint(tool.ErrSendCommand, "listDevices", err1)
+		}
+		var deviceList conn.DeviceList
+		for _, d := range list {
+			deviceByte, _ := json.Marshal(d.Properties())
+			device := &conn.Device{}
+			if isDetail {
+				detail, err2 := conn.GetDetail(d)
+				if err2 != nil {
+					return err2
 				}
-				data, _ := json.Marshal(detail)
-				d1 := &conn.DeviceDetail{}
-				json.Unmarshal(data, d1)
-
-				data2, _ := json.Marshal(d)
-				d2 := &conn.Device{}
-				json.Unmarshal(data2, d2)
-				fmt.Println(d1)
-				fmt.Println(d2)
+				device.DeviceDetail = *detail
 			}
+			json.Unmarshal(deviceByte, device)
+			device.Status = device.GetStatus()
+			deviceList.DeviceList = append(deviceList.DeviceList, *device)
 		}
-		//fmt.Println(list.(string))
-		//data := tool.Data(list)
-		//fmt.Println(tool.Format(data, isFormat, isJson))
+		data := tool.Data(deviceList)
+		fmt.Println(tool.Format(data, isFormat, isJson))
 		return nil
 	},
 }

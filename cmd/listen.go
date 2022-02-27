@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/conn"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/tool"
+	giDevice "github.com/electricbubble/gidevice"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
@@ -18,41 +20,46 @@ var listenCmd = &cobra.Command{
 		if isDetail && (!isJson && !isFormat) {
 			return errors.New("detail flag must use with json flag or format flag")
 		}
-		go func() {
-			for {
-				usbMuxClient, err1 := conn.NewUsbMuxClient()
-				defer usbMuxClient.GetDeviceConn().Close()
-				if err1 != nil {
-					tool.NewErrorPrint(tool.ErrConnect, "usbMux", err1)
-					continue
+		usbMuxClient, err := giDevice.NewUsbmux()
+		if err != nil {
+			return tool.NewErrorPrint(tool.ErrConnect, "usbMux", err)
+		}
+		model := make(chan giDevice.Device)
+		shutDownFun, err2 := usbMuxClient.Listen(model)
+		if err2 != nil {
+			return tool.NewErrorPrint(tool.ErrSendCommand, "listen", err2)
+		}
+
+		shutDown := make(chan os.Signal, syscall.SIGTERM)
+		signal.Notify(shutDown, os.Interrupt, os.Kill)
+		var deviceIdMap = make(map[int]string)
+		for {
+			select {
+			case d := <-model:
+				deviceByte, _ := json.Marshal(d.Properties())
+				device := &conn.Device{}
+				json.Unmarshal(deviceByte, device)
+				if len(device.SerialNumber) > 0 {
+					deviceIdMap[device.DeviceID] = device.SerialNumber
+				} else {
+					device.SerialNumber = deviceIdMap[device.DeviceID]
+					delete(deviceIdMap, device.DeviceID)
 				}
-				receiveFun, err2 := usbMuxClient.Listen()
-				if err2 != nil {
-					tool.NewErrorPrint(tool.ErrSendCommand, "listen", err2)
-					break
-				}
-				for {
-					device, err := receiveFun()
-					if err != nil {
-						break
+				device.Status = device.GetStatus()
+				if device.Status == "online" && isDetail {
+					detail, err1 := conn.GetDetail(d)
+					if err1 != nil {
+						continue
 					}
-					if device.Status == "online" && isDetail {
-						detail, err1 := device.GetDetail()
-						if err1 != nil {
-							fmt.Errorf("get udId %s device detail fail : %w", device.Properties.SerialNumber, err1)
-							continue
-						}
-						device.DeviceDetail = *detail
-					}
-					data := tool.Data(device)
-					fmt.Println(tool.Format(data, isFormat, isJson))
+					device.DeviceDetail = *detail
 				}
+				data := tool.Data(device)
+				fmt.Println(tool.Format(data, isFormat, isJson))
+			case <-shutDown:
+				shutDownFun()
+				return nil
 			}
-		}()
-		//syscall.SIGKILL or syscall.SIGTERM ? SIGTERM can use defer
-		signalSetting := make(chan os.Signal, syscall.SIGTERM)
-		signal.Notify(signalSetting, os.Interrupt)
-		<-signalSetting
+		}
 		return nil
 	},
 }
