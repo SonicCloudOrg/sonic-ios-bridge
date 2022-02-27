@@ -141,6 +141,15 @@ func (deviceList IDeviceList) ToFormat() string {
 }
 
 //
+
+func (device *Device) GetStatus() string {
+	if device.ConnectionType != "" {
+		return "online"
+	} else {
+		return "offline"
+	}
+}
+
 func (device Device) ToString() string {
 	var s strings.Builder
 	s.WriteString(device.SerialNumber + " " + device.Status)

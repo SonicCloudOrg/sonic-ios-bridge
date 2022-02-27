@@ -37,6 +37,7 @@ var devicesCmd = &cobra.Command{
 				device.DeviceDetail = *detail
 			}
 			json.Unmarshal(deviceByte, device)
+			device.Status = device.GetStatus()
 			deviceList.DeviceList = append(deviceList.DeviceList, *device)
 		}
 		data := tool.Data(deviceList)

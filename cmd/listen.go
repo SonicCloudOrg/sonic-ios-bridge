@@ -29,32 +29,37 @@ var listenCmd = &cobra.Command{
 		if err2 != nil {
 			return tool.NewErrorPrint(tool.ErrSendCommand, "listen", err2)
 		}
-		go func() {
-			for {
-				gDevice := <-model
-				if err != nil {
-					break
-				}
-				deviceByte, _ := json.Marshal(gDevice)
+
+		shutDown := make(chan os.Signal, syscall.SIGTERM)
+		signal.Notify(shutDown, os.Interrupt, os.Kill)
+		var deviceIdMap = make(map[int]string)
+		for {
+			select {
+			case d := <-model:
+				deviceByte, _ := json.Marshal(d.Properties())
 				device := &conn.Device{}
 				json.Unmarshal(deviceByte, device)
+				if len(device.SerialNumber) > 0 {
+					deviceIdMap[device.DeviceID] = device.SerialNumber
+				} else {
+					device.SerialNumber = deviceIdMap[device.DeviceID]
+					delete(deviceIdMap, device.DeviceID)
+				}
+				device.Status = device.GetStatus()
 				if device.Status == "online" && isDetail {
-					detail, err1 := conn.GetDetail(gDevice)
+					detail, err1 := conn.GetDetail(d)
 					if err1 != nil {
 						continue
 					}
 					device.DeviceDetail = *detail
 				}
-				fmt.Println(device)
 				data := tool.Data(device)
 				fmt.Println(tool.Format(data, isFormat, isJson))
+			case <-shutDown:
+				shutDownFun()
+				return nil
 			}
-		}()
-
-		signalSetting := make(chan os.Signal, syscall.SIGTERM)
-		signal.Notify(signalSetting, os.Interrupt)
-		<-signalSetting
-		shutDownFun()
+		}
 		return nil
 	},
 }
