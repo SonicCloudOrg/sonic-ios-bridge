@@ -16,7 +16,7 @@ import (
 var listenCmd = &cobra.Command{
 	Use:   "listen",
 	Short: "Listener for devices status",
-	Long: "Listener for devices status",
+	Long:  "Listener for devices status",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if isDetail && (!isJson && !isFormat) {
 			return errors.New("detail flag must use with json flag or format flag")

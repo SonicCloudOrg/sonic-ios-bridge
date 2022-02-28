@@ -8,6 +8,7 @@ import (
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var devicesCmd = &cobra.Command{
@@ -66,10 +67,12 @@ var devicesCmd = &cobra.Command{
 					data := util.ResultData(device)
 					fmt.Println(util.Format(data, isFormat, isJson))
 				}else{
-					return fmt.Errorf("device no found")
+					fmt.Println("device no found")
+					os.Exit(0)
 				}
 			} else {
-				return fmt.Errorf("no device connected")
+				fmt.Printf("no device connected")
+				os.Exit(0)
 			}
 		}
 		return nil
