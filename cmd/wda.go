@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -45,7 +46,6 @@ var wdaCmd = &cobra.Command{
 				output, stopTest, err := device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
 				if err != nil {
 					fmt.Printf("WebDriverAgent server start failed... try to mount developer disk image...")
-
 					os.Exit(0)
 				}
 				shutDown := make(chan os.Signal, syscall.SIGTERM)
@@ -55,6 +55,9 @@ var wdaCmd = &cobra.Command{
 				go func() {
 					for s := range output {
 						fmt.Print(s)
+						if strings.Contains(s,"ServerURLHere->"){
+							fmt.Println("WebDriverAgent server start successful")
+						}
 					}
 					shutDown <- os.Interrupt
 				}()
