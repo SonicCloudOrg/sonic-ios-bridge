@@ -25,7 +25,7 @@ var wdaCmd = &cobra.Command{
 			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
 		}
 		if len(list) == 0 {
-			fmt.Printf("no device connected")
+			fmt.Errorf("no device connected")
 			os.Exit(0)
 		} else {
 			var device giDevice.Device
@@ -43,19 +43,45 @@ var wdaCmd = &cobra.Command{
 				testEnv := make(map[string]interface{})
 				testEnv["USE_PORT"] = serverRemotePort
 				testEnv["MJPEG_SERVER_PORT"] = mjpegRemotePort
-				output, stopTest, err := device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
-				if err != nil {
+				output, stopTest, err2 := device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
+				if err2 != nil {
 					fmt.Printf("WebDriverAgent server start failed... try to mount developer disk image...")
-					os.Exit(0)
+					value, err3 := device.GetValue("", "ProductVersion")
+					if err3 != nil {
+						return util.NewErrorPrint(util.ErrSendCommand, "get value", err3)
+					}
+					ver := strings.Split(value.(string), ".")
+					var reVer string
+					if len(ver) >= 2 {
+						reVer = ver[0] + "." + ver[1]
+					}
+					done := util.LoadDevelopImage(reVer)
+					if done {
+						var dmg = "DeveloperDiskImage.dmg"
+						var sign = dmg + ".signature"
+						err4 := device.MountDeveloperDiskImage(fmt.Sprintf(".sib/%s/%s", reVer, dmg), fmt.Sprintf(".sib/%s/%s", reVer, sign))
+						if err4 != nil {
+							fmt.Errorf("mount develop disk image fail")
+							os.Exit(0)
+						} else {
+							output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
+							if err2 != nil {
+								fmt.Errorf("WebDriverAgent server still start failed")
+								os.Exit(0)
+							}
+						}
+					} else {
+						fmt.Errorf("download develop disk image fail")
+						os.Exit(0)
+					}
 				}
 				shutDown := make(chan os.Signal, syscall.SIGTERM)
 				signal.Notify(shutDown, os.Interrupt, os.Kill)
 
-				fmt.Println(testEnv)
 				go func() {
 					for s := range output {
 						fmt.Print(s)
-						if strings.Contains(s,"ServerURLHere->"){
+						if strings.Contains(s, "ServerURLHere->") {
 							fmt.Println("WebDriverAgent server start successful")
 						}
 					}
@@ -66,7 +92,7 @@ var wdaCmd = &cobra.Command{
 				stopTest()
 				fmt.Println("stopped")
 			} else {
-				fmt.Println("device no found")
+				fmt.Errorf("device no found")
 				os.Exit(0)
 			}
 		}

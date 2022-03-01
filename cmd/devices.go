@@ -67,11 +67,11 @@ var devicesCmd = &cobra.Command{
 					data := util.ResultData(device)
 					fmt.Println(util.Format(data, isFormat, isJson))
 				}else{
-					fmt.Println("device no found")
+					fmt.Errorf("device no found")
 					os.Exit(0)
 				}
 			} else {
-				fmt.Printf("no device connected")
+				fmt.Errorf("no device connected")
 				os.Exit(0)
 			}
 		}
