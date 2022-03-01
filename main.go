@@ -1,7 +1,8 @@
 package main
 
-import "github.com/SonicCloudOrg/sonic-ios-bridge/cmd"
+import "github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 
 func main() {
-	cmd.Execute()
+	//cmd.Execute()
+	util.DownloadZip("https://tool.appetizer.io","12.4")
 }
