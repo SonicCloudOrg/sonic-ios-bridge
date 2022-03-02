@@ -29,7 +29,7 @@ var wdaCmd = &cobra.Command{
 			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
 		}
 		if len(list) == 0 {
-			fmt.Errorf("no device connected")
+			fmt.Println("no device connected")
 			os.Exit(0)
 		} else {
 			var device giDevice.Device
@@ -52,7 +52,7 @@ var wdaCmd = &cobra.Command{
 				testEnv["MJPEG_SERVER_PORT"] = mjpegRemotePort
 				output, stopTest, err2 := device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
 				if err2 != nil {
-					fmt.Printf("WebDriverAgent server start failed... try to mount developer disk image...")
+					fmt.Println("WebDriverAgent server start failed... try to mount developer disk image...")
 					value, err3 := device.GetValue("", "ProductVersion")
 					if err3 != nil {
 						return util.NewErrorPrint(util.ErrSendCommand, "get value", err3)
@@ -68,17 +68,17 @@ var wdaCmd = &cobra.Command{
 						var sign = dmg + ".signature"
 						err4 := device.MountDeveloperDiskImage(fmt.Sprintf(".sib/%s/%s", reVer, dmg), fmt.Sprintf(".sib/%s/%s", reVer, sign))
 						if err4 != nil {
-							fmt.Errorf("mount develop disk image fail")
+							fmt.Println("mount develop disk image fail")
 							os.Exit(0)
 						} else {
 							output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
 							if err2 != nil {
-								fmt.Errorf("WebDriverAgent server still start failed")
+								fmt.Println("WebDriverAgent server still start failed")
 								os.Exit(0)
 							}
 						}
 					} else {
-						fmt.Errorf("download develop disk image fail")
+						fmt.Println("download develop disk image fail")
 						os.Exit(0)
 					}
 				}
@@ -112,7 +112,7 @@ var wdaCmd = &cobra.Command{
 				stopTest()
 				fmt.Println("stopped")
 			} else {
-				fmt.Errorf("device no found")
+				fmt.Println("device no found")
 				os.Exit(0)
 			}
 		}
@@ -149,7 +149,7 @@ func proxy() func(mjpegListener net.Listener, port int, device giDevice.Device) 
 			fmt.Println("accept", accept.RemoteAddr())
 			rInnerConn, err := device.NewConnect(port)
 			if err != nil {
-				fmt.Errorf("connect to device fail")
+				fmt.Println("connect to device fail")
 				os.Exit(0)
 			}
 			rConn := rInnerConn.RawConn()

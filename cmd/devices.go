@@ -67,11 +67,11 @@ var devicesCmd = &cobra.Command{
 					data := util.ResultData(device)
 					fmt.Println(util.Format(data, isFormat, isJson))
 				}else{
-					fmt.Errorf("device no found")
+					fmt.Println("device no found")
 					os.Exit(0)
 				}
 			} else {
-				fmt.Errorf("no device connected")
+				fmt.Println("no device connected")
 				os.Exit(0)
 			}
 		}
@@ -82,7 +82,7 @@ var devicesCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(devicesCmd)
 	devicesCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
-	devicesCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")
+	devicesCmd.Flags().BoolVarP(&isJson, "json", "j", true, "convert to JSON string")
 	devicesCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
 	devicesCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail, use with json flag or format flag")
 }
