@@ -7,7 +7,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -18,7 +20,7 @@ var versionMap = map[string]string{
 	"15.3": "15.2",
 }
 
-var urlList = [...]string{"https://tool.appetizer.io", "https://github.com"}
+var urlList = [...]string{"https://tool.appetizer.io/JinjunHan", "https://code.aliyun.com/hanjinjun", "https://github.com/JinjunHan"}
 
 func downloadZip(url, version string) error {
 	if versionMap[version] != "" {
@@ -33,7 +35,7 @@ func downloadZip(url, version string) error {
 		client := http.Client{
 			Timeout: DownLoadTimeOut,
 		}
-		res, err := client.Get(fmt.Sprintf("%s/JinjunHan/iOSDeviceSupport/raw/master/DeviceSupport/%s.zip", url, version))
+		res, err := client.Get(fmt.Sprintf("%s/iOSDeviceSupport/raw/master/DeviceSupport/%s.zip", url, version))
 		if err != nil {
 			return err
 		}
@@ -43,15 +45,16 @@ func downloadZip(url, version string) error {
 		w := bufio.NewWriter(newFile)
 		io.Copy(w, r)
 		abs, _ := filepath.Abs(newFile.Name())
-		errZip := unzip(abs, ".sib")
+		errZip := unzip(abs, ".sib", version)
 		if errZip != nil {
-			fmt.Println(errZip)
+			os.Remove(newFile.Name())
+			return errZip
 		}
 	}
 	return nil
 }
 
-func unzip(zipFile string, destDir string) error {
+func unzip(zipFile, destDir, version string) error {
 	zipReader, err := zip.OpenReader(zipFile)
 	if err != nil {
 		return err
@@ -59,7 +62,12 @@ func unzip(zipFile string, destDir string) error {
 	defer zipReader.Close()
 
 	for _, f := range zipReader.File {
-		fpath := filepath.Join(destDir, f.Name)
+		var fpath string
+		if strings.HasPrefix(f.Name, version) && f.FileInfo().IsDir() {
+			fpath = filepath.Join(destDir, version)
+		} else {
+			fpath = filepath.Join(destDir, version+"/"+path.Base(f.Name))
+		}
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(fpath, os.ModePerm)
 		} else {
