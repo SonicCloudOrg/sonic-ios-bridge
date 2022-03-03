@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/electricbubble/gidevice v0.3.2
+	github.com/mitchellh/mapstructure v1.4.3
 	github.com/spf13/cobra v1.3.0
 )
 

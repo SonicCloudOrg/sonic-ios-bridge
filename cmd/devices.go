@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
@@ -16,9 +15,6 @@ var devicesCmd = &cobra.Command{
 	Short: "Get iOS device list",
 	Long:  "Get iOS device list",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if isDetail && (!isJson && !isFormat) {
-			return errors.New("detail flag must use with json flag or format flag")
-		}
 		usbMuxClient, err := giDevice.NewUsbmux()
 		if err != nil {
 			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
@@ -44,7 +40,7 @@ var devicesCmd = &cobra.Command{
 				deviceList.DeviceList = append(deviceList.DeviceList, *device)
 			}
 			data := util.ResultData(deviceList)
-			fmt.Println(util.Format(data, isFormat, isJson))
+			fmt.Println(util.Format(data, isFormat, isDetail))
 		} else {
 			if len(list) != 0 {
 				device := &entity.Device{}
@@ -65,8 +61,8 @@ var devicesCmd = &cobra.Command{
 				}
 				if device.SerialNumber != "" {
 					data := util.ResultData(device)
-					fmt.Println(util.Format(data, isFormat, isJson))
-				}else{
+					fmt.Println(util.Format(data, isFormat, isDetail))
+				} else {
 					fmt.Println("device no found")
 					os.Exit(0)
 				}
@@ -82,7 +78,6 @@ var devicesCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(devicesCmd)
 	devicesCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
-	devicesCmd.Flags().BoolVarP(&isJson, "json", "j", true, "convert to JSON string")
 	devicesCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
-	devicesCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail, use with json flag or format flag")
+	devicesCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail")
 }
