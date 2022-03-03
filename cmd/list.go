@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -34,13 +36,18 @@ var listCmd = &cobra.Command{
 				device = list[0]
 			}
 			if device.Properties().SerialNumber != "" {
-				result, errList := device.AppList()
+				result, errList := device.InstallationProxyBrowse(giDevice.WithApplicationType(giDevice.ApplicationTypeUser))
 				if errList != nil {
 					return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
 				}
+				var appList entity.AppList
 				for _, app := range result {
-					fmt.Println(app.DisplayName)
+					a := entity.Application{}
+					mapstructure.Decode(app, &a)
+					appList.ApplicationList = append(appList.ApplicationList, a)
 				}
+				data := util.ResultData(appList)
+				fmt.Println(util.Format(data, isFormat, isJson))
 			} else {
 				fmt.Println("device no found")
 				os.Exit(0)
@@ -55,9 +62,7 @@ var listCmd = &cobra.Command{
 
 func init() {
 	appCmd.AddCommand(listCmd)
-	appCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
-}
-
-type App struct {
-	Name string
+	listCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
+	listCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")
+	listCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
 }

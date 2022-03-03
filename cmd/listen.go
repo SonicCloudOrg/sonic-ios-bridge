@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
@@ -18,9 +17,6 @@ var listenCmd = &cobra.Command{
 	Short: "Listener for devices status",
 	Long:  "Listener for devices status",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if isDetail && (!isJson && !isFormat) {
-			return errors.New("detail flag must use with json flag or format flag")
-		}
 		usbMuxClient, err := giDevice.NewUsbmux()
 		if err != nil {
 			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
@@ -55,7 +51,7 @@ var listenCmd = &cobra.Command{
 					device.DeviceDetail = *detail
 				}
 				data := util.ResultData(device)
-				fmt.Println(util.Format(data, isFormat, isJson))
+				fmt.Println(util.Format(data, isFormat, isDetail))
 			case <-shutDown:
 				shutDownFun()
 				return nil
@@ -67,7 +63,6 @@ var listenCmd = &cobra.Command{
 
 func init() {
 	devicesCmd.AddCommand(listenCmd)
-	listenCmd.Flags().BoolVarP(&isJson, "json", "j", true, "convert to JSON string")
 	listenCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
-	listenCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail, use with json flag or format flag")
+	listenCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail")
 }
