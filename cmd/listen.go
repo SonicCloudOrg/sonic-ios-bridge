@@ -67,7 +67,7 @@ var listenCmd = &cobra.Command{
 
 func init() {
 	devicesCmd.AddCommand(listenCmd)
-	listenCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")
+	listenCmd.Flags().BoolVarP(&isJson, "json", "j", true, "convert to JSON string")
 	listenCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
 	listenCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail, use with json flag or format flag")
 }
