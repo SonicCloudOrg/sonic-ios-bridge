@@ -13,7 +13,7 @@
     <img src="https://img.shields.io/github/v/release/SonicCloudOrg/sonic-ios-bridge?include_prereleases">
   </a>
   <a href="#">  
-    https://img.shields.io/github/go-mod/go-version/SonicCloudOrg/sonic-ios-bridge
+    <img src="https://img.shields.io/github/go-mod/go-version/SonicCloudOrg/sonic-ios-bridge">
   </a>
 </p>
 
@@ -34,9 +34,9 @@
 > 如果你想支持，可以给我一个star。⭐
 
 ## 感谢
-|---|
-|[gidevice](https://github.com/electricbubble/gidevice)|
-|[tidevice](https://github.com/alibaba/taobao-iphone-device)|
+
+- gidevice [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice)
+- tidevice [https://github.com/alibaba/taobao-iphone-device](https://github.com/alibaba/taobao-iphone-device)
 
 ## 赞助商
 
