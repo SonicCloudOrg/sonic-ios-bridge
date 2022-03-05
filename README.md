@@ -38,6 +38,9 @@
 - gidevice [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice)
 - tidevice [https://github.com/alibaba/taobao-iphone-device](https://github.com/alibaba/taobao-iphone-device)
 
+## Usage
+[Click Here!](doc/sib.md)
+
 ## Sponsors
 
 Thank you to all our sponsors!
