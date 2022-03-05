@@ -13,6 +13,9 @@
     <img src="https://img.shields.io/github/v/release/SonicCloudOrg/sonic-ios-bridge?include_prereleases">
   </a>
   <a href="#">  
+    <img src="https://img.shields.io/github/downloads/SonicCloudOrg/sonic-ios-bridge/total">
+  </a>
+  <a href="#">  
     <img src="https://img.shields.io/github/go-mod/go-version/SonicCloudOrg/sonic-ios-bridge">
   </a>
 </p>
