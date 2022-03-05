@@ -36,7 +36,6 @@
 ## Thanks
 
 - gidevice [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice) 
-- gidevice-cli [https://github.com/electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli) 
 - tidevice [https://github.com/alibaba/taobao-iphone-device](https://github.com/alibaba/taobao-iphone-device)
 
 ## Usage
