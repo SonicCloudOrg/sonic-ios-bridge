@@ -39,7 +39,14 @@
 - tidevice [https://github.com/alibaba/taobao-iphone-device](https://github.com/alibaba/taobao-iphone-device)
 
 ## 使用方法
-[Click Here!](doc/sib.md)
+```
+sib run wda -b your.wda.bundleId
+sib app list
+sib app launch
+sib devices listen
+...
+```
+👉[点击这里获取更多!](doc/sib.md)
 
 ## 赞助商
 
