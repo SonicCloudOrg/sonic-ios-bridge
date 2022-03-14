@@ -31,11 +31,11 @@ var rebootCmd = &cobra.Command{
 				}
 			}
 			if device.Properties().SerialNumber != "" {
-				//errReboot := device.
-				//if errReboot != nil {
-				//	fmt.Println("reboot failed")
-				//	os.Exit(0)
-				//}
+				errReboot := device.Reboot()
+				if errReboot != nil {
+					fmt.Println("reboot failed")
+					os.Exit(0)
+				}
 			} else {
 				fmt.Println("device no found")
 				os.Exit(0)
