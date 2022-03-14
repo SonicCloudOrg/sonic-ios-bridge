@@ -9,10 +9,13 @@ builds:
       - linux
       - windows
       - darwin
+    goarch:
+      - "386"
+      - amd64
 archives:
   - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
+      darwin: macosx
+      linux: linux
+      windows: windows
+      386: x86
       amd64: x86_64
