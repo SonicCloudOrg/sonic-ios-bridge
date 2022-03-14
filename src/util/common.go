@@ -29,6 +29,7 @@ func downloadZip(url, version string) (string, error) {
 	f, err := os.Stat(".sib")
 	if err != nil {
 		os.MkdirAll(".sib", os.ModePerm)
+		f, err = os.Stat(".sib")
 	}
 	localAbs, _ := filepath.Abs(f.Name())
 	_, errT := os.Stat(fmt.Sprintf(".sib/%s.zip", version))
