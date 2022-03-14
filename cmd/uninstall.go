@@ -48,11 +48,11 @@ var uninstallCmd = &cobra.Command{
 					if len(ver) >= 2 {
 						reVer = ver[0] + "." + ver[1]
 					}
-					done := util.LoadDevelopImage(reVer)
+					p, done := util.LoadDevelopImage(reVer)
 					if done {
 						var dmg = "DeveloperDiskImage.dmg"
 						var sign = dmg + ".signature"
-						err4 := device.MountDeveloperDiskImage(fmt.Sprintf(".sib/%s/%s", reVer, dmg), fmt.Sprintf(".sib/%s/%s", reVer, sign))
+						err4 := device.MountDeveloperDiskImage(fmt.Sprintf("%s/%s/%s", p, reVer, dmg), fmt.Sprintf("%s/%s/%s", p, reVer, sign))
 						if err4 != nil {
 							fmt.Println("mount develop disk image fail")
 							os.Exit(0)

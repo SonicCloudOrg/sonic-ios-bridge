@@ -22,22 +22,23 @@ var versionMap = map[string]string{
 
 var urlList = [...]string{"https://tool.appetizer.io/JinjunHan", "https://code.aliyun.com/hanjinjun", "https://github.com/JinjunHan"}
 
-func downloadZip(url, version string) error {
+func downloadZip(url, version string) (string, error) {
 	if versionMap[version] != "" {
 		version = versionMap[version]
 	}
+	f, err := os.Stat(".sib")
+	if err != nil {
+		os.MkdirAll(".sib", os.ModePerm)
+	}
+	localAbs, _ := filepath.Abs(f.Name())
 	_, errT := os.Stat(fmt.Sprintf(".sib/%s.zip", version))
 	if errT != nil {
-		_, err := os.Stat(".sib")
-		if err != nil {
-			os.MkdirAll(".sib", os.ModePerm)
-		}
 		client := http.Client{
 			Timeout: DownLoadTimeOut,
 		}
 		res, err := client.Get(fmt.Sprintf("%s/iOSDeviceSupport/raw/master/DeviceSupport/%s.zip", url, version))
 		if err != nil {
-			return err
+			return "", err
 		}
 		defer res.Body.Close()
 		r := bufio.NewReaderSize(res.Body, 32*1024)
@@ -48,10 +49,10 @@ func downloadZip(url, version string) error {
 		errZip := unzip(abs, ".sib", version)
 		if errZip != nil {
 			os.Remove(newFile.Name())
-			return errZip
+			return "", errZip
 		}
 	}
-	return nil
+	return localAbs, nil
 }
 
 func unzip(zipFile, destDir, version string) error {
@@ -96,14 +97,16 @@ func unzip(zipFile, destDir, version string) error {
 	return nil
 }
 
-func LoadDevelopImage(version string) bool {
+func LoadDevelopImage(version string) (string, bool) {
 	var done = false
+	var path = ""
 	for _, s := range urlList {
-		err1 := downloadZip(s, version)
+		p, err1 := downloadZip(s, version)
 		if err1 == nil {
+			path = p
 			done = true
 			break
 		}
 	}
-	return done
+	return path, done
 }
