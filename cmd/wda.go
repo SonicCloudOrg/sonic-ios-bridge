@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
 	"io"
 	"log"
@@ -47,6 +49,23 @@ var wdaCmd = &cobra.Command{
 				if !strings.HasSuffix(wdaBundleID, ".xctrunner") {
 					wdaBundleID += ".xctrunner"
 				}
+				appList, errList := device.InstallationProxyBrowse(giDevice.WithApplicationType(giDevice.ApplicationTypeUser))
+				if errList != nil {
+					return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
+				}
+				var hasWda = false
+				for _, d := range appList {
+					a := entity.Application{}
+					mapstructure.Decode(d, &a)
+					if a.CFBundleIdentifier == wdaBundleID {
+						hasWda = true
+						break
+					}
+				}
+				if !hasWda {
+					fmt.Printf("%s is not in your device!", wdaBundleID)
+					os.Exit(0)
+				}
 				testEnv := make(map[string]interface{})
 				testEnv["USE_PORT"] = serverRemotePort
 				testEnv["MJPEG_SERVER_PORT"] = mjpegRemotePort
@@ -68,7 +87,7 @@ var wdaCmd = &cobra.Command{
 						var sign = dmg + ".signature"
 						err4 := device.MountDeveloperDiskImage(fmt.Sprintf("%s/%s/%s", p, reVer, dmg), fmt.Sprintf("%s/%s/%s", p, reVer, sign))
 						if err4 != nil {
-							fmt.Println("mount develop disk image fail")
+							fmt.Printf("mount develop disk image fail: %s", err4)
 							os.Exit(0)
 						} else {
 							output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
