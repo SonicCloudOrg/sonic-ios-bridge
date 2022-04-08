@@ -188,3 +188,7 @@ func proxy() func(mjpegListener net.Listener, port int, device giDevice.Device) 
 		}
 	}
 }
+
+func checkWdaHealth(){
+
+}
