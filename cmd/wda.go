@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -69,32 +70,7 @@ var wdaCmd = &cobra.Command{
 				testEnv := make(map[string]interface{})
 				testEnv["USE_PORT"] = serverRemotePort
 				testEnv["MJPEG_SERVER_PORT"] = mjpegRemotePort
-				sign, errImage := device.Images()
-				if errImage != nil || len(sign) == 0 {
-					fmt.Println("try to mount developer disk image...")
-					value, err3 := device.GetValue("", "ProductVersion")
-					if err3 != nil {
-						return util.NewErrorPrint(util.ErrSendCommand, "get value", err3)
-					}
-					ver := strings.Split(value.(string), ".")
-					var reVer string
-					if len(ver) >= 2 {
-						reVer = ver[0] + "." + ver[1]
-					}
-					p, done := util.LoadDevelopImage(reVer)
-					if done {
-						var dmg = "DeveloperDiskImage.dmg"
-						var sign = dmg + ".signature"
-						err4 := device.MountDeveloperDiskImage(fmt.Sprintf("%s/%s/%s", p, reVer, dmg), fmt.Sprintf("%s/%s/%s", p, reVer, sign))
-						if err4 != nil {
-							fmt.Printf("mount develop disk image fail: %s", err4)
-							os.Exit(0)
-						}
-					} else {
-						fmt.Println("download develop disk image fail")
-						os.Exit(0)
-					}
-				}
+				util.CheckMount(device)
 				output, stopTest, err2 := device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
 				if err2 != nil {
 					fmt.Printf("WebDriverAgent server start failed: %s", err2)
@@ -124,6 +100,41 @@ var wdaCmd = &cobra.Command{
 						}
 					}
 					shutWdaDown <- os.Interrupt
+				}()
+
+				go func() {
+					var resp *http.Response
+					var httpErr error
+					var checkTime = 0
+					for {
+						time.Sleep(time.Duration(60) * time.Second)
+						checkTime++
+						resp, httpErr = http.Get(fmt.Sprintf("http://127.0.0.1:%d/status", serverLocalPort))
+						if httpErr != nil {
+							fmt.Printf("request fail: %s", httpErr)
+							continue
+						}
+						if resp.StatusCode == 200 {
+							fmt.Printf("wda server health checked %d times: ok", checkTime)
+						} else {
+							stopTest()
+							var upTimes = 0
+							for {
+								output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
+								upTimes++
+								if err2 != nil {
+									fmt.Printf("WebDriverAgent server start failed in %d times: %s", upTimes, err2)
+									if upTimes >= 3 {
+										fmt.Printf("WebDriverAgent server start failed more than 3 times, giving up...")
+										os.Exit(0)
+									}
+								} else {
+									break
+								}
+							}
+						}
+					}
+					defer resp.Body.Close()
 				}()
 
 				<-shutWdaDown
@@ -156,16 +167,12 @@ func init() {
 	wdaCmd.Flags().IntVarP(&mjpegLocalPort, "mjpeg-local-port", "", 9100, "mjpeg-server local port")
 }
 
-func startWda() error {
-	return nil
-}
-
-func proxy() func(mjpegListener net.Listener, port int, device giDevice.Device) {
-	return func(mjpegListener net.Listener, port int, device giDevice.Device) {
+func proxy() func(listener net.Listener, port int, device giDevice.Device) {
+	return func(listener net.Listener, port int, device giDevice.Device) {
 		for {
 			var accept net.Conn
 			var err error
-			if accept, err = mjpegListener.Accept(); err != nil {
+			if accept, err = listener.Accept(); err != nil {
 				log.Println("accept:", err)
 			}
 			fmt.Println("accept", accept.RemoteAddr())
@@ -189,11 +196,5 @@ func proxy() func(mjpegListener net.Listener, port int, device giDevice.Device) 
 				}(lConn, rConn)
 			}(accept)
 		}
-	}
-}
-
-func checkWdaHealth() func() {
-	return func() {
-
 	}
 }

@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
-	"os"
-	"strings"
-
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var uninstallCmd = &cobra.Command{
@@ -36,32 +34,7 @@ var uninstallCmd = &cobra.Command{
 				device = list[0]
 			}
 			if device.Properties().SerialNumber != "" {
-				sign, errImage := device.Images()
-				if errImage != nil || len(sign) == 0 {
-					fmt.Println("try to mount developer disk image...")
-					value, err3 := device.GetValue("", "ProductVersion")
-					if err3 != nil {
-						return util.NewErrorPrint(util.ErrSendCommand, "get value", err3)
-					}
-					ver := strings.Split(value.(string), ".")
-					var reVer string
-					if len(ver) >= 2 {
-						reVer = ver[0] + "." + ver[1]
-					}
-					p, done := util.LoadDevelopImage(reVer)
-					if done {
-						var dmg = "DeveloperDiskImage.dmg"
-						var sign = dmg + ".signature"
-						err4 := device.MountDeveloperDiskImage(fmt.Sprintf("%s/%s/%s", p, reVer, dmg), fmt.Sprintf("%s/%s/%s", p, reVer, sign))
-						if err4 != nil {
-							fmt.Printf("mount develop disk image fail: %s", err4)
-							os.Exit(0)
-						}
-					} else {
-						fmt.Println("download develop disk image fail")
-						os.Exit(0)
-					}
-				}
+				util.CheckMount(device)
 				errUninstall := device.AppUninstall(bundleId)
 				if errUninstall != nil {
 					fmt.Println("uninstall failed")

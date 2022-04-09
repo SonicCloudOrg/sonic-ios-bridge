@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bufio"
 	"fmt"
+	giDevice "github.com/electricbubble/gidevice"
 	"io"
 	"net/http"
 	"os"
@@ -98,7 +99,7 @@ func unzip(zipFile, destDir, version string) error {
 	return nil
 }
 
-func LoadDevelopImage(version string) (string, bool) {
+func loadDevelopImage(version string) (string, bool) {
 	var done = false
 	var path = ""
 	for _, s := range urlList {
@@ -110,4 +111,34 @@ func LoadDevelopImage(version string) (string, bool) {
 		}
 	}
 	return path, done
+}
+
+func CheckMount(device giDevice.Device) {
+	sign, errImage := device.Images()
+	if errImage != nil || len(sign) == 0 {
+		fmt.Println("try to mount developer disk image...")
+		value, err3 := device.GetValue("", "ProductVersion")
+		if err3 != nil {
+			NewErrorPrint(ErrSendCommand, "get value", err3)
+			os.Exit(0)
+		}
+		ver := strings.Split(value.(string), ".")
+		var reVer string
+		if len(ver) >= 2 {
+			reVer = ver[0] + "." + ver[1]
+		}
+		p, done := loadDevelopImage(reVer)
+		if done {
+			var dmg = "DeveloperDiskImage.dmg"
+			var sign = dmg + ".signature"
+			err4 := device.MountDeveloperDiskImage(fmt.Sprintf("%s/%s/%s", p, reVer, dmg), fmt.Sprintf("%s/%s/%s", p, reVer, sign))
+			if err4 != nil {
+				fmt.Printf("mount develop disk image fail: %s", err4)
+				os.Exit(0)
+			}
+		} else {
+			fmt.Println("download develop disk image fail")
+			os.Exit(0)
+		}
+	}
 }
