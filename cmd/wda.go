@@ -22,7 +22,118 @@ var wdaCmd = &cobra.Command{
 	Short: "Run WebDriverAgent on your devices",
 	Long:  `Run WebDriverAgent on your devices`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		usbMuxClient, err := giDevice.NewUsbmux()
+		if err != nil {
+			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
+		}
+		list, err1 := usbMuxClient.Devices()
+		if err1 != nil {
+			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
+		}
+		if len(list) == 0 {
+			fmt.Println("no device connected")
+			os.Exit(0)
+		} else {
+			var device giDevice.Device
+			if len(udid) != 0 {
+				for i, d := range list {
+					if d.Properties().SerialNumber == udid {
+						device = list[i]
+						break
+					}
+				}
+			} else {
+				device = list[0]
+			}
+			if device.Properties().SerialNumber != "" {
+				if !strings.HasSuffix(wdaBundleID, ".xctrunner") {
+					wdaBundleID += ".xctrunner"
+				}
+				appList, errList := device.InstallationProxyBrowse(giDevice.WithApplicationType(giDevice.ApplicationTypeUser))
+				if errList != nil {
+					return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
+				}
+				var hasWda = false
+				for _, d := range appList {
+					a := entity.Application{}
+					mapstructure.Decode(d, &a)
+					if a.CFBundleIdentifier == wdaBundleID {
+						hasWda = true
+						break
+					}
+				}
+				if !hasWda {
+					fmt.Printf("%s is not in your device!", wdaBundleID)
+					os.Exit(0)
+				}
+				testEnv := make(map[string]interface{})
+				testEnv["USE_PORT"] = serverRemotePort
+				testEnv["MJPEG_SERVER_PORT"] = mjpegRemotePort
+				sign, errImage := device.Images()
+				if errImage != nil || len(sign) == 0 {
+					fmt.Println("try to mount developer disk image...")
+					value, err3 := device.GetValue("", "ProductVersion")
+					if err3 != nil {
+						return util.NewErrorPrint(util.ErrSendCommand, "get value", err3)
+					}
+					ver := strings.Split(value.(string), ".")
+					var reVer string
+					if len(ver) >= 2 {
+						reVer = ver[0] + "." + ver[1]
+					}
+					p, done := util.LoadDevelopImage(reVer)
+					if done {
+						var dmg = "DeveloperDiskImage.dmg"
+						var sign = dmg + ".signature"
+						err4 := device.MountDeveloperDiskImage(fmt.Sprintf("%s/%s/%s", p, reVer, dmg), fmt.Sprintf("%s/%s/%s", p, reVer, sign))
+						if err4 != nil {
+							fmt.Printf("mount develop disk image fail: %s", err4)
+							os.Exit(0)
+						}
+					} else {
+						fmt.Println("download develop disk image fail")
+						os.Exit(0)
+					}
+				}
+				output, stopTest, err2 := device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
+				if err2 != nil {
+					fmt.Printf("WebDriverAgent server start failed: %s", err2)
+					os.Exit(0)
+				}
+				serverListener, err := net.Listen("tcp", fmt.Sprintf(":%d", serverLocalPort))
+				if err != nil {
+					return err
+				}
+				defer serverListener.Close()
+				mjpegListener, err := net.Listen("tcp", fmt.Sprintf(":%d", mjpegLocalPort))
+				if err != nil {
+					return err
+				}
+				defer mjpegListener.Close()
+				shutWdaDown := make(chan os.Signal, syscall.SIGTERM)
+				signal.Notify(shutWdaDown, os.Interrupt, os.Kill)
 
+				go proxy()(serverListener, serverRemotePort, device)
+				go proxy()(mjpegListener, mjpegRemotePort, device)
+
+				go func() {
+					for s := range output {
+						fmt.Print(s)
+						if strings.Contains(s, "ServerURLHere->") {
+							fmt.Println("WebDriverAgent server start successful")
+						}
+					}
+					shutWdaDown <- os.Interrupt
+				}()
+
+				<-shutWdaDown
+				stopTest()
+				fmt.Println("stopped")
+			} else {
+				fmt.Println("device no found")
+				os.Exit(0)
+			}
+		}
 		return nil
 	},
 }
@@ -46,119 +157,6 @@ func init() {
 }
 
 func startWda() error {
-	usbMuxClient, err := giDevice.NewUsbmux()
-	if err != nil {
-		return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
-	}
-	list, err1 := usbMuxClient.Devices()
-	if err1 != nil {
-		return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
-	}
-	if len(list) == 0 {
-		fmt.Println("no device connected")
-		os.Exit(0)
-	} else {
-		var device giDevice.Device
-		if len(udid) != 0 {
-			for i, d := range list {
-				if d.Properties().SerialNumber == udid {
-					device = list[i]
-					break
-				}
-			}
-		} else {
-			device = list[0]
-		}
-		if device.Properties().SerialNumber != "" {
-			if !strings.HasSuffix(wdaBundleID, ".xctrunner") {
-				wdaBundleID += ".xctrunner"
-			}
-			appList, errList := device.InstallationProxyBrowse(giDevice.WithApplicationType(giDevice.ApplicationTypeUser))
-			if errList != nil {
-				return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
-			}
-			var hasWda = false
-			for _, d := range appList {
-				a := entity.Application{}
-				mapstructure.Decode(d, &a)
-				if a.CFBundleIdentifier == wdaBundleID {
-					hasWda = true
-					break
-				}
-			}
-			if !hasWda {
-				fmt.Printf("%s is not in your device!", wdaBundleID)
-				os.Exit(0)
-			}
-			testEnv := make(map[string]interface{})
-			testEnv["USE_PORT"] = serverRemotePort
-			testEnv["MJPEG_SERVER_PORT"] = mjpegRemotePort
-			output, stopTest, err2 := device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
-			if err2 != nil {
-				fmt.Println("WebDriverAgent server start failed... try to mount developer disk image...")
-				value, err3 := device.GetValue("", "ProductVersion")
-				if err3 != nil {
-					return util.NewErrorPrint(util.ErrSendCommand, "get value", err3)
-				}
-				ver := strings.Split(value.(string), ".")
-				var reVer string
-				if len(ver) >= 2 {
-					reVer = ver[0] + "." + ver[1]
-				}
-				p, done := util.LoadDevelopImage(reVer)
-				if done {
-					var dmg = "DeveloperDiskImage.dmg"
-					var sign = dmg + ".signature"
-					err4 := device.MountDeveloperDiskImage(fmt.Sprintf("%s/%s/%s", p, reVer, dmg), fmt.Sprintf("%s/%s/%s", p, reVer, sign))
-					if err4 != nil {
-						fmt.Printf("mount develop disk image fail: %s", err4)
-						os.Exit(0)
-					} else {
-						output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
-						if err2 != nil {
-							fmt.Println("WebDriverAgent server still start failed")
-							os.Exit(0)
-						}
-					}
-				} else {
-					fmt.Println("download develop disk image fail")
-					os.Exit(0)
-				}
-			}
-			serverListener, err := net.Listen("tcp", fmt.Sprintf(":%d", serverLocalPort))
-			if err != nil {
-				return err
-			}
-			defer serverListener.Close()
-			mjpegListener, err := net.Listen("tcp", fmt.Sprintf(":%d", mjpegLocalPort))
-			if err != nil {
-				return err
-			}
-			defer mjpegListener.Close()
-			shutWdaDown := make(chan os.Signal, syscall.SIGTERM)
-			signal.Notify(shutWdaDown, os.Interrupt, os.Kill)
-
-			go proxy()(serverListener, serverRemotePort, device)
-			go proxy()(mjpegListener, mjpegRemotePort, device)
-
-			go func() {
-				for s := range output {
-					fmt.Print(s)
-					if strings.Contains(s, "ServerURLHere->") {
-						fmt.Println("WebDriverAgent server start successful")
-					}
-				}
-				shutWdaDown <- os.Interrupt
-			}()
-
-			<-shutWdaDown
-			stopTest()
-			fmt.Println("stopped")
-		} else {
-			fmt.Println("device no found")
-			os.Exit(0)
-		}
-	}
 	return nil
 }
 

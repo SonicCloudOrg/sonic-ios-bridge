@@ -37,7 +37,7 @@ var installCmd = &cobra.Command{
 			if device.Properties().SerialNumber != "" {
 				errInstall := device.AppInstall(path)
 				if errInstall != nil {
-					fmt.Println("install failed")
+					fmt.Printf("install failed: %s", errInstall)
 					os.Exit(0)
 				}
 			} else {

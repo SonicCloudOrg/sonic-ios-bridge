@@ -44,7 +44,9 @@ var listCmd = &cobra.Command{
 				for _, app := range result {
 					a := entity.Application{}
 					mapstructure.Decode(app, &a)
-					appList.ApplicationList = append(appList.ApplicationList, a)
+					if a.CFBundleIdentifier != "" && a.CFBundleDisplayName != "" && a.CFBundleVersion != "" {
+						appList.ApplicationList = append(appList.ApplicationList, a)
+					}
 				}
 				data := util.ResultData(appList)
 				fmt.Println(util.Format(data, isFormat, isJson))
