@@ -22,34 +22,34 @@ import (
 	"strings"
 )
 
-type Application struct {
-	CFBundleVersion     string `json:"version"`
-	CFBundleDisplayName string `json:"name"`
-	CFBundleIdentifier  string `json:"bundleId"`
+type Battery struct {
+	SerialNumber string `json:"serialNumber,omitempty"`
+	Level        int    `json:"level,omitempty"`
+	Temperature  int    `json:"temperature,omitempty"`
 }
 
-type AppList struct {
-	ApplicationList []Application `json:"appList"`
+type BatteryList struct {
+	BatteryInfo []Battery `json:"batteryList"`
 }
 
-func (appList AppList) ToString() string {
+func (batteryList BatteryList) ToString() string {
 	var s strings.Builder
-	for i, e := range appList.ApplicationList {
-		if i != len(appList.ApplicationList)-1 {
-			s.WriteString(fmt.Sprintf("%s %s %s\n", e.CFBundleDisplayName, e.CFBundleIdentifier, e.CFBundleVersion))
+	for i, e := range batteryList.BatteryInfo {
+		if i != len(batteryList.BatteryInfo)-1 {
+			s.WriteString(fmt.Sprintf("%s %d %d\n", e.SerialNumber, e.Level, e.Temperature))
 		} else {
-			s.WriteString(fmt.Sprintf("%s %s %s", e.CFBundleDisplayName, e.CFBundleIdentifier, e.CFBundleVersion))
+			s.WriteString(fmt.Sprintf("%s %d %d", e.SerialNumber, e.Level, e.Temperature))
 		}
 	}
 	return s.String()
 }
 
-func (appList AppList) ToJson() string {
-	result, _ := json.Marshal(appList)
+func (batteryList BatteryList) ToJson() string {
+	result, _ := json.Marshal(batteryList)
 	return string(result)
 }
 
-func (appList AppList) ToFormat() string {
-	result, _ := json.MarshalIndent(appList, "", "\t")
+func (batteryList BatteryList) ToFormat() string {
+	result, _ := json.MarshalIndent(batteryList, "", "\t")
 	return string(result)
 }
