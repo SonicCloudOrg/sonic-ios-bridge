@@ -18,8 +18,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
+	"github.com/mitchellh/mapstructure"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -39,8 +41,22 @@ var batteryCmd = &cobra.Command{
 			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
 		}
 		if len(list) != 0 {
-			//util.CheckMount(list[0])
-			fmt.Println(list[0].GetValue("com.apple.mobile.battery",""))
+			var batteryList entity.BatteryList
+			for _, d := range list {
+				b := entity.Battery{}
+				bd, err := d.GetValue("com.apple.mobile.battery", "")
+				if err != nil {
+					continue
+				}
+				bi := entity.BatteryInter{}
+				mapstructure.Decode(bd, &bi)
+				b.SerialNumber = d.Properties().SerialNumber
+				b.Level = bi.BatteryCurrentCapacity
+				b.Temperature = 0
+				batteryList.BatteryInfo = append(batteryList.BatteryInfo, b)
+			}
+			data := util.ResultData(batteryList)
+			fmt.Println(util.Format(data, isFormat, isJson))
 		} else {
 			fmt.Println("no device connected")
 			os.Exit(0)
@@ -51,4 +67,6 @@ var batteryCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(batteryCmd)
+	batteryCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")
+	batteryCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
 }

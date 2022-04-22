@@ -22,10 +22,14 @@ import (
 	"strings"
 )
 
+type BatteryInter struct {
+	BatteryCurrentCapacity int
+}
+
 type Battery struct {
 	SerialNumber string `json:"serialNumber,omitempty"`
-	Level        int    `json:"level,omitempty"`
-	Temperature  int    `json:"temperature,omitempty"`
+	Level        int    `json:"level"`
+	Temperature  int    `json:"temperature"`
 }
 
 type BatteryList struct {
