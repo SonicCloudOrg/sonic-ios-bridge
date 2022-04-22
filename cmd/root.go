@@ -17,6 +17,8 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra/doc"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -48,8 +50,8 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
-	//err1 := doc.GenMarkdownTree(rootCmd, "doc")
-	//if err1 != nil {
-	//	log.Fatal(err1)
-	//}
+	err1 := doc.GenMarkdownTree(rootCmd, "doc")
+	if err1 != nil {
+		log.Fatal(err1)
+	}
 }

@@ -1,19 +1,20 @@
-## sib version
+## sib reboot
 
-Version code of sib
+Reboot device
 
 ### Synopsis
 
-Version code of sib
+Reboot device
 
 ```
-sib version [flags]
+sib reboot [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for version
+  -h, --help          help for reboot
+  -u, --udid string   device's serialNumber
 ```
 
 ### SEE ALSO
