@@ -39,7 +39,7 @@ var batteryCmd = &cobra.Command{
 			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
 		}
 		if len(list) != 0 {
-			util.CheckMount(list[0])
+			//util.CheckMount(list[0])
 			fmt.Println(list[0].GetValue("com.apple.mobile.battery",""))
 		} else {
 			fmt.Println("no device connected")
