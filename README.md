@@ -63,4 +63,4 @@ Thank you to all our sponsors!
 
 ## LICENSE
 
-[LICENSE](LICENSE)
+[License](LICENSE)

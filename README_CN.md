@@ -63,4 +63,4 @@ sib devices listen
 
 ## 开源许可协议
 
-[LICENSE](LICENSE)
+[License](LICENSE)
