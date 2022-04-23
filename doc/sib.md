@@ -1,9 +1,9 @@
 ## sib
 
-Bridge of iOS Devices by usbmuxd
+Bridge of iOS Devices
 
 ### Synopsis
-
+```
 
    ▄▄▄▄      ▄▄▄▄    ▄▄▄   ▄▄   ▄▄▄▄▄▄      ▄▄▄▄
  ▄█▀▀▀▀█    ██▀▀██   ███   ██   ▀▀██▀▀    ██▀▀▀▀█
@@ -15,7 +15,7 @@ Bridge of iOS Devices by usbmuxd
 
           Author: SonicCloudOrg
 https://github.com/SonicCloudOrg/sonic-ios-bridge
-
+```
 
 ### Options
 

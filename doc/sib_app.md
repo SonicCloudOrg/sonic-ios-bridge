@@ -18,7 +18,7 @@ sib app [flags]
 
 ### SEE ALSO
 
-* [sib](sib.md)	 - Bridge of iOS Devices by usbmuxd
+* [sib](sib.md)	 - Bridge of iOS Devices
 * [sib app install](sib_app_install.md)	 - Install App in your device
 * [sib app launch](sib_app_launch.md)	 - Launch App
 * [sib app list](sib_app_list.md)	 - show app list

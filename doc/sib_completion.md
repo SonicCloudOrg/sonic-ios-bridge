@@ -16,7 +16,7 @@ See each sub-command's help for details on how to use the generated script.
 
 ### SEE ALSO
 
-* [sib](sib.md)	 - Bridge of iOS Devices by usbmuxd
+* [sib](sib.md)	 - Bridge of iOS Devices
 * [sib completion bash](sib_completion_bash.md)	 - Generate the autocompletion script for bash
 * [sib completion fish](sib_completion_fish.md)	 - Generate the autocompletion script for fish
 * [sib completion powershell](sib_completion_powershell.md)	 - Generate the autocompletion script for powershell
