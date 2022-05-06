@@ -3,6 +3,12 @@ before:
     - go mod tidy
 builds:
   - id: "sonic-ios-bridge"
+    asmflags:
+      - all=-trimpath=C:/Users/ZHOUYIXUN/Desktop/sonic-ios-bridge
+    gcflags:
+      - all=-trimpath=C:/Users/ZHOUYIXUN/Desktop/sonic-ios-bridge
+    ldflags:
+      - -s -w
     main: .
     binary: sib
     goos:
