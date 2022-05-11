@@ -49,7 +49,7 @@ sib app launch
 sib devices listen
 ...
 ```
-👉[Click Here to Get More!](doc/sib.md)
+👉[Click Here to Get More!](https://sonic-cloud.gitee.io/#/SIB)
 
 
 ## Sponsors
