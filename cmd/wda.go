@@ -26,6 +26,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -115,6 +116,42 @@ var wdaCmd = &cobra.Command{
 						}
 					}
 					shutWdaDown <- os.Interrupt
+				}()
+
+				go func() {
+					var resp *http.Response
+					var httpErr error
+					var checkTime = 0
+					defer resp.Body.Close()
+					for {
+						time.Sleep(time.Duration(20) * time.Second)
+						checkTime++
+						resp, httpErr = http.Get(fmt.Sprintf("http://127.0.0.1:%d/status", serverLocalPort))
+						if httpErr != nil {
+							fmt.Printf("request fail: %s", httpErr)
+							continue
+						}
+						if resp.StatusCode == 200 {
+							fmt.Printf("wda server health checked %d times: ok", checkTime)
+						} else {
+							stopTest()
+							var upTimes = 0
+							for {
+								output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
+								upTimes++
+								if err2 != nil {
+									fmt.Printf("WebDriverAgent server start failed in %d times: %s", upTimes, err2)
+									if upTimes >= 3 {
+										fmt.Printf("WebDriverAgent server start failed more than 3 times, giving up...")
+										os.Exit(0)
+									}
+								} else {
+									break
+								}
+							}
+						}
+					}
+					fmt.Println("bye")
 				}()
 
 				<-shutWdaDown
