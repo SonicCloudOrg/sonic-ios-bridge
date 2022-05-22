@@ -52,7 +52,9 @@ var listCmd = &cobra.Command{
 				device = list[0]
 			}
 			if device.Properties().SerialNumber != "" {
-				result, errList := device.InstallationProxyBrowse(giDevice.WithApplicationType(giDevice.ApplicationTypeUser))
+				result, errList := device.InstallationProxyBrowse(
+					giDevice.WithApplicationType(giDevice.ApplicationTypeUser),
+					giDevice.WithReturnAttributes("CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
 				if errList != nil {
 					return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
 				}
