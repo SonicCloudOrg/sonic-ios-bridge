@@ -26,7 +26,6 @@ import (
 	"io"
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -118,41 +117,41 @@ var wdaCmd = &cobra.Command{
 					shutWdaDown <- os.Interrupt
 				}()
 
-				go func() {
-					var resp *http.Response
-					var httpErr error
-					var checkTime = 0
-					defer resp.Body.Close()
-					for {
-						time.Sleep(time.Duration(20) * time.Second)
-						checkTime++
-						resp, httpErr = http.Get(fmt.Sprintf("http://127.0.0.1:%d/status", serverLocalPort))
-						if httpErr != nil {
-							fmt.Printf("request fail: %s", httpErr)
-							continue
-						}
-						if resp.StatusCode == 200 {
-							fmt.Printf("wda server health checked %d times: ok", checkTime)
-						} else {
-							stopTest()
-							var upTimes = 0
-							for {
-								output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
-								upTimes++
-								if err2 != nil {
-									fmt.Printf("WebDriverAgent server start failed in %d times: %s", upTimes, err2)
-									if upTimes >= 3 {
-										fmt.Printf("WebDriverAgent server start failed more than 3 times, giving up...")
-										os.Exit(0)
-									}
-								} else {
-									break
-								}
-							}
-						}
-					}
-					fmt.Println("bye")
-				}()
+				//go func() {
+				//	var resp *http.Response
+				//	var httpErr error
+				//	var checkTime = 0
+				//	defer resp.Body.Close()
+				//	for {
+				//		time.Sleep(time.Duration(20) * time.Second)
+				//		checkTime++
+				//		resp, httpErr = http.Get(fmt.Sprintf("http://127.0.0.1:%d/status", serverLocalPort))
+				//		if httpErr != nil {
+				//			fmt.Printf("request fail: %s", httpErr)
+				//			continue
+				//		}
+				//		if resp.StatusCode == 200 {
+				//			fmt.Printf("wda server health checked %d times: ok", checkTime)
+				//		} else {
+				//			stopTest()
+				//			var upTimes = 0
+				//			for {
+				//				output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
+				//				upTimes++
+				//				if err2 != nil {
+				//					fmt.Printf("WebDriverAgent server start failed in %d times: %s", upTimes, err2)
+				//					if upTimes >= 3 {
+				//						fmt.Printf("WebDriverAgent server start failed more than 3 times, giving up...")
+				//						os.Exit(0)
+				//					}
+				//				} else {
+				//					break
+				//				}
+				//			}
+				//		}
+				//	}
+				//	fmt.Println("bye")
+				//}()
 
 				<-shutWdaDown
 				stopTest()
@@ -203,12 +202,12 @@ func proxy() func(listener net.Listener, port int, device giDevice.Device) {
 			go func(lConn net.Conn) {
 				go func(lConn, rConn net.Conn) {
 					if _, err := io.Copy(lConn, rConn); err != nil {
-						log.Println("copy local -> remote failed:", err)
+						log.Println("local -> remote failed:", err)
 					}
 				}(lConn, rConn)
 				go func(lConn, rConn net.Conn) {
 					if _, err := io.Copy(rConn, lConn); err != nil {
-						log.Println("copy local <- remote failed:", err)
+						log.Println("local <- remote failed:", err)
 					}
 				}(lConn, rConn)
 			}(accept)

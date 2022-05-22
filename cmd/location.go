@@ -70,4 +70,6 @@ func init() {
 	locationCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	locationCmd.Flags().Float64Var(&long, "long", 0, "longitude")
 	locationCmd.Flags().Float64Var(&lat, "lat", 0, "latitude")
+	locationCmd.MarkFlagRequired("long")
+	locationCmd.MarkFlagRequired("lat")
 }
