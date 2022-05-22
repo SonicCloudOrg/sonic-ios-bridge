@@ -65,7 +65,7 @@ var wdaCmd = &cobra.Command{
 				if !strings.HasSuffix(wdaBundleID, ".xctrunner") {
 					wdaBundleID += ".xctrunner"
 				}
-				appList, errList := device.AppList()
+				appList, errList := device.InstallationProxyBrowse(giDevice.WithApplicationType(giDevice.ApplicationTypeUser))
 				if errList != nil {
 					return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
 				}

@@ -52,7 +52,7 @@ var listCmd = &cobra.Command{
 				device = list[0]
 			}
 			if device.Properties().SerialNumber != "" {
-				result, errList := device.AppList()
+				result, errList := device.InstallationProxyBrowse(giDevice.WithApplicationType(giDevice.ApplicationTypeUser))
 				if errList != nil {
 					return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
 				}
@@ -60,7 +60,7 @@ var listCmd = &cobra.Command{
 				for _, app := range result {
 					a := entity.Application{}
 					mapstructure.Decode(app, &a)
-					if a.CFBundleIdentifier != "" && a.DisplayName != "" && a.Version != "" {
+					if a.CFBundleIdentifier != "" && a.CFBundleDisplayName != "" && a.CFBundleVersion != "" {
 						appList.ApplicationList = append(appList.ApplicationList, a)
 					}
 				}
