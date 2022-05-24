@@ -47,6 +47,7 @@ sib run wda -b your.wda.bundleId
 sib app list
 sib app launch
 sib devices listen
+sib app uninstall
 ...
 ```
 👉[Click Here to Get More!](https://sonic-cloud.gitee.io/#/SIB)
