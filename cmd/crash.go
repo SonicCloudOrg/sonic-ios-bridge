@@ -18,19 +18,49 @@ package cmd
 
 import (
 	"fmt"
-
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
+	giDevice "github.com/electricbubble/gidevice"
 	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
 )
 
 var crashCmd = &cobra.Command{
 	Use:   "crash",
 	Short: "Get CrashReport from your device",
 	Long:  "Get CrashReport from your device",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("crash called")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		device := util.GetDeviceByUdId(udid)
+		if device == nil {
+			os.Exit(0)
+		}
+		if !filepath.IsAbs(path) {
+			var err error
+			if path, err = filepath.Abs(path); err != nil {
+				fmt.Println("path no found!")
+				os.Exit(0)
+			}
+		}
+		err := device.MoveCrashReport(path,
+			giDevice.WithKeepCrashReport(keep),
+			giDevice.WithExtractRawCrashReport(true),
+			giDevice.WithWhenMoveIsDone(func(filename string) {
+				fmt.Printf("%s: done.\n", filename)
+			}),
+		)
+		if err != nil {
+			fmt.Println("move crash files failed.")
+		}
+		fmt.Println("All done.")
+		return nil
 	},
 }
 
+var keep bool
+
 func init() {
 	rootCmd.AddCommand(crashCmd)
+	crashCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
+	crashCmd.Flags().BoolVarP(&keep, "keep", "k", false, "keep crash reports from device")
+	crashCmd.Flags().StringVarP(&path, "path", "p", "./", "output path")
 }

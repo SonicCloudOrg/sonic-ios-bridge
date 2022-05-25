@@ -19,7 +19,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	giDevice "github.com/electricbubble/gidevice"
 	"os"
 	"os/signal"
 	"strings"
@@ -33,53 +32,34 @@ var syslogCmd = &cobra.Command{
 	Short: "Get syslog from your device.",
 	Long:  "Get syslog from your device.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		usbMuxClient, err := giDevice.NewUsbmux()
-		if err != nil {
-			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
-		}
-		list, err1 := usbMuxClient.Devices()
-		if err1 != nil {
-			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
-		}
-		if len(list) == 0 {
-			fmt.Println("no device connected")
+		device := util.GetDeviceByUdId(udid)
+		if device == nil {
 			os.Exit(0)
-		} else {
-			var device giDevice.Device
-			if len(udid) != 0 {
-				for i, d := range list {
-					if d.Properties().SerialNumber == udid {
-						device = list[i]
-						break
-					}
-				}
-			} else {
-				device = list[0]
-			}
-			output, err := device.Syslog()
-			if err != nil {
-				fmt.Printf("Get syslog failed: %s", err)
-			}
-			defer device.SyslogStop()
-			done := make(chan os.Signal, syscall.SIGTERM)
-			signal.Notify(done, os.Interrupt, os.Kill)
-
-			go func() {
-				for line := range output {
-					if len(filter) == 0 {
-						fmt.Print(line)
-						continue
-					} else {
-						if strings.Contains(line, filter) {
-							fmt.Print(line)
-						}
-					}
-				}
-				done <- os.Interrupt
-			}()
-
-			<-done
 		}
+		output, err := device.Syslog()
+		if err != nil {
+			fmt.Printf("Get syslog failed: %s", err)
+		}
+		defer device.SyslogStop()
+		done := make(chan os.Signal, syscall.SIGTERM)
+		signal.Notify(done, os.Interrupt, os.Kill)
+
+		go func() {
+			for line := range output {
+				if len(filter) == 0 {
+					fmt.Print(line)
+					continue
+				} else {
+					if strings.Contains(line, filter) {
+						fmt.Print(line)
+					}
+				}
+			}
+			done <- os.Interrupt
+		}()
+
+		<-done
+
 		return nil
 	},
 }

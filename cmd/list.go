@@ -17,12 +17,14 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"os"
 )
 
@@ -63,25 +65,35 @@ var listCmd = &cobra.Command{
 					a := entity.Application{}
 					mapstructure.Decode(app, &a)
 					if a.CFBundleIdentifier != "" && a.CFBundleDisplayName != "" && a.CFBundleVersion != "" {
+						if showIcon {
+							icon, errIcon := device.GetIconPNGData(a.CFBundleIdentifier)
+							if errIcon == nil {
+								data, _ := ioutil.ReadAll(icon)
+								a.IconBase64 = base64.StdEncoding.EncodeToString(data)
+							}
+						}
 						appList.ApplicationList = append(appList.ApplicationList, a)
 					}
 				}
 				data := util.ResultData(appList)
 				fmt.Println(util.Format(data, isFormat, isJson))
 			} else {
-				fmt.Println("device no found")
+				fmt.Errorf("device no found")
 				os.Exit(0)
 			}
 		} else {
-			fmt.Println("no device connected")
+			fmt.Errorf("no device connected")
 			os.Exit(0)
 		}
 		return nil
 	},
 }
 
+var showIcon bool
+
 func init() {
 	appCmd.AddCommand(listCmd)
+	listCmd.Flags().BoolVarP(&showIcon, "icon", "i", false, "show app icon")
 	listCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	listCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")
 	listCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")

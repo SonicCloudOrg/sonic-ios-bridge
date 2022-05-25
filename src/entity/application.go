@@ -26,6 +26,7 @@ type Application struct {
 	CFBundleVersion     string `json:"version"`
 	CFBundleDisplayName string `json:"name"`
 	CFBundleIdentifier  string `json:"bundleId"`
+	IconBase64          string `json:"iconBase64,omitempty"`
 }
 
 type AppList struct {
@@ -45,8 +46,11 @@ func (appList AppList) ToString() string {
 }
 
 func (appList AppList) ToJson() string {
-	result, _ := json.Marshal(appList)
-	return string(result)
+	for _, a := range appList.ApplicationList {
+		result, _ := json.Marshal(a)
+		fmt.Println(string(result))
+	}
+	return ""
 }
 
 func (appList AppList) ToFormat() string {

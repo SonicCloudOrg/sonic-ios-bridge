@@ -39,6 +39,39 @@ var versionMap = map[string]string{
 
 var urlList = [...]string{"https://tool.appetizer.io/JinjunHan", "https://code.aliyun.com/hanjinjun", "https://github.com/JinjunHan"}
 
+func GetDeviceByUdId(udId string) (device giDevice.Device) {
+	usbMuxClient, err := giDevice.NewUsbmux()
+	if err != nil {
+		NewErrorPrint(ErrConnect, "usbMux", err)
+		return nil
+	}
+	list, err1 := usbMuxClient.Devices()
+	if err1 != nil {
+		NewErrorPrint(ErrSendCommand, "listDevices", err1)
+		return nil
+	}
+	if len(list) != 0 {
+		if len(udId) != 0 {
+			for i, d := range list {
+				if d.Properties().SerialNumber == udId {
+					device = list[i]
+					break
+				}
+			}
+		} else {
+			device = list[0]
+		}
+		if device.Properties().SerialNumber == "" {
+			fmt.Println("device no found")
+			return nil
+		}
+	} else {
+		fmt.Println("no device connected")
+		return nil
+	}
+	return
+}
+
 func downloadZip(url, version string) (string, error) {
 	if versionMap[version] != "" {
 		version = versionMap[version]
