@@ -60,7 +60,7 @@ var keep bool
 
 func init() {
 	rootCmd.AddCommand(crashCmd)
-	crashCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
+	crashCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber (default first device)")
 	crashCmd.Flags().BoolVarP(&keep, "keep", "k", false, "keep crash reports from device")
 	crashCmd.Flags().StringVarP(&path, "path", "p", "./", "output path")
 }
