@@ -18,6 +18,7 @@ package entity
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 )
 
@@ -61,11 +62,10 @@ func (device Device) ToFormat() string {
 }
 
 func (deviceList DeviceList) ToString() string {
-	var s strings.Builder
 	for _, e := range deviceList.DeviceList {
-		s.WriteString(e.SerialNumber + " " + e.Status)
+		fmt.Println(e.SerialNumber + " " + e.Status)
 	}
-	return s.String()
+	return ""
 }
 
 func (deviceList DeviceList) ToJson() string {
