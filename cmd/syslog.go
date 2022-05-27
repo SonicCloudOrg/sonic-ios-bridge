@@ -47,11 +47,11 @@ var syslogCmd = &cobra.Command{
 		go func() {
 			for line := range output {
 				if len(filter) == 0 {
-					fmt.Print(line)
+					fmt.Println(line)
 					continue
 				} else {
 					if strings.Contains(line, filter) {
-						fmt.Print(line)
+						fmt.Println(line)
 					}
 				}
 			}
