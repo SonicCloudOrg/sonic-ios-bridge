@@ -17,18 +17,30 @@
 package cmd
 
 import (
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
-var locationCmd = &cobra.Command{
-	Use:   "location",
-	Short: "Manage your location.",
-	Long:  "Manage your location.",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+var locationUnsetCmd = &cobra.Command{
+	Use:   "unset",
+	Short: "Unset simulate location to your device.",
+	Long:  "Unset simulate location to your device.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		device := util.GetDeviceByUdId(udid)
+		if device == nil {
+			os.Exit(0)
+		}
+		err := device.SimulateLocationRecover()
+		if err != nil {
+			return util.NewErrorPrint(util.ErrSendCommand, "location unset", err)
+		}
+		return nil
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(locationCmd)
+	locationCmd.AddCommand(locationUnsetCmd)
+	locationUnsetCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 }
