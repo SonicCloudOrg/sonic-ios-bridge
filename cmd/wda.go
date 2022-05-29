@@ -133,6 +133,7 @@ var wdaCmd = &cobra.Command{
 				}
 			}
 			defer resp.Body.Close()
+			shutWdaDown <- os.Interrupt
 		}()
 
 		<-shutWdaDown
