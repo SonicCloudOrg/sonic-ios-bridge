@@ -105,7 +105,7 @@ var wdaCmd = &cobra.Command{
 			var httpErr error
 			var checkTime = 0
 			for {
-				time.Sleep(time.Duration(15) * time.Second)
+				time.Sleep(time.Duration(20) * time.Second)
 				checkTime++
 				resp, httpErr = http.Get(fmt.Sprintf("http://127.0.0.1:%d/status", serverLocalPort))
 				if httpErr != nil {
@@ -113,7 +113,7 @@ var wdaCmd = &cobra.Command{
 					continue
 				}
 				if resp.StatusCode == 200 {
-					fmt.Printf("wda server health checked %d times: ok", checkTime)
+					fmt.Printf("wda server health checked %d times: ok\n", checkTime)
 				} else {
 					stopTest()
 					var upTimes = 0
@@ -121,9 +121,9 @@ var wdaCmd = &cobra.Command{
 						output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
 						upTimes++
 						if err2 != nil {
-							fmt.Printf("WebDriverAgent server start failed in %d times: %s", upTimes, err2)
+							fmt.Printf("WebDriverAgent server start failed in %d times: %s\n", upTimes, err2)
 							if upTimes >= 3 {
-								fmt.Printf("WebDriverAgent server start failed more than 3 times, giving up...")
+								fmt.Printf("WebDriverAgent server start failed more than 3 times, giving up...\n")
 								os.Exit(0)
 							}
 						} else {
@@ -133,7 +133,6 @@ var wdaCmd = &cobra.Command{
 				}
 			}
 			defer resp.Body.Close()
-			shutWdaDown <- os.Interrupt
 		}()
 
 		<-shutWdaDown
