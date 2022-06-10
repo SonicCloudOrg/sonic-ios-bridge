@@ -62,7 +62,7 @@ var proxyCmd = &cobra.Command{
 					os.Exit(0)
 				}
 				rConn := rInnerConn.RawConn()
-				_ = rConn.SetDeadline(time.Time{})
+				rConn.SetDeadline(time.Time{})
 				go func(lConn net.Conn) {
 					go func(lConn, rConn net.Conn) {
 						if _, err := io.Copy(lConn, rConn); err != nil {

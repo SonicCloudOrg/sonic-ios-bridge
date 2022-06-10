@@ -104,7 +104,7 @@ var wdaCmd = &cobra.Command{
 		//	var httpErr error
 		//	var checkTime = 0
 		//	for {
-		//		time.Sleep(time.Duration(20) * time.Second)
+		//		time.Sleep(time.Duration(10) * time.Second)
 		//		checkTime++
 		//		resp, httpErr = http.Get(fmt.Sprintf("http://127.0.0.1:%d/status", serverLocalPort))
 		//		if httpErr != nil {
@@ -175,7 +175,7 @@ func proxy() func(listener net.Listener, port int, device giDevice.Device) {
 				os.Exit(0)
 			}
 			rConn := rInnerConn.RawConn()
-			_ = rConn.SetDeadline(time.Time{})
+			rConn.SetDeadline(time.Time{})
 			go func(lConn net.Conn) {
 				go func(lConn, rConn net.Conn) {
 					if _, err := io.Copy(lConn, rConn); err != nil {
