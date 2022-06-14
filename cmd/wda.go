@@ -78,16 +78,19 @@ var wdaCmd = &cobra.Command{
 			return err
 		}
 		defer serverListener.Close()
-		mjpegListener, err := net.Listen("tcp", fmt.Sprintf(":%d", mjpegLocalPort))
-		if err != nil {
-			return err
+		go proxy()(serverListener, serverRemotePort, device)
+
+		if !disableMjpegProxy {
+			mjpegListener, err := net.Listen("tcp", fmt.Sprintf(":%d", mjpegLocalPort))
+			if err != nil {
+				return err
+			}
+			defer mjpegListener.Close()
+			go proxy()(mjpegListener, mjpegRemotePort, device)
 		}
-		defer mjpegListener.Close()
+
 		shutWdaDown := make(chan os.Signal, syscall.SIGTERM)
 		signal.Notify(shutWdaDown, os.Interrupt, os.Kill)
-
-		go proxy()(serverListener, serverRemotePort, device)
-		go proxy()(mjpegListener, mjpegRemotePort, device)
 
 		go func() {
 			for s := range output {
@@ -99,41 +102,6 @@ var wdaCmd = &cobra.Command{
 			shutWdaDown <- os.Interrupt
 		}()
 
-		//go func() {
-		//	var resp *http.Response
-		//	var httpErr error
-		//	var checkTime = 0
-		//	for {
-		//		time.Sleep(time.Duration(10) * time.Second)
-		//		checkTime++
-		//		resp, httpErr = http.Get(fmt.Sprintf("http://127.0.0.1:%d/status", serverLocalPort))
-		//		if httpErr != nil {
-		//			fmt.Printf("request fail: %s", httpErr)
-		//			continue
-		//		}
-		//		if resp.StatusCode == 200 {
-		//			fmt.Printf("wda server health checked %d times: ok\n", checkTime)
-		//		} else {
-		//			stopTest()
-		//			var upTimes = 0
-		//			for {
-		//				output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
-		//				upTimes++
-		//				if err2 != nil {
-		//					fmt.Printf("WebDriverAgent server start failed in %d times: %s\n", upTimes, err2)
-		//					if upTimes >= 3 {
-		//						fmt.Printf("WebDriverAgent server start failed more than 3 times, giving up...\n")
-		//						os.Exit(0)
-		//					}
-		//				} else {
-		//					break
-		//				}
-		//			}
-		//		}
-		//	}
-		//	defer resp.Body.Close()
-		//}()
-
 		<-shutWdaDown
 		stopTest()
 		fmt.Println("stopped")
@@ -143,15 +111,17 @@ var wdaCmd = &cobra.Command{
 }
 
 var (
-	wdaBundleID      string
-	serverRemotePort int
-	mjpegRemotePort  int
-	serverLocalPort  int
-	mjpegLocalPort   int
+	wdaBundleID       string
+	serverRemotePort  int
+	mjpegRemotePort   int
+	serverLocalPort   int
+	mjpegLocalPort    int
+	disableMjpegProxy bool
 )
 
 func init() {
 	runCmd.AddCommand(wdaCmd)
+	wdaCmd.Flags().BoolVarP(&disableMjpegProxy, "disable-mjpeg-proxy", "", false, "disable mjpeg-server proxy")
 	wdaCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	wdaCmd.Flags().StringVarP(&wdaBundleID, "bundleId", "b", "com.facebook.WebDriverAgentRunner.xctrunner", "WebDriverAgentRunner bundleId")
 	wdaCmd.Flags().IntVarP(&serverRemotePort, "server-remote-port", "", 8100, "WebDriverAgentRunner server remote port")

@@ -3,7 +3,7 @@ module github.com/SonicCloudOrg/sonic-ios-bridge
 go 1.18
 
 require (
-	github.com/electricbubble/gidevice v0.5.2
+	github.com/electricbubble/gidevice v0.6.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/cobra v1.4.0
 )
