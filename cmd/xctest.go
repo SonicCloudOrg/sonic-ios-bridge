@@ -102,5 +102,5 @@ func init() {
 	runCmd.AddCommand(xctestCmd)
 	xctestCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	xctestCmd.Flags().StringVarP(&xcTestBundleID, "bundleId", "b", "", "application bundleId")
-	xctestCmd.Flags().StringArrayVarP(&env, "env", "e", nil, "application bundleId")
+	xctestCmd.Flags().StringArrayVarP(&env, "env", "e", nil, "test environment params")
 }
