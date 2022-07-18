@@ -61,7 +61,7 @@ func GetDeviceByUdId(udId string) (device giDevice.Device) {
 		} else {
 			device = list[0]
 		}
-		if device.Properties().SerialNumber == "" {
+		if device == nil || device.Properties().SerialNumber == "" {
 			fmt.Println("device no found")
 			return nil
 		}

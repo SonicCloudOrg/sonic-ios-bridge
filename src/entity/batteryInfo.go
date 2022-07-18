@@ -36,6 +36,22 @@ type BatteryList struct {
 	BatteryInfo []Battery `json:"batteryList"`
 }
 
+func (battery Battery) ToString() string {
+	var s strings.Builder
+	s.WriteString(fmt.Sprintf("%s %d %d", battery.SerialNumber, battery.Level, battery.Temperature))
+	return s.String()
+}
+
+func (battery Battery) ToJson() string {
+	result, _ := json.Marshal(battery)
+	return string(result)
+}
+
+func (battery Battery) ToFormat() string {
+	result, _ := json.MarshalIndent(battery, "", "\t")
+	return string(result)
+}
+
 func (batteryList BatteryList) ToString() string {
 	var s strings.Builder
 	for i, e := range batteryList.BatteryInfo {

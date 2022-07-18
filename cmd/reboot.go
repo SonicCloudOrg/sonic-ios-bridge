@@ -26,14 +26,19 @@ import (
 
 var rebootCmd = &cobra.Command{
 	Use:   "reboot",
-	Short: "Reboot device",
-	Long:  "Reboot device",
+	Short: "Reboot or Shutdown device",
+	Long:  "Reboot or Shutdown device",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		device := util.GetDeviceByUdId(udid)
 		if device == nil {
 			os.Exit(0)
 		}
-		errReboot := device.Reboot()
+		var errReboot error
+		if isShutdown {
+			errReboot = device.Shutdown()
+		} else {
+			errReboot = device.Reboot()
+		}
 		if errReboot != nil {
 			fmt.Println("reboot failed")
 			os.Exit(0)
@@ -43,8 +48,10 @@ var rebootCmd = &cobra.Command{
 	},
 }
 
+var isShutdown bool
+
 func init() {
 	rootCmd.AddCommand(rebootCmd)
 	rebootCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
-	rebootCmd.MarkFlagRequired("udid")
+	rebootCmd.Flags().BoolVarP(&isShutdown, "shutdown", "s", false, "shutdown your device")
 }
