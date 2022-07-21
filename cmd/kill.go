@@ -18,10 +18,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
-	"github.com/mitchellh/mapstructure"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -36,24 +34,34 @@ var killCmd = &cobra.Command{
 		if device == nil {
 			os.Exit(0)
 		}
-		result, errList := device.InstallationProxyBrowse(
-			giDevice.WithBundleIDs(bundleId),
-			giDevice.WithReturnAttributes("CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
-		if errList != nil {
-			return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
+		lookup, err := device.InstallationProxyLookup(giDevice.WithBundleIDs(bundleId))
+		if err != nil {
+			return util.NewErrorPrint(util.ErrSendCommand, "look up", err)
 		}
-		if result == nil {
+		lookupResult := lookup.(map[string]interface{})
+		if lookupResult[bundleId] == nil {
 			fmt.Printf("%s is not in your device!", bundleId)
 			os.Exit(0)
 		}
+		lookupResult = lookupResult[bundleId].(map[string]interface{})
+		execName := lookupResult["CFBundleExecutable"]
+
 		processList, errProcess := device.AppRunningProcesses()
 		if errProcess != nil {
-			return util.NewErrorPrint(util.ErrSendCommand, "processList", errList)
+			return util.NewErrorPrint(util.ErrSendCommand, "processList", errProcess)
 		}
-		a := entity.Application{}
-		mapstructure.Decode(result, &a)
-		for _, process := range processList {
 
+		var hit bool
+		for _, process := range processList {
+			if process.Name == execName {
+				hit = true
+				device.AppKill(process.Pid)
+				fmt.Println("kill process successful!")
+				break
+			}
+		}
+		if !hit {
+			fmt.Printf("%s process not found\n", bundleId)
 		}
 		return nil
 	},
