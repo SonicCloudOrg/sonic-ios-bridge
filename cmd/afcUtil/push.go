@@ -14,22 +14,25 @@ var afcPushCmd = &cobra.Command{
 	Short: "push a file or directory to the device",
 	Long:  "push a file or directory to the device",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			fmt.Println("parameter error")
-			os.Exit(0)
-		}
-		if afcServer==nil {
-			getAFCServer()
-		}
-		pushOperate(afcServer, args[0], args[1])
-		fmt.Println(fmt.Sprintf("success,push %s --> %s", args[0], args[1]))
+		afcServer:=getAFCServer()
+		pushOperate(afcServer, pushLocalPath, pushSaveDevicePath)
+		fmt.Println(fmt.Sprintf("success,push %s --> %s", pushLocalPath, pushSaveDevicePath))
 
 		return nil
 	},
 }
 
+var pushLocalPath 	string
+var pushSaveDevicePath string
+
 func initPush() {
 	afcRootCMD.AddCommand(afcPushCmd)
+	afcPushCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
+	afcPushCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcPushCmd.Flags().StringVarP(&pushLocalPath,"localPath",  "l","", "push file or directory local path")
+	afcPushCmd.Flags().StringVarP(&pushSaveDevicePath,"devicePath",  "d","", "push save file or directory to device path")
+	afcPushCmd.MarkFlagRequired("localPath")
+	afcPushCmd.MarkFlagRequired("devicePath")
 }
 
 func pushFile(afc giDevice.Afc, localPath string, devicePath string) {

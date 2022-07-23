@@ -13,16 +13,20 @@ var afcLsCmd = &cobra.Command{
 	Short: "ls to view the directory",
 	Long:  "ls to view the directory",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if afcServer==nil {
-			getAFCServer()
-		}
-		lsShow(afcServer, args[0])
+		afcServer:=getAFCServer()
+		lsShow(afcServer, lsDirPath)
 		return nil
 	},
 }
 
+var lsDirPath string
+
 func initLs() {
 	afcRootCMD.AddCommand(afcLsCmd)
+	afcLsCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
+	afcLsCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcLsCmd.Flags().StringVarP(&lsDirPath,"folder",  "f","", "ls folder path")
+	afcLsCmd.MarkFlagRequired("folder")
 }
 
 func lsShow(afc giDevice.Afc, filePath string) {

@@ -8,14 +8,14 @@ import (
 	"os"
 )
 
-var afcServer 	giDevice.Afc
+
 var afcRootCMD 	*cobra.Command
+
 var udid 		string
 var bundleID 	string
+
 // InitAfc 用于初始化，在上层中调用这个方法，否则不会正常进行初始化
-func InitAfc(afcCMD *cobra.Command,pUdid string,pBundleID string){
-	udid = pUdid
-	bundleID = pBundleID
+func InitAfc(afcCMD *cobra.Command){
 	afcRootCMD = afcCMD
 
 	initMkDir()
@@ -32,7 +32,7 @@ func InitAfc(afcCMD *cobra.Command,pUdid string,pBundleID string){
 	initRMTree()
 }
 
-func getAFCServer()()  {
+func getAFCServer()(afcServer giDevice.Afc)  {
 	device := util.GetDeviceByUdId(udid)
 	if device == nil {
 		os.Exit(0)
@@ -53,4 +53,5 @@ func getAFCServer()()  {
 		fmt.Println(err)
 		os.Exit(0)
 	}
+	return afcServer
 }

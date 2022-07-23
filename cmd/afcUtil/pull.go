@@ -14,21 +14,23 @@ var afcPullCmd = &cobra.Command{
 	Short: "pull file or directory from device",
 	Long:  "pull file or directory from device",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			fmt.Println("arguments error")
-			os.Exit(0)
-		}
-		if afcServer==nil {
-			getAFCServer()
-		}
-		pullOperate(afcServer, args[0], args[1])
-		fmt.Println(fmt.Sprintf("success,pull %s --> %s", args[0], args[1]))
+		afcServer:=getAFCServer()
+		pullOperate(afcServer, pullDevicePath, pullSaveLocalPath)
+		fmt.Println(fmt.Sprintf("success,pull %s --> %s", pullDevicePath, pullSaveLocalPath))
 		return nil
 	},
 }
 
+var pullDevicePath 		string
+var pullSaveLocalPath 	string
 func initPullCmd() {
 	afcRootCMD.AddCommand(afcPullCmd)
+	afcPullCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
+	afcPullCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcPullCmd.Flags().StringVarP(&pullDevicePath,"devicePath",  "d","", "pull file or directory device path")
+	afcPullCmd.Flags().StringVarP(&pullSaveLocalPath,"localPath",  "l","", "pull save file or directory to local path")
+	afcPullCmd.MarkFlagRequired("devicePath")
+	afcPullCmd.MarkFlagRequired("localPath")
 }
 
 func pullOperate(afc giDevice.Afc, devicePath string, localPath string) {

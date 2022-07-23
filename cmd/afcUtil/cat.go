@@ -13,16 +13,20 @@ var afcCatCmd = &cobra.Command{
 	Short: "cat to view files",
 	Long:  "cat to view files",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if afcServer==nil {
-			getAFCServer()
-		}
-		catFile(afcServer, args[0])
+		afcServer:=getAFCServer()
+		catFile(afcServer, catFilePath)
 		return nil
 	},
 }
 
+var catFilePath string
+
 func initCat() {
 	afcRootCMD.AddCommand(afcCatCmd)
+	afcCatCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
+	afcCatCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcCatCmd.Flags().StringVarP(&catFilePath, "file",  "f","", "cat file path")
+	afcCatCmd.MarkFlagRequired("file")
 }
 
 func catFile(afc giDevice.Afc, filePath string) {

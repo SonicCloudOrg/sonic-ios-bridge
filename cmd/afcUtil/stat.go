@@ -11,10 +11,8 @@ var afcStatCmd = &cobra.Command{
 	Short: "view file details",
 	Long:  "view file details",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if afcServer==nil {
-			getAFCServer()
-		}
-		info, err := (afcServer).Stat(args[0])
+		afcServer:=getAFCServer()
+		info, err := (afcServer).Stat(statPath)
 		if err != nil {
 			os.Exit(0)
 		}
@@ -30,6 +28,12 @@ var afcStatCmd = &cobra.Command{
 	},
 }
 
+var statPath string
+
 func initStat() {
 	afcRootCMD.AddCommand(afcStatCmd)
+	afcStatCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
+	afcStatCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcStatCmd.Flags().StringVarP(&statPath,"path","p","","files or folders for which details need to be viewed")
+	afcStatCmd.MarkFlagRequired("path")
 }

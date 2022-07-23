@@ -13,12 +13,20 @@ var afcTreeCmd = &cobra.Command{
 	Short: "tree structure view directory",
 	Long:  "tree structure view directory",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if afcServer==nil {
-			getAFCServer()
-		}
-		showTree(afcServer, args[0],100)
+		afcServer:=getAFCServer()
+		showTree(afcServer, treeDir,100)
 		return nil
 	},
+}
+
+var treeDir string
+
+func initTree() {
+	afcRootCMD.AddCommand(afcTreeCmd)
+	afcTreeCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
+	afcTreeCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcTreeCmd.Flags().StringVarP(&treeDir,"folder","f","","folder path to tree view")
+	afcTreeCmd.MarkFlagRequired("folder")
 }
 
 var (
@@ -101,6 +109,3 @@ func buildPrefix(level int) string {
 	return result
 }
 
-func initTree() {
-	afcRootCMD.AddCommand(afcTreeCmd)
-}

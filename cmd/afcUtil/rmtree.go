@@ -13,16 +13,21 @@ var afcRMTreeCmd = &cobra.Command{
 	Short: "recursively delete all files in a directory",
 	Long:  "recursively delete all files in a directory",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if afcServer==nil {
-			getAFCServer()
-		}
-		removeTree(afcServer,args[0])
+		afcServer:=getAFCServer()
+		removeTree(afcServer,rmDir)
+		fmt.Println("success")
 		return nil
 	},
 }
 
+var rmDir string
+
 func initRMTree() {
 	afcRootCMD.AddCommand(afcRMTreeCmd)
+	afcRMTreeCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
+	afcRMTreeCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcRMTreeCmd.Flags().StringVarP(&rmDir,"folder","f","","folder address to delete")
+	afcRMTreeCmd.MarkFlagRequired("folder")
 }
 
 func removeTree(afc giDevice.Afc, devicePath string) {
