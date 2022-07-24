@@ -14,37 +14,39 @@
  *  limitations under the License.
  *
  */
-package cmd
+package app
 
 import (
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	"os"
-
 	"github.com/spf13/cobra"
+	"os"
 )
 
-var launchCmd = &cobra.Command{
-	Use:   "launch",
-	Short: "Launch App",
-	Long:  "Launch App",
+var installCmd = &cobra.Command{
+	Use:   "install",
+	Short: "Install App in your device",
+	Long:  "Install App in your device",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		device := util.GetDeviceByUdId(udid)
 		if device == nil {
 			os.Exit(0)
 		}
-		_, errLaunch := device.AppLaunch(bundleId)
-		if errLaunch != nil {
-			fmt.Println("launch failed")
+		errInstall := device.AppInstall(path)
+		if errInstall != nil {
+			fmt.Printf("install failed: %s", errInstall)
 			os.Exit(0)
 		}
+		fmt.Println("install successful")
 		return nil
 	},
 }
 
-func init() {
-	appCmd.AddCommand(launchCmd)
-	launchCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
-	launchCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "target bundleId")
-	launchCmd.MarkFlagRequired("bundleId")
+var path string
+
+func initAppInstall() {
+	appRootCMD.AddCommand(installCmd)
+	installCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
+	installCmd.Flags().StringVarP(&path, "path", "p", "", "path of ipa file")
+	installCmd.MarkFlagRequired("path")
 }

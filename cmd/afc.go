@@ -17,20 +17,20 @@
 package cmd
 
 import (
-	"github.com/SonicCloudOrg/sonic-ios-bridge/cmd/app"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/cmd/afc"
 	"github.com/spf13/cobra"
 )
 
-var appCmd = &cobra.Command{
-	Use:   "app",
-	Short: "Manage your Apps.",
-	Long:  "Manage your Apps.",
+var afcCmd = &cobra.Command{
+	Use:   "afc",
+	Short: "manipulate device files through afc commands",
+	Long:  "manipulate device files through afc commands",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(appCmd)
-	app.InitApp(appCmd)
+	rootCmd.AddCommand(afcCmd)
+	afc.InitAfc(afcCmd)
 }

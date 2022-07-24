@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package cmd
+package app
 
 import (
 	"fmt"
@@ -67,8 +67,8 @@ var killCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	appCmd.AddCommand(killCmd)
+func initAppKill() {
+	appRootCMD.AddCommand(killCmd)
 	killCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	killCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "target bundleId")
 	killCmd.MarkFlagRequired("bundleId")

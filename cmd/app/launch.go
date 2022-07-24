@@ -14,40 +14,37 @@
  *  limitations under the License.
  *
  */
-package cmd
+package app
 
 import (
+	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	giDevice "github.com/electricbubble/gidevice"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-var locationSetCmd = &cobra.Command{
-	Use:   "set",
-	Short: "Set simulate location to your device.",
-	Long:  "Set simulate location to your device.",
+var launchCmd = &cobra.Command{
+	Use:   "launch",
+	Short: "Launch App",
+	Long:  "Launch App",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		device := util.GetDeviceByUdId(udid)
 		if device == nil {
 			os.Exit(0)
 		}
-		err := device.SimulateLocationUpdate(long, lat, giDevice.CoordinateSystemBD09)
-		if err != nil {
-			return util.NewErrorPrint(util.ErrSendCommand, "location set", err)
+		_, errLaunch := device.AppLaunch(bundleId)
+		if errLaunch != nil {
+			fmt.Println("launch failed")
+			os.Exit(0)
 		}
 		return nil
 	},
 }
 
-var long, lat float64
-
-func init() {
-	locationCmd.AddCommand(locationSetCmd)
-	locationSetCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	locationSetCmd.Flags().Float64Var(&long, "long", 0, "longitude")
-	locationSetCmd.Flags().Float64Var(&lat, "lat", 0, "latitude")
-	locationSetCmd.MarkFlagRequired("long")
-	locationSetCmd.MarkFlagRequired("lat")
+func initAppLaunch() {
+	appRootCMD.AddCommand(launchCmd)
+	launchCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
+	launchCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "target bundleId")
+	launchCmd.MarkFlagRequired("bundleId")
 }

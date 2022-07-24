@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package cmd
+package app
 
 import (
 	"encoding/base64"
@@ -78,11 +78,11 @@ var listCmd = &cobra.Command{
 				data := util.ResultData(appList)
 				fmt.Println(util.Format(data, isFormat, isJson))
 			} else {
-				fmt.Errorf("device no found")
+				fmt.Println("device no found")
 				os.Exit(0)
 			}
 		} else {
-			fmt.Errorf("no device connected")
+			fmt.Println("no device connected")
 			os.Exit(0)
 		}
 		return nil
@@ -91,8 +91,8 @@ var listCmd = &cobra.Command{
 
 var showIcon bool
 
-func init() {
-	appCmd.AddCommand(listCmd)
+func initAppList() {
+	appRootCMD.AddCommand(listCmd)
 	listCmd.Flags().BoolVarP(&showIcon, "icon", "i", false, "show app icon")
 	listCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	listCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")

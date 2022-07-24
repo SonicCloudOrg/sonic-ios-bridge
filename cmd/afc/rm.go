@@ -14,39 +14,36 @@
  *  limitations under the License.
  *
  */
-package cmd
+package afc
 
 import (
 	"fmt"
-	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/spf13/cobra"
 	"os"
 )
 
-var installCmd = &cobra.Command{
-	Use:   "install",
-	Short: "Install App in your device",
-	Long:  "Install App in your device",
+var afcRMCmd = &cobra.Command{
+	Use:   "rm",
+	Short: "delete file",
+	Long:  "delete file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		device := util.GetDeviceByUdId(udid)
-		if device == nil {
+		afcServer := getAFCServer()
+		err := (afcServer).Remove(rmFilePath)
+		if err != nil {
+			fmt.Println(err)
 			os.Exit(0)
 		}
-		errInstall := device.AppInstall(path)
-		if errInstall != nil {
-			fmt.Printf("install failed: %s", errInstall)
-			os.Exit(0)
-		}
-		fmt.Println("install successful")
+		fmt.Println("rm success")
 		return nil
 	},
 }
 
-var path string
+var rmFilePath string
 
-func init() {
-	appCmd.AddCommand(installCmd)
-	installCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
-	installCmd.Flags().StringVarP(&path, "path", "p", "", "path of ipa file")
-	installCmd.MarkFlagRequired("path")
+func initRM() {
+	afcRootCMD.AddCommand(afcRMCmd)
+	afcRMCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
+	afcRMCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "app bundleId")
+	afcRMCmd.Flags().StringVarP(&rmFilePath, "file", "f", "", "the address of the file to be deleted")
+	afcRMCmd.MarkFlagRequired("file")
 }

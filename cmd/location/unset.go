@@ -14,40 +14,33 @@
  *  limitations under the License.
  *
  */
-package cmd
+package location
 
 import (
-	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
-var uninstallCmd = &cobra.Command{
-	Use:   "uninstall",
-	Short: "Uninstall App in your device",
-	Long:  "Uninstall App in your device",
+var locationUnsetCmd = &cobra.Command{
+	Use:   "unset",
+	Short: "Unset simulate location to your device.",
+	Long:  "Unset simulate location to your device.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		device := util.GetDeviceByUdId(udid)
 		if device == nil {
 			os.Exit(0)
 		}
-		util.CheckMount(device)
-		errUninstall := device.AppUninstall(bundleId)
-		if errUninstall != nil {
-			fmt.Println("uninstall failed")
-			os.Exit(0)
+		err := device.SimulateLocationRecover()
+		if err != nil {
+			return util.NewErrorPrint(util.ErrSendCommand, "location unset", err)
 		}
-		fmt.Println("uninstall successful")
 		return nil
 	},
 }
 
-var bundleId string
-
-func init() {
-	appCmd.AddCommand(uninstallCmd)
-	uninstallCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
-	uninstallCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "target bundleId")
-	uninstallCmd.MarkFlagRequired("bundleId")
+func initLocationUnset() {
+	locationRootCMD.AddCommand(locationUnsetCmd)
+	locationUnsetCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 }

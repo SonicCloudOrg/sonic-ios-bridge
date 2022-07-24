@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package cmd
+package run
 
 import (
 	"fmt"
@@ -98,8 +98,8 @@ var (
 	env            []string
 )
 
-func init() {
-	runCmd.AddCommand(xctestCmd)
+func initXcTest() {
+	runRootCMD.AddCommand(xctestCmd)
 	xctestCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	xctestCmd.Flags().StringVarP(&xcTestBundleID, "bundleId", "b", "", "application bundleId")
 	xctestCmd.Flags().StringArrayVarP(&env, "env", "e", nil, "test environment params")

@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"github.com/SonicCloudOrg/sonic-ios-bridge/cmd/location"
 	"github.com/spf13/cobra"
 )
 
@@ -31,4 +32,5 @@ var locationCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(locationCmd)
+	location.InitLocation(locationCmd)
 }
