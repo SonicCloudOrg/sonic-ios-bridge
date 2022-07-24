@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package cmd
+package run
 
 import (
 	"fmt"
@@ -119,8 +119,8 @@ var (
 	disableMjpegProxy bool
 )
 
-func init() {
-	runCmd.AddCommand(wdaCmd)
+func initWda() {
+	runRootCMD.AddCommand(wdaCmd)
 	wdaCmd.Flags().BoolVarP(&disableMjpegProxy, "disable-mjpeg-proxy", "", false, "disable mjpeg-server proxy")
 	wdaCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	wdaCmd.Flags().StringVarP(&wdaBundleID, "bundleId", "b", "com.facebook.WebDriverAgentRunner.xctrunner", "WebDriverAgentRunner bundleId")

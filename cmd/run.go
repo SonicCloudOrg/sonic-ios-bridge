@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"github.com/SonicCloudOrg/sonic-ios-bridge/cmd/run"
 	"github.com/spf13/cobra"
 )
 
@@ -31,4 +32,5 @@ var runCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(runCmd)
+	run.InitRun(runCmd)
 }

@@ -14,23 +14,17 @@
  *  limitations under the License.
  *
  */
-package cmd
+package run
 
-import (
-	"github.com/SonicCloudOrg/sonic-ios-bridge/cmd/location"
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
-var locationCmd = &cobra.Command{
-	Use:   "location",
-	Short: "Manage your location.",
-	Long:  "Manage your location.",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
-}
+var runRootCMD *cobra.Command
 
-func init() {
-	rootCmd.AddCommand(locationCmd)
-	location.InitLocation(locationCmd)
+var udid string
+
+func InitRun(runCMD *cobra.Command) {
+	runRootCMD = runCMD
+
+	initWda()
+	initXcTest()
 }
