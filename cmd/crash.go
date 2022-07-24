@@ -34,14 +34,14 @@ var crashCmd = &cobra.Command{
 		if device == nil {
 			os.Exit(0)
 		}
-		if !filepath.IsAbs(path) {
+		if !filepath.IsAbs(crashOutputPath) {
 			var err error
-			if path, err = filepath.Abs(path); err != nil {
+			if crashOutputPath, err = filepath.Abs(crashOutputPath); err != nil {
 				fmt.Println("path no found!")
 				os.Exit(0)
 			}
 		}
-		err := device.MoveCrashReport(path,
+		err := device.MoveCrashReport(crashOutputPath,
 			giDevice.WithKeepCrashReport(keep),
 			giDevice.WithExtractRawCrashReport(true),
 			giDevice.WithWhenMoveIsDone(func(filename string) {
@@ -57,10 +57,11 @@ var crashCmd = &cobra.Command{
 }
 
 var keep bool
+var crashOutputPath string
 
 func init() {
 	rootCmd.AddCommand(crashCmd)
 	crashCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber (default first device)")
 	crashCmd.Flags().BoolVarP(&keep, "keep", "k", false, "keep crash reports from device")
-	crashCmd.Flags().StringVarP(&path, "path", "p", "./", "output path")
+	crashCmd.Flags().StringVarP(&crashOutputPath, "path", "p", "./", "output path")
 }

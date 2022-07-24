@@ -43,7 +43,7 @@ var rmFilePath string
 func initRM() {
 	afcRootCMD.AddCommand(afcRMCmd)
 	afcRMCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	afcRMCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcRMCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "app bundleId")
 	afcRMCmd.Flags().StringVarP(&rmFilePath, "file", "f", "", "the address of the file to be deleted")
 	afcRMCmd.MarkFlagRequired("file")
 }

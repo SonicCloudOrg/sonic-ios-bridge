@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package cmd
+package app
 
 import (
 	"fmt"
@@ -44,8 +44,8 @@ var installCmd = &cobra.Command{
 
 var path string
 
-func init() {
-	appCmd.AddCommand(installCmd)
+func initAppInstall() {
+	appRootCMD.AddCommand(installCmd)
 	installCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	installCmd.Flags().StringVarP(&path, "path", "p", "", "path of ipa file")
 	installCmd.MarkFlagRequired("path")

@@ -14,23 +14,18 @@
  *  limitations under the License.
  *
  */
-package cmd
+package app
 
-import (
-	"github.com/SonicCloudOrg/sonic-ios-bridge/cmd/app"
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
-var appCmd = &cobra.Command{
-	Use:   "app",
-	Short: "Manage your Apps.",
-	Long:  "Manage your Apps.",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
-}
+var appRootCMD *cobra.Command
 
-func init() {
-	rootCmd.AddCommand(appCmd)
-	app.InitApp(appCmd)
+var udid, bundleId string
+var isJson, isDetail, isFormat bool
+
+func InitApp(appCMD *cobra.Command) {
+	appRootCMD = appCMD
+
+	initAppInstall()
+	initAppList()
 }

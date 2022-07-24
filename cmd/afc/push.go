@@ -44,7 +44,7 @@ var pushSaveDevicePath string
 func initPush() {
 	afcRootCMD.AddCommand(afcPushCmd)
 	afcPushCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	afcPushCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcPushCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "app bundleId")
 	afcPushCmd.Flags().StringVarP(&pushLocalPath, "localPath", "l", "", "push file or directory local path")
 	afcPushCmd.Flags().StringVarP(&pushSaveDevicePath, "devicePath", "d", "", "push save file or directory to device path")
 	afcPushCmd.MarkFlagRequired("localPath")

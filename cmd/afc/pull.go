@@ -43,7 +43,7 @@ var pullSaveLocalPath string
 func initPullCmd() {
 	afcRootCMD.AddCommand(afcPullCmd)
 	afcPullCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	afcPullCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcPullCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "app bundleId")
 	afcPullCmd.Flags().StringVarP(&pullDevicePath, "devicePath", "d", "", "pull file or directory device path")
 	afcPullCmd.Flags().StringVarP(&pullSaveLocalPath, "localPath", "l", "", "pull save file or directory to local path")
 	afcPullCmd.MarkFlagRequired("devicePath")

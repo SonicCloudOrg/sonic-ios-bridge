@@ -26,8 +26,7 @@ import (
 
 var afcRootCMD *cobra.Command
 
-var udid string
-var bundleID string
+var udid, bundleId string
 
 // InitAfc 用于初始化，在上层中调用这个方法，否则不会正常进行初始化
 func InitAfc(afcCMD *cobra.Command) {
@@ -53,14 +52,14 @@ func getAFCServer() (afcServer giDevice.Afc) {
 		os.Exit(0)
 	}
 	var err error
-	if bundleID != "" {
+	if bundleId != "" {
 		var houseArrestSrv giDevice.HouseArrest
 		houseArrestSrv, err = device.HouseArrestService()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(0)
 		}
-		afcServer, err = houseArrestSrv.Documents(bundleID)
+		afcServer, err = houseArrestSrv.Documents(bundleId)
 	} else {
 		afcServer, err = device.AfcService()
 	}

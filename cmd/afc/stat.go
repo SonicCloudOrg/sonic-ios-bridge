@@ -49,7 +49,7 @@ var statPath string
 func initStat() {
 	afcRootCMD.AddCommand(afcStatCmd)
 	afcStatCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	afcStatCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcStatCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "app bundleId")
 	afcStatCmd.Flags().StringVarP(&statPath, "path", "p", "", "files or folders for which details need to be viewed")
 	afcStatCmd.MarkFlagRequired("path")
 }

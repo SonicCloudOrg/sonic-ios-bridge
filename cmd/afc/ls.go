@@ -40,7 +40,7 @@ var lsDirPath string
 func initLs() {
 	afcRootCMD.AddCommand(afcLsCmd)
 	afcLsCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	afcLsCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcLsCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "app bundleId")
 	afcLsCmd.Flags().StringVarP(&lsDirPath, "folder", "f", "", "ls folder path")
 	afcLsCmd.MarkFlagRequired("folder")
 }

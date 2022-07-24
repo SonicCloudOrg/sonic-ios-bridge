@@ -40,7 +40,7 @@ var treeDir string
 func initTree() {
 	afcRootCMD.AddCommand(afcTreeCmd)
 	afcTreeCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	afcTreeCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcTreeCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "app bundleId")
 	afcTreeCmd.Flags().StringVarP(&treeDir, "folder", "f", "", "folder path to tree view")
 	afcTreeCmd.MarkFlagRequired("folder")
 }

@@ -43,7 +43,7 @@ var mkDir string
 func initMkDir() {
 	afcRootCMD.AddCommand(afcMkDirCmd)
 	afcMkDirCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	afcMkDirCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcMkDirCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "app bundleId")
 	afcMkDirCmd.Flags().StringVarP(&mkDir, "folder", "f", "", "mkdir directory path")
 	afcMkDirCmd.MarkFlagRequired("folder")
 }

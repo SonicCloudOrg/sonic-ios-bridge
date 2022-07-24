@@ -40,7 +40,7 @@ var catFilePath string
 func initCat() {
 	afcRootCMD.AddCommand(afcCatCmd)
 	afcCatCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	afcCatCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcCatCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "app bundleId")
 	afcCatCmd.Flags().StringVarP(&catFilePath, "file", "f", "", "cat file path")
 	afcCatCmd.MarkFlagRequired("file")
 }

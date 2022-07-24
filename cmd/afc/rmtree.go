@@ -41,7 +41,7 @@ var rmDir string
 func initRMTree() {
 	afcRootCMD.AddCommand(afcRMTreeCmd)
 	afcRMTreeCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	afcRMTreeCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
+	afcRMTreeCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "app bundleId")
 	afcRMTreeCmd.Flags().StringVarP(&rmDir, "folder", "f", "", "folder address to delete")
 	afcRMTreeCmd.MarkFlagRequired("folder")
 }
