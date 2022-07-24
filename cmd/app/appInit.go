@@ -28,4 +28,7 @@ func InitApp(appCMD *cobra.Command) {
 
 	initAppInstall()
 	initAppList()
+	initAppLaunch()
+	initAppKill()
+	initAppUninstall()
 }

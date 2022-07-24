@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package cmd
+package app
 
 import (
 	"fmt"
@@ -42,8 +42,8 @@ var launchCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	appCmd.AddCommand(launchCmd)
+func initAppLaunch() {
+	appRootCMD.AddCommand(launchCmd)
 	launchCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	launchCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "target bundleId")
 	launchCmd.MarkFlagRequired("bundleId")

@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package cmd
+package app
 
 import (
 	"fmt"
@@ -43,10 +43,8 @@ var uninstallCmd = &cobra.Command{
 	},
 }
 
-var bundleId string
-
-func init() {
-	appCmd.AddCommand(uninstallCmd)
+func initAppUninstall() {
+	appRootCMD.AddCommand(uninstallCmd)
 	uninstallCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	uninstallCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "target bundleId")
 	uninstallCmd.MarkFlagRequired("bundleId")

@@ -78,11 +78,11 @@ var listCmd = &cobra.Command{
 				data := util.ResultData(appList)
 				fmt.Println(util.Format(data, isFormat, isJson))
 			} else {
-				fmt.Errorf("device no found")
+				fmt.Println("device no found")
 				os.Exit(0)
 			}
 		} else {
-			fmt.Errorf("no device connected")
+			fmt.Println("no device connected")
 			os.Exit(0)
 		}
 		return nil
