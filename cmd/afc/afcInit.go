@@ -1,4 +1,20 @@
-package afcUtil
+/*
+ *  Copyright (C) [SonicCloudOrg] Sonic Project
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+package afc
 
 import (
 	"fmt"
@@ -8,14 +24,13 @@ import (
 	"os"
 )
 
+var afcRootCMD *cobra.Command
 
-var afcRootCMD 	*cobra.Command
-
-var udid 		string
-var bundleID 	string
+var udid string
+var bundleID string
 
 // InitAfc 用于初始化，在上层中调用这个方法，否则不会正常进行初始化
-func InitAfc(afcCMD *cobra.Command){
+func InitAfc(afcCMD *cobra.Command) {
 	afcRootCMD = afcCMD
 
 	initMkDir()
@@ -32,7 +47,7 @@ func InitAfc(afcCMD *cobra.Command){
 	initRMTree()
 }
 
-func getAFCServer()(afcServer giDevice.Afc)  {
+func getAFCServer() (afcServer giDevice.Afc) {
 	device := util.GetDeviceByUdId(udid)
 	if device == nil {
 		os.Exit(0)

@@ -1,4 +1,20 @@
-package afcUtil
+/*
+ *  Copyright (C) [SonicCloudOrg] Sonic Project
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+package afc
 
 import (
 	"fmt"
@@ -13,7 +29,7 @@ var afcLsCmd = &cobra.Command{
 	Short: "ls to view the directory",
 	Long:  "ls to view the directory",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		afcServer:=getAFCServer()
+		afcServer := getAFCServer()
 		lsShow(afcServer, lsDirPath)
 		return nil
 	},
@@ -25,7 +41,7 @@ func initLs() {
 	afcRootCMD.AddCommand(afcLsCmd)
 	afcLsCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	afcLsCmd.Flags().StringVarP(&bundleID, "bundleId", "b", "", "app bundleId")
-	afcLsCmd.Flags().StringVarP(&lsDirPath,"folder",  "f","", "ls folder path")
+	afcLsCmd.Flags().StringVarP(&lsDirPath, "folder", "f", "", "ls folder path")
 	afcLsCmd.MarkFlagRequired("folder")
 }
 
