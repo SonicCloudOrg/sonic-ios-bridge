@@ -15,6 +15,7 @@
   <a href="#">  
     <img src="https://img.shields.io/github/downloads/SonicCloudOrg/sonic-ios-bridge/total">
   </a>
+<a href="https://app.fossa.com/projects/git%2Bgithub.com%2FSonicCloudOrg%2Fsonic-ios-bridge?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FSonicCloudOrg%2Fsonic-ios-bridge.svg?type=shield"/></a>
   <a href="#">  
     <img src="https://img.shields.io/github/go-mod/go-version/SonicCloudOrg/sonic-ios-bridge">
   </a>
@@ -82,3 +83,6 @@ Thank you to all our sponsors!
 ## LICENSE
 
 [License](LICENSE)
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FSonicCloudOrg%2Fsonic-ios-bridge.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FSonicCloudOrg%2Fsonic-ios-bridge?ref=badge_large)
