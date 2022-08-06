@@ -17,6 +17,7 @@
 package location
 
 import (
+	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"os"
 
@@ -36,6 +37,7 @@ var locationUnsetCmd = &cobra.Command{
 		if err != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "location unset", err)
 		}
+		fmt.Println("location unset successful!")
 		return nil
 	},
 }

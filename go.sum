@@ -1,6 +1,4 @@
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
-github.com/electricbubble/gidevice v0.6.0 h1:SUIv/wI0/RnrUeVVIK/RUsFSQcQx+0QHBfuyNBZYC+4=
-github.com/electricbubble/gidevice v0.6.0/go.mod h1:bRHL2M9qgeEKju8KRvKMZUVEg7t5zMnTiG3SJ3QDH5o=
 github.com/electricbubble/gidevice v0.6.2 h1:eIeCHH7Xn5fTwnUv3qL8c7L4anKIHtjlTBkgr1LDVTc=
 github.com/electricbubble/gidevice v0.6.2/go.mod h1:bRHL2M9qgeEKju8KRvKMZUVEg7t5zMnTiG3SJ3QDH5o=
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=

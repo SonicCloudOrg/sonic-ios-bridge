@@ -67,8 +67,6 @@ var xctestCmd = &cobra.Command{
 			}
 			log.Println("Read env:", testEnv)
 		}
-
-		util.CheckMount(device)
 		output, stopTest, err2 := device.XCTest(xcTestBundleID, giDevice.WithXCTestEnv(testEnv))
 		if err2 != nil {
 			fmt.Printf("xctest start failed: %s", err2)
