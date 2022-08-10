@@ -32,6 +32,7 @@ var uninstallCmd = &cobra.Command{
 		if device == nil {
 			os.Exit(0)
 		}
+		util.CheckMount(device)
 		errUninstall := device.AppUninstall(bundleId)
 		if errUninstall != nil {
 			fmt.Println("uninstall failed")

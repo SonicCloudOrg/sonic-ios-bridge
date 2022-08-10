@@ -68,9 +68,6 @@ func GetDeviceByUdId(udId string) (device giDevice.Device) {
 		fmt.Println("no device connected")
 		return nil
 	}
-	if device != nil {
-		CheckMount(device)
-	}
 	return
 }
 

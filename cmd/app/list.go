@@ -33,33 +33,58 @@ var listCmd = &cobra.Command{
 	Short: "show app list",
 	Long:  "show app list",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		device := util.GetDeviceByUdId(udid)
-		if device == nil {
-			os.Exit(0)
+		usbMuxClient, err := giDevice.NewUsbmux()
+		if err != nil {
+			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
 		}
-		result, errList := device.InstallationProxyBrowse(
-			giDevice.WithApplicationType(giDevice.ApplicationTypeUser),
-			giDevice.WithReturnAttributes("CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
-		if errList != nil {
-			return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
+		list, err1 := usbMuxClient.Devices()
+		if err1 != nil {
+			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
 		}
-		var appList entity.AppList
-		for _, app := range result {
-			a := entity.Application{}
-			mapstructure.Decode(app, &a)
-			if a.CFBundleIdentifier != "" && a.CFBundleDisplayName != "" && a.CFBundleVersion != "" {
-				if showIcon {
-					icon, errIcon := device.GetIconPNGData(a.CFBundleIdentifier)
-					if errIcon == nil {
-						data, _ := ioutil.ReadAll(icon)
-						a.IconBase64 = base64.StdEncoding.EncodeToString(data)
+		if len(list) != 0 {
+			var device giDevice.Device
+			if len(udid) != 0 {
+				for i, d := range list {
+					if d.Properties().SerialNumber == udid {
+						device = list[i]
+						break
 					}
 				}
-				appList.ApplicationList = append(appList.ApplicationList, a)
+			} else {
+				device = list[0]
 			}
+			if device.Properties().SerialNumber != "" {
+				result, errList := device.InstallationProxyBrowse(
+					giDevice.WithApplicationType(giDevice.ApplicationTypeUser),
+					giDevice.WithReturnAttributes("CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
+				if errList != nil {
+					return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
+				}
+				var appList entity.AppList
+				for _, app := range result {
+					a := entity.Application{}
+					mapstructure.Decode(app, &a)
+					if a.CFBundleIdentifier != "" && a.CFBundleDisplayName != "" && a.CFBundleVersion != "" {
+						if showIcon {
+							icon, errIcon := device.GetIconPNGData(a.CFBundleIdentifier)
+							if errIcon == nil {
+								data, _ := ioutil.ReadAll(icon)
+								a.IconBase64 = base64.StdEncoding.EncodeToString(data)
+							}
+						}
+						appList.ApplicationList = append(appList.ApplicationList, a)
+					}
+				}
+				data := util.ResultData(appList)
+				fmt.Println(util.Format(data, isFormat, isJson))
+			} else {
+				fmt.Println("device no found")
+				os.Exit(0)
+			}
+		} else {
+			fmt.Println("no device connected")
+			os.Exit(0)
 		}
-		data := util.ResultData(appList)
-		fmt.Println(util.Format(data, isFormat, isJson))
 		return nil
 	},
 }

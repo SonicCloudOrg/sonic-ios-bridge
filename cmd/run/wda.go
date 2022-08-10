@@ -67,6 +67,7 @@ var wdaCmd = &cobra.Command{
 		testEnv := make(map[string]interface{})
 		testEnv["USE_PORT"] = serverRemotePort
 		testEnv["MJPEG_SERVER_PORT"] = mjpegRemotePort
+		util.CheckMount(device)
 		output, stopTest, err2 := device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
 		if err2 != nil {
 			fmt.Printf("WebDriverAgent server start failed: %s", err2)

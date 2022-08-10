@@ -37,6 +37,7 @@ var screenshotCmd = &cobra.Command{
 		if device == nil {
 			os.Exit(0)
 		}
+		util.CheckMount(device)
 		bytes, err := device.Screenshot()
 		if err != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "screenshot", err)
