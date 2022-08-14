@@ -34,7 +34,6 @@ var locationSetCmd = &cobra.Command{
 		if device == nil {
 			os.Exit(0)
 		}
-		util.CheckMount(device)
 		err := device.SimulateLocationUpdate(long, lat, giDevice.CoordinateSystemBD09)
 		if err != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "location set", err)

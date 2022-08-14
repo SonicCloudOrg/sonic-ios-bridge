@@ -28,6 +28,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -49,13 +50,15 @@ var wdaCmd = &cobra.Command{
 			giDevice.WithApplicationType(giDevice.ApplicationTypeUser),
 			giDevice.WithReturnAttributes("CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
 		if errList != nil {
-			return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
+			return util.NewErrorPrint(util.ErrSendCommand, "app list", errList)
 		}
 		var hasWda = false
+		re, _ := regexp.Compile(strings.ReplaceAll(wdaBundleID, "*", "/*"))
 		for _, d := range appList {
 			a := entity.Application{}
 			mapstructure.Decode(d, &a)
-			if a.CFBundleIdentifier == wdaBundleID {
+			if re.MatchString(a.CFBundleIdentifier) {
+				wdaBundleID = a.CFBundleIdentifier
 				hasWda = true
 				break
 			}
