@@ -77,8 +77,8 @@ Thank you to all our sponsors!
 
 ## Thanks
 
-- gidevice [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice) 
-- tidevice [https://github.com/alibaba/taobao-iphone-device](https://github.com/alibaba/taobao-iphone-device)
+- [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice) 
+- [https://github.com/libimobiledevice/libimobiledevice](https://github.com/libimobiledevice/libimobiledevice)
 
 ## LICENSE
 
