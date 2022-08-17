@@ -48,12 +48,12 @@ var xctestCmd = &cobra.Command{
 			return util.NewErrorPrint(util.ErrSendCommand, "app list", errList)
 		}
 		var hasApp = false
-		re, _ := regexp.Compile(strings.ReplaceAll(wdaBundleID, "*", "/*"))
+		re, _ := regexp.Compile(strings.ReplaceAll(xcTestBundleID, "*", "/*"))
 		for _, d := range appList {
 			a := entity.Application{}
 			mapstructure.Decode(d, &a)
 			if re.MatchString(a.CFBundleIdentifier) {
-				wdaBundleID = a.CFBundleIdentifier
+				xcTestBundleID = a.CFBundleIdentifier
 				hasApp = true
 				break
 			}

@@ -27,7 +27,7 @@ var versionCmd = &cobra.Command{
 	Short: "Version code of sib",
 	Long:  "Version code of sib",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("1.1.7")
+		fmt.Println("1.1.8")
 	},
 }
 
