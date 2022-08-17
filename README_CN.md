@@ -76,8 +76,8 @@ sib info
  
 ## 感谢
 
-- gidevice [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice)
-- tidevice [https://github.com/alibaba/taobao-iphone-device](https://github.com/alibaba/taobao-iphone-device)
+- [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice) 
+- [https://github.com/libimobiledevice/libimobiledevice](https://github.com/libimobiledevice/libimobiledevice)
 
 ## 开源许可协议
 
