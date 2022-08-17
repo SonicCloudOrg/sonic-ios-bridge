@@ -24,7 +24,7 @@ const (
 	ErrSendCommand = "failed send the command"
 	ErrMissingArgs = "missing arg(s)"
 	ErrUnknown     = "unknown error"
-	MountTips      = "you use [sib mount] command to fix it and retry"
+	MountTips      = "you can use [sib mount] command to fix it and retry"
 )
 
 func NewErrorPrint(t string, msg string, err error) error {
