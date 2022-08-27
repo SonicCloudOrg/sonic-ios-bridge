@@ -2,14 +2,14 @@ package entity
 
 type (
 	WIRArgument struct {
-		WIRMessageDataKey          map[string]interface{}     `plist:"WIRMessageDataKey,omitempty"`
+		WIRMessageDataKey          *[]byte                    `plist:"WIRMessageDataKey,omitempty"`
 		WIRConnectionIdentifierKey *string                    `plist:"WIRConnectionIdentifierKey,omitempty"`
 		WIRPageIdentifierKey       *int                       `plist:"WIRPageIdentifierKey,omitempty"`
 		WIRIndicateEnabledKey      *bool                      `plist:"WIRIndicateEnabledKey,omitempty"`
 		WIRSessionIdentifierKey    *string                    `plist:"WIRSessionIdentifierKey,omitempty"`
 		WIRSenderKey               *string                    `plist:"WIRSenderKey,omitempty"`
 		WIRAutomaticallyPause      *bool                      `plist:"WIRAutomaticallyPause,omitempty"`
-		WIRSocketDataKey           *string                    `plist:"WIRSessionIdentifierKey,omitempty"`
+		WIRSocketDataKey           *[]byte                    `plist:"WIRSessionIdentifierKey,omitempty"`
 		SessionCapabilitiesKey     *WIRSessionCapabilitiesKey `plist:"WIRSessionCapabilitiesKey,omitempty"`
 		// 单个appInfo情况下
 		WIRApplicationIdentifierKey       *string                    `plist:"WIRApplicationIdentifierKey,omitempty"`
@@ -105,3 +105,13 @@ const (
 	AVAILABLE           AutomationAvailabilityType = "WIRAutomationAvailabilityAvailable"
 	AvailabilityUNKNOWN AutomationAvailabilityType = "WIRAutomationAvailabilityUnknown"
 )
+
+type UrlItem struct {
+	Description          string  `json:"description"`
+	ID                   string  `json:"id"`
+	Title                *string `json:"title"`
+	Type                 string  `json:"type"`
+	Url                  *string `json:"url"`
+	WebSocketDebuggerUrl string  `json:"webSocketDebuggerUrl"`
+	DevtoolsFrontendUrl  string  `json:"devtoolsFrontendUrl"`
+}

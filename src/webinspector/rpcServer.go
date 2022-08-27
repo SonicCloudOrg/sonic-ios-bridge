@@ -1,11 +1,9 @@
 package webinspector
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	giDevice "github.com/electricbubble/gidevice"
-	"github.com/valyala/fastjson"
 	"howett.net/plist"
 	"log"
 	"strconv"
@@ -14,20 +12,30 @@ import (
 
 var isDebug = false
 
-type RPCServer struct {
+type RPCService struct {
 	inspector            giDevice.WebInspector
 	state                entity.AutomationAvailabilityType
-	connectedApplication map[string]*entity.WebInspectorApplication
-	applicationPages     map[string]map[string]*entity.WebInspectorPage
+	ConnectedApplication map[string]*entity.WebInspectorApplication
+	ApplicationPages     map[string]map[string]*entity.WebInspectorPage
+	WirEvent             chan []byte
 }
 
 func SetRPCDebug(flag bool) {
 	isDebug = flag
 }
 
-func (r *RPCServer) rpcSendMessage(selector entity.WebInspectorSelectorEnum, args entity.WIRArgument) error {
+func NewRPCServer(inspector giDevice.WebInspector) *RPCService {
+	var rpc = &RPCService{
+		inspector: inspector,
+	}
+	rpc.ConnectedApplication = make(map[string]*entity.WebInspectorApplication)
+	rpc.ApplicationPages = make(map[string]map[string]*entity.WebInspectorPage)
+	return rpc
+}
+
+func (r *RPCService) rpcSendMessage(selector entity.WebInspectorSelectorEnum, args entity.WIRArgument) error {
 	if isDebug {
-		log.Println("----->")
+		log.Println("-----> send message")
 		log.Println(fmt.Sprintf("selector:%s", selector))
 		log.Println(args)
 		fmt.Println()
@@ -39,7 +47,7 @@ func (r *RPCServer) rpcSendMessage(selector entity.WebInspectorSelectorEnum, arg
 	return nil
 }
 
-func (r *RPCServer) SendReportIdentifier(connectionID *string) error {
+func (r *RPCService) SendReportIdentifier(connectionID *string) error {
 	if connectionID == nil {
 		return fmt.Errorf("SendReportIdentifier func params connectionID is null")
 	}
@@ -50,7 +58,7 @@ func (r *RPCServer) SendReportIdentifier(connectionID *string) error {
 	return r.rpcSendMessage(selector, argument)
 }
 
-func (r *RPCServer) SendGetConnectedApplications(connectionID *string) error {
+func (r *RPCService) SendGetConnectedApplications(connectionID *string) error {
 	if connectionID == nil {
 		return fmt.Errorf("SendGetConnectedApplications func params connectionID is null")
 	}
@@ -61,7 +69,7 @@ func (r *RPCServer) SendGetConnectedApplications(connectionID *string) error {
 	return r.rpcSendMessage(selector, argument)
 }
 
-func (r *RPCServer) SendForwardGetListing(connectionID *string, appID *string) error {
+func (r *RPCService) SendForwardGetListing(connectionID *string, appID *string) error {
 	if connectionID == nil || appID == nil {
 		return fmt.Errorf("SendForwardGetListing func params is null")
 	}
@@ -73,7 +81,7 @@ func (r *RPCServer) SendForwardGetListing(connectionID *string, appID *string) e
 	return r.rpcSendMessage(selector, argument)
 }
 
-func (r *RPCServer) SendForwardIndicateWebView(connectionID *string, appID *string, pageID int, isEnabled bool) error {
+func (r *RPCService) SendForwardIndicateWebView(connectionID *string, appID *string, pageID int, isEnabled bool) error {
 	if connectionID == nil || appID == nil {
 		return fmt.Errorf("SendForwardIndicateWebView func params is null")
 	}
@@ -87,7 +95,7 @@ func (r *RPCServer) SendForwardIndicateWebView(connectionID *string, appID *stri
 	return r.rpcSendMessage(selector, argument)
 }
 
-func (r *RPCServer) SendForwardSocketSetup(connectionID *string, appID *string, pageID int, senderID *string, pause bool) error {
+func (r *RPCService) SendForwardSocketSetup(connectionID *string, appID *string, pageID int, senderID *string, pause bool) error {
 	if connectionID == nil || appID == nil || senderID == nil {
 		return fmt.Errorf("SendForwardSocketSetup func params is null")
 	}
@@ -104,7 +112,7 @@ func (r *RPCServer) SendForwardSocketSetup(connectionID *string, appID *string, 
 	return r.rpcSendMessage(selector, argument)
 }
 
-func (r *RPCServer) SendForwardSocketData(connectionID *string, appID *string, pageID int, senderID *string, data *string) error {
+func (r *RPCService) SendForwardSocketData(connectionID *string, appID *string, pageID int, senderID *string, data *[]byte) error {
 	if connectionID == nil || appID == nil || senderID == nil || data == nil {
 		return fmt.Errorf("SendForwardSocketData func params is null")
 	}
@@ -119,7 +127,7 @@ func (r *RPCServer) SendForwardSocketData(connectionID *string, appID *string, p
 	return r.rpcSendMessage(selector, argument)
 }
 
-func (r *RPCServer) SendForwardDidClose(connectionID *string, appID *string, pageID int, senderID *string) error {
+func (r *RPCService) SendForwardDidClose(connectionID *string, appID *string, pageID int, senderID *string) error {
 	if connectionID == nil || appID == nil || senderID == nil {
 		return fmt.Errorf("SendForwardDidClose func params is null")
 	}
@@ -133,7 +141,7 @@ func (r *RPCServer) SendForwardDidClose(connectionID *string, appID *string, pag
 	return r.rpcSendMessage(selector, argument)
 }
 
-func (r *RPCServer) parseDataToWIRMessageStruct(plistRaw interface{}) (*entity.WIRMessageStruct, error) {
+func (r *RPCService) parseDataToWIRMessageStruct(plistRaw interface{}) (*entity.WIRMessageStruct, error) {
 	arr, err := plist.Marshal(plistRaw, plist.BinaryFormat)
 	if err != nil {
 		return nil, err
@@ -145,15 +153,16 @@ func (r *RPCServer) parseDataToWIRMessageStruct(plistRaw interface{}) (*entity.W
 	return &paresPlist, nil
 }
 
-// todo isDebu print error
-func (r *RPCServer) ReceiveAndProcess() error {
+// todo isDebug print error
+// todo channel close server
+func (r *RPCService) ReceiveAndProcess() error {
 	plistRaw, err := r.inspector.ReceiveWebkitMsg()
 	if err != nil {
 		return err
 	}
 	if isDebug {
-		log.Println("<-----")
-		log.Print("recv data:")
+		log.Print("<-----")
+		log.Println("recv data")
 		log.Println(plistRaw)
 		fmt.Println()
 	}
@@ -176,28 +185,7 @@ func (r *RPCServer) ReceiveAndProcess() error {
 	case entity.ON_APP_CONNECTED:
 		return r.ReceiveApplicationConnected(wirMessageStruct.Argument)
 	case entity.ON_APP_SENT_DATA:
-		// todo keyCheck
-		fmt.Println("start recv data")
-		wirMessages, wirEvents, err1 := r.ReceiveApplicationSentData(wirMessageStruct.Argument)
-		var p fastjson.Parser
-		for _, v := range wirMessages {
-			if data, err2 := p.Parse(v); err2 != nil {
-				return err2
-			} else {
-				fmt.Println(data)
-			}
-		}
-
-		for _, v := range wirEvents {
-			if data, err2 := p.Parse(v); err2 != nil {
-				return err2
-			} else {
-				fmt.Println(data)
-			}
-		}
-		fmt.Println("recv end")
-		fmt.Println()
-		return err1
+		return r.ReceiveApplicationSentData(wirMessageStruct.Argument)
 	case entity.ON_APP_DISCONNECTED:
 		return r.ReceiveApplicationDisconnected(wirMessageStruct.Argument)
 	case entity.ON_REPORT_SETUP:
@@ -207,7 +195,7 @@ func (r *RPCServer) ReceiveAndProcess() error {
 }
 
 // ON_REPORT_CURRENT_STATE
-func (r *RPCServer) ReceiveReportCurrentState(arg entity.WIRArgument) (entity.AutomationAvailabilityType, error) {
+func (r *RPCService) ReceiveReportCurrentState(arg entity.WIRArgument) (entity.AutomationAvailabilityType, error) {
 	if arg.WIRIsApplicationReadyKey == nil {
 		return "", fmt.Errorf("selector:%s argumentKey: %s is nil", entity.ON_REPORT_CURRENT_STATE, "WIRIsApplicationReadyKey")
 	}
@@ -215,7 +203,7 @@ func (r *RPCServer) ReceiveReportCurrentState(arg entity.WIRArgument) (entity.Au
 }
 
 // ON_REPORT_CONNECTED_APP_LIST
-func (r *RPCServer) ReceiveReportConnectedApplicationList(arg entity.WIRArgument) error {
+func (r *RPCService) ReceiveReportConnectedApplicationList(arg entity.WIRArgument) error {
 	if arg.WIRApplicationDictionaryKey == nil {
 		return fmt.Errorf("selector:%s argumentKey: %s is nil", entity.ON_REPORT_CONNECTED_APP_LIST, "WIRApplicationDictionaryKey")
 	}
@@ -226,14 +214,14 @@ func (r *RPCServer) ReceiveReportConnectedApplicationList(arg entity.WIRArgument
 			}
 			continue
 		} else {
-			r.connectedApplication[key] = app
+			r.ConnectedApplication[key] = app
 		}
 	}
 	return nil
 }
 
 // ON_APP_SENT_LISTING
-func (r *RPCServer) ReceiveApplicationSentListing(arg entity.WIRArgument) error {
+func (r *RPCService) ReceiveApplicationSentListing(arg entity.WIRArgument) error {
 	var item = arg.WIRListingKey
 	if item == nil {
 		return fmt.Errorf("selector:%s argumentKey: %s is nil", entity.ON_APP_SENT_LISTING, "WIRListingKey")
@@ -247,60 +235,49 @@ func (r *RPCServer) ReceiveApplicationSentListing(arg entity.WIRArgument) error 
 		pages[id] = &page
 	}
 	if len(pages) > 0 {
-		r.applicationPages[*appid] = pages
+		r.ApplicationPages[*appid] = pages
 	}
 	return nil
 }
 
 // ON_APP_CONNECTED
-func (r *RPCServer) ReceiveApplicationConnected(arg entity.WIRArgument) error {
+func (r *RPCService) ReceiveApplicationConnected(arg entity.WIRArgument) error {
 	// todo check
 	if appPage, err1 := r.parseApp(arg); err1 != nil {
 		return err1
 	} else {
-		r.connectedApplication[*appPage.ApplicationID] = appPage
+		r.ConnectedApplication[*appPage.ApplicationID] = appPage
 		return nil
 	}
 }
 
 // ON_APP_SENT_DATA
-func (r *RPCServer) ReceiveApplicationSentData(arg entity.WIRArgument) (map[int]string, []string, error) {
+func (r *RPCService) ReceiveApplicationSentData(arg entity.WIRArgument) error {
 	var data = arg.WIRMessageDataKey
 	if data == nil {
-		return nil, nil, fmt.Errorf("selector:%s argumentKey: %s is nil", entity.ON_APP_SENT_DATA, "WIRMessageDataKey")
+		return fmt.Errorf("selector:%s argumentKey: %s is nil", entity.ON_APP_SENT_DATA, "WIRMessageDataKey")
 	}
-	arr, err := json.Marshal(data)
-	if err != nil {
-		return nil, nil, err
-	}
-	wirMessageResult := make(map[int]string)
-	var wirEvent []string
-	// todo check
-	if id := data["id"]; id != nil {
-		wirMessageResult[id.(int)] = string(arr)
-	} else {
-		wirEvent = append(wirEvent, string(arr))
-	}
-	return wirMessageResult, wirEvent, nil
+	r.WirEvent <- *data
+	return nil
 }
 
 // ON_APP_UPDATED
-func (r *RPCServer) ReceiveApplicationUpdated(arg entity.WIRArgument) error {
+func (r *RPCService) ReceiveApplicationUpdated(arg entity.WIRArgument) error {
 	if appPage, err1 := r.parseApp(arg); err1 != nil {
 		return err1
 	} else {
-		r.connectedApplication[*appPage.ApplicationID] = appPage
+		r.ConnectedApplication[*appPage.ApplicationID] = appPage
 		return nil
 	}
 }
 
 // ON_APP_DISCONNECTED
-func (r *RPCServer) ReceiveApplicationDisconnected(arg entity.WIRArgument) error {
+func (r *RPCService) ReceiveApplicationDisconnected(arg entity.WIRArgument) error {
 	// todo
 	return nil
 }
 
-func (r *RPCServer) parseApp(args entity.WIRArgument) (appPage *entity.WebInspectorApplication, err error) {
+func (r *RPCService) parseApp(args entity.WIRArgument) (appPage *entity.WebInspectorApplication, err error) {
 	if args.WIRApplicationIdentifierKey == nil {
 		return nil, fmt.Errorf("parse app is fail")
 	}

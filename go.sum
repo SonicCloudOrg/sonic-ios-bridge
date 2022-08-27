@@ -1,9 +1,10 @@
-github.com/aoliaoaoaojiao/gidevice v0.6.2-0.20220826175733-fd9a99caed72/go.mod h1:bRHL2M9qgeEKju8KRvKMZUVEg7t5zMnTiG3SJ3QDH5o=
+github.com/SonicCloudOrg/sonic-gidevice v0.0.0-20220827051900-b54b5c523e71 h1:+9mlD+SPg8xOYnO0EGe7ePAfiEWRNYgvyeC0IXJeeQk=
+github.com/SonicCloudOrg/sonic-gidevice v0.0.0-20220827051900-b54b5c523e71/go.mod h1:bRHL2M9qgeEKju8KRvKMZUVEg7t5zMnTiG3SJ3QDH5o=
+github.com/aoliaoaoaojiao/gidevice v0.6.2-0.20220826201710-6a8394a60a32 h1:5pbnRSwoG//xqjS8moD8iWs17F0J6OoyMSFMjDA2F/k=
+github.com/aoliaoaoaojiao/gidevice v0.6.2-0.20220826201710-6a8394a60a32/go.mod h1:bRHL2M9qgeEKju8KRvKMZUVEg7t5zMnTiG3SJ3QDH5o=
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
-github.com/electricbubble/gidevice v0.6.0 h1:SUIv/wI0/RnrUeVVIK/RUsFSQcQx+0QHBfuyNBZYC+4=
-github.com/electricbubble/gidevice v0.6.0/go.mod h1:bRHL2M9qgeEKju8KRvKMZUVEg7t5zMnTiG3SJ3QDH5o=
-github.com/electricbubble/gidevice v0.6.2 h1:eIeCHH7Xn5fTwnUv3qL8c7L4anKIHtjlTBkgr1LDVTc=
-github.com/electricbubble/gidevice v0.6.2/go.mod h1:bRHL2M9qgeEKju8KRvKMZUVEg7t5zMnTiG3SJ3QDH5o=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=

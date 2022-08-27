@@ -1,0 +1,134 @@
+package webinspector
+
+import (
+	"fmt"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
+	giDevice "github.com/electricbubble/gidevice"
+	"github.com/google/uuid"
+	"log"
+	"strings"
+	"sync"
+)
+
+type WebkitDebugServer struct {
+	connectID            string
+	rpcService           *RPCService
+	inspector            *giDevice.WebInspector
+	device               *giDevice.Device
+	connectedApplication map[string]*entity.WebInspectorApplication
+	applicationPages     map[string]map[string]*entity.WebInspectorPage
+	// 摘出？
+	senderID string
+}
+
+func NewWebkitDebugServer(device *giDevice.Device) *WebkitDebugServer {
+	return &WebkitDebugServer{
+		device:    device,
+		connectID: strings.ToUpper(uuid.New().String()),
+		senderID:  strings.ToUpper(uuid.New().String()),
+	}
+}
+
+func (w *WebkitDebugServer) ConnectInspector() error {
+	if w.device == nil {
+		return fmt.Errorf("device is null")
+	}
+	webInspectorService, err := (*w.device).WebInspectorService()
+	if err != nil {
+		return err
+	}
+
+	// init
+	w.inspector = &webInspectorService
+	w.rpcService = NewRPCServer(*w.inspector)
+	w.applicationPages = w.rpcService.ApplicationPages
+	w.connectedApplication = w.rpcService.ConnectedApplication
+
+	if len(w.rpcService.ApplicationPages) == 0 {
+		err = w.rpcService.SendReportIdentifier(&w.connectID)
+		if err != nil {
+			return err
+		}
+	}
+
+	go func() {
+		for {
+			err = w.rpcService.ReceiveAndProcess()
+			if err != nil {
+				if strings.Contains(err.Error(), "timeout") {
+					continue
+				}
+				return
+			}
+		}
+	}()
+	return err
+}
+
+func (w *WebkitDebugServer) StartCDP(appID *string, pageID *int) error {
+	return w.rpcService.SendForwardSocketSetup(&w.connectID, appID, *pageID, &w.senderID, false)
+}
+
+func (w *WebkitDebugServer) FindPagesByID(pageId string) (application *entity.WebInspectorApplication, page *entity.WebInspectorPage, err error) {
+	for appID, value := range w.applicationPages {
+		for id := range value {
+			if id == pageId {
+				application = w.connectedApplication[appID]
+				page = w.applicationPages[appID][id]
+				return
+			}
+		}
+	}
+	return nil, nil, fmt.Errorf("not find page")
+}
+
+func (w *WebkitDebugServer) GetOpenPages() ([]entity.UrlItem, error) {
+	var wg = sync.WaitGroup{}
+	for key, _ := range w.connectedApplication {
+		wg.Add(1)
+		go func(key string) {
+			err := w.rpcService.SendForwardGetListing(&w.connectID, &key)
+			if err != nil {
+				log.Fatal(err)
+			}
+			wg.Done()
+		}(key)
+	}
+	wg.Wait()
+	var pages []entity.UrlItem
+	for appID, _ := range w.applicationPages {
+		for pageID, page := range w.applicationPages[appID] {
+			//if page.PageType != entity.WEB && page.PageType != entity.WEB_PAGE {
+			//	continue
+			//}
+			var pageItem = &entity.UrlItem{
+				Description:          "",
+				ID:                   pageID,
+				Title:                page.PageWebTitle,
+				Type:                 "page",
+				Url:                  page.PageWebUrl,
+				WebSocketDebuggerUrl: fmt.Sprintf("ws://localhost:9222/devtools/page/%s", pageID),
+				DevtoolsFrontendUrl:  fmt.Sprintf("/devtools/inspector.html?ws://localhost:9222/devtools/page/%s", pageID),
+			}
+			pages = append(pages, *pageItem)
+		}
+	}
+	return pages, nil
+}
+
+func (w *WebkitDebugServer) SendCommand(applicationID string, pageID int, message []byte) {
+	err := w.rpcService.SendForwardSocketData(&w.connectID, &applicationID, pageID, &w.senderID, &message)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (w *WebkitDebugServer) RecvProtocolData() []byte {
+	select {
+	case data, ok := <-w.rpcService.WirEvent:
+		if ok {
+			return data
+		}
+	}
+	return nil
+}
