@@ -8,7 +8,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.4.0
 )
-// todo 修改为序列化信息优化的版本
+
 replace github.com/electricbubble/gidevice v0.6.2 => github.com/SonicCloudOrg/sonic-gidevice v0.0.0-20220809142714-8bef4cc76426
 
 require (
