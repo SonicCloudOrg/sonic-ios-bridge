@@ -17,7 +17,6 @@
 package app
 
 import (
-	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"os"
 
@@ -35,8 +34,7 @@ var launchCmd = &cobra.Command{
 		}
 		_, errLaunch := device.AppLaunch(bundleId)
 		if errLaunch != nil {
-			fmt.Println("launch failed")
-			os.Exit(0)
+			return util.NewErrorPrint(util.ErrSendCommand, "launch", errLaunch)
 		}
 		return nil
 	},

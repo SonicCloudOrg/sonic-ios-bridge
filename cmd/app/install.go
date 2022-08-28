@@ -34,8 +34,7 @@ var installCmd = &cobra.Command{
 		}
 		errInstall := device.AppInstall(path)
 		if errInstall != nil {
-			fmt.Printf("install failed: %s", errInstall)
-			os.Exit(0)
+			return util.NewErrorPrint(util.ErrSendCommand, "install", errInstall)
 		}
 		fmt.Println("install successful")
 		return nil

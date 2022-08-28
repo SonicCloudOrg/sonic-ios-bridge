@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package location
+package cmd
 
 import (
 	"fmt"
@@ -24,25 +24,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var locationUnsetCmd = &cobra.Command{
-	Use:   "unset",
-	Short: "Unset simulate location to your device.",
-	Long:  "Unset simulate location to your device.",
+var mountCmd = &cobra.Command{
+	Use:   "mount",
+	Short: "Mount device development disk",
+	Long:  "Mount device development disk",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		device := util.GetDeviceByUdId(udid)
 		if device == nil {
 			os.Exit(0)
 		}
-		err := device.SimulateLocationRecover()
-		if err != nil {
-			return util.NewErrorPrint(util.ErrSendCommand, "location unset", err)
-		}
-		fmt.Println("location unset successful!")
+		util.CheckMount(device)
+		fmt.Println("mount successful!")
 		return nil
 	},
 }
 
-func initLocationUnset() {
-	locationRootCMD.AddCommand(locationUnsetCmd)
-	locationUnsetCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
+func init() {
+	rootCmd.AddCommand(mountCmd)
+	mountCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 }

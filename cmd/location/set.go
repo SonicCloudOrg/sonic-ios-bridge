@@ -17,6 +17,7 @@
 package location
 
 import (
+	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
 	"os"
@@ -37,6 +38,7 @@ var locationSetCmd = &cobra.Command{
 		if err != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "location set", err)
 		}
+		fmt.Println("location set successful!")
 		return nil
 	},
 }

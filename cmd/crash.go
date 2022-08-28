@@ -49,7 +49,7 @@ var crashCmd = &cobra.Command{
 			}),
 		)
 		if err != nil {
-			fmt.Println("move crash files failed.")
+			return util.NewErrorPrint(util.ErrUnknown, "move crash files", err)
 		}
 		fmt.Println("All done.")
 		return nil

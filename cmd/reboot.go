@@ -40,8 +40,7 @@ var rebootCmd = &cobra.Command{
 			errReboot = device.Reboot()
 		}
 		if errReboot != nil {
-			fmt.Println("reboot failed")
-			os.Exit(0)
+			return util.NewErrorPrint(util.ErrSendCommand, "reboot", errReboot)
 		}
 		fmt.Println("reboot successful")
 		return nil

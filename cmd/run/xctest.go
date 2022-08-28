@@ -25,6 +25,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"syscall"
 
@@ -44,13 +45,15 @@ var xctestCmd = &cobra.Command{
 			giDevice.WithApplicationType(giDevice.ApplicationTypeUser),
 			giDevice.WithReturnAttributes("CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
 		if errList != nil {
-			return util.NewErrorPrint(util.ErrSendCommand, "appList", errList)
+			return util.NewErrorPrint(util.ErrSendCommand, "app list", errList)
 		}
 		var hasApp = false
+		re, _ := regexp.Compile(strings.ReplaceAll(xcTestBundleID, "*", "/*"))
 		for _, d := range appList {
 			a := entity.Application{}
 			mapstructure.Decode(d, &a)
-			if a.CFBundleIdentifier == xcTestBundleID {
+			if re.MatchString(a.CFBundleIdentifier) {
+				xcTestBundleID = a.CFBundleIdentifier
 				hasApp = true
 				break
 			}
