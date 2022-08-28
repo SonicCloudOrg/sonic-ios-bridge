@@ -93,7 +93,7 @@ func PageDebugHandle(c *gin.Context) {
 			if len(message) == 0 {
 				continue
 			}
-			go webDebug.SendProtocolCommand(application.ApplicationID, page.PageID, message)
+			webDebug.SendProtocolCommand(application.ApplicationID, page.PageID, message)
 		}
 	}
 }

@@ -143,8 +143,7 @@ func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.UrlItem, error) {
 
 func (w *WebkitDebugService) SendProtocolCommand(applicationID *string, pageID *int, message []byte) {
 	if isProtocolDebug {
-		log.Println(fmt.Sprintf("protocol send command:%s", string(message)))
-		fmt.Println()
+		log.Println(fmt.Sprintf("protocol send command:%s\n", string(message)))
 	}
 	err := w.rpcService.SendForwardSocketData(&w.connectID, applicationID, *pageID, &w.senderID, message)
 	if err != nil {
@@ -157,8 +156,7 @@ func (w *WebkitDebugService) ReceiveProtocolData(conn *websocket.Conn) {
 	case message, ok := <-w.rpcService.WirEvent:
 		if ok {
 			if isProtocolDebug {
-				log.Println(fmt.Sprintf("protocol receive command:%s", string(message)))
-				fmt.Println()
+				log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
 			}
 			err := conn.WriteMessage(websocket.TextMessage, message)
 			if err != nil {
