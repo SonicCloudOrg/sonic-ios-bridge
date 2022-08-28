@@ -2,15 +2,15 @@ package entity
 
 type (
 	WIRArgument struct {
-		WIRMessageDataKey          *[]byte                    `plist:"WIRMessageDataKey,omitempty"`
+		WIRMessageDataKey          []byte                     `plist:"WIRMessageDataKey,omitempty"`
 		WIRConnectionIdentifierKey *string                    `plist:"WIRConnectionIdentifierKey,omitempty"`
 		WIRPageIdentifierKey       *int                       `plist:"WIRPageIdentifierKey,omitempty"`
 		WIRIndicateEnabledKey      *bool                      `plist:"WIRIndicateEnabledKey,omitempty"`
 		WIRSessionIdentifierKey    *string                    `plist:"WIRSessionIdentifierKey,omitempty"`
 		WIRSenderKey               *string                    `plist:"WIRSenderKey,omitempty"`
 		WIRAutomaticallyPause      *bool                      `plist:"WIRAutomaticallyPause,omitempty"`
-		WIRSocketDataKey           *[]byte                    `plist:"WIRSessionIdentifierKey,omitempty"`
-		SessionCapabilitiesKey     *WIRSessionCapabilitiesKey `plist:"WIRSessionCapabilitiesKey,omitempty"`
+		WIRSocketDataKey           []byte                     `plist:"WIRSocketDataKey,omitempty"`
+		WIRSessionCapabilitiesKey  *WIRSessionCapabilitiesKey `plist:"WIRSessionCapabilitiesKey,omitempty"`
 		// 单个appInfo情况下
 		WIRApplicationIdentifierKey       *string                    `plist:"WIRApplicationIdentifierKey,omitempty"`
 		WIRApplicationBundleIdentifierKey *string                    `plist:"WIRApplicationBundleIdentifierKey,omitempty"`

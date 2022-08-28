@@ -5,12 +5,13 @@ import (
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	giDevice "github.com/electricbubble/gidevice"
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 	"log"
 	"strings"
 	"sync"
 )
 
-type WebkitDebugServer struct {
+type WebkitDebugService struct {
 	connectID            string
 	rpcService           *RPCService
 	inspector            *giDevice.WebInspector
@@ -21,15 +22,15 @@ type WebkitDebugServer struct {
 	senderID string
 }
 
-func NewWebkitDebugServer(device *giDevice.Device) *WebkitDebugServer {
-	return &WebkitDebugServer{
+func NewWebkitDebugService(device *giDevice.Device) *WebkitDebugService {
+	return &WebkitDebugService{
 		device:    device,
 		connectID: strings.ToUpper(uuid.New().String()),
 		senderID:  strings.ToUpper(uuid.New().String()),
 	}
 }
 
-func (w *WebkitDebugServer) ConnectInspector() error {
+func (w *WebkitDebugService) ConnectInspector() error {
 	if w.device == nil {
 		return fmt.Errorf("device is null")
 	}
@@ -65,11 +66,11 @@ func (w *WebkitDebugServer) ConnectInspector() error {
 	return err
 }
 
-func (w *WebkitDebugServer) StartCDP(appID *string, pageID *int) error {
+func (w *WebkitDebugService) StartCDP(appID *string, pageID *int) error {
 	return w.rpcService.SendForwardSocketSetup(&w.connectID, appID, *pageID, &w.senderID, false)
 }
 
-func (w *WebkitDebugServer) FindPagesByID(pageId string) (application *entity.WebInspectorApplication, page *entity.WebInspectorPage, err error) {
+func (w *WebkitDebugService) FindPagesByID(pageId string) (application *entity.WebInspectorApplication, page *entity.WebInspectorPage, err error) {
 	for appID, value := range w.applicationPages {
 		for id := range value {
 			if id == pageId {
@@ -82,7 +83,7 @@ func (w *WebkitDebugServer) FindPagesByID(pageId string) (application *entity.We
 	return nil, nil, fmt.Errorf("not find page")
 }
 
-func (w *WebkitDebugServer) GetOpenPages() ([]entity.UrlItem, error) {
+func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.UrlItem, error) {
 	var wg = sync.WaitGroup{}
 	for key, _ := range w.connectedApplication {
 		wg.Add(1)
@@ -107,8 +108,8 @@ func (w *WebkitDebugServer) GetOpenPages() ([]entity.UrlItem, error) {
 				Title:                page.PageWebTitle,
 				Type:                 "page",
 				Url:                  page.PageWebUrl,
-				WebSocketDebuggerUrl: fmt.Sprintf("ws://localhost:9222/devtools/page/%s", pageID),
-				DevtoolsFrontendUrl:  fmt.Sprintf("/devtools/inspector.html?ws://localhost:9222/devtools/page/%s", pageID),
+				WebSocketDebuggerUrl: fmt.Sprintf("ws://localhost:%d/devtools/page/%s", port, pageID),
+				DevtoolsFrontendUrl:  fmt.Sprintf("/devtools/inspector.html?ws://localhost:%d/devtools/page/%s", port, pageID),
 			}
 			pages = append(pages, *pageItem)
 		}
@@ -116,19 +117,36 @@ func (w *WebkitDebugServer) GetOpenPages() ([]entity.UrlItem, error) {
 	return pages, nil
 }
 
-func (w *WebkitDebugServer) SendCommand(applicationID string, pageID int, message []byte) {
-	err := w.rpcService.SendForwardSocketData(&w.connectID, &applicationID, pageID, &w.senderID, &message)
+var isProtocolDebug = false
+
+func SetProtocolDebug(flag bool) {
+	isProtocolDebug = flag
+}
+
+func (w *WebkitDebugService) SendProtocolCommand(applicationID *string, pageID *int, message []byte) {
+	if isProtocolDebug {
+		log.Println(fmt.Sprintf("protocol send command:%s", string(message)))
+		fmt.Println()
+	}
+	err := w.rpcService.SendForwardSocketData(&w.connectID, applicationID, *pageID, &w.senderID, message)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (w *WebkitDebugServer) RecvProtocolData() []byte {
+func (w *WebkitDebugService) ReceiveProtocolData(conn *websocket.Conn) {
 	select {
-	case data, ok := <-w.rpcService.WirEvent:
+	case message, ok := <-w.rpcService.WirEvent:
 		if ok {
-			return data
+			if isProtocolDebug {
+				log.Println("protocol receive command:")
+				log.Println(string(message))
+				fmt.Println()
+			}
+			err := conn.WriteMessage(websocket.TextMessage, message)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
-	return nil
 }

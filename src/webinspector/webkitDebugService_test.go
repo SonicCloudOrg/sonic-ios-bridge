@@ -18,7 +18,7 @@ func setupDeviceSrv() {
 func TestWebkitDebugService(t *testing.T) {
 	setupDeviceSrv()
 
-	webkitDebug := NewWebkitDebugServer(&device)
+	webkitDebug := NewWebkitDebugService(&device)
 	SetRPCDebug(true)
 	// init
 	err := webkitDebug.ConnectInspector()
@@ -27,7 +27,7 @@ func TestWebkitDebugService(t *testing.T) {
 	}
 	time.Sleep(6 * time.Second)
 	// get all page
-	pages, err := webkitDebug.GetOpenPages()
+	pages, err := webkitDebug.GetOpenPages(port)
 	if err != nil {
 		panic(err)
 	}

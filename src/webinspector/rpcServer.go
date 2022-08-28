@@ -30,6 +30,7 @@ func NewRPCServer(inspector giDevice.WebInspector) *RPCService {
 	}
 	rpc.ConnectedApplication = make(map[string]*entity.WebInspectorApplication)
 	rpc.ApplicationPages = make(map[string]map[string]*entity.WebInspectorPage)
+	rpc.WirEvent = make(chan []byte)
 	return rpc
 }
 
@@ -112,7 +113,7 @@ func (r *RPCService) SendForwardSocketSetup(connectionID *string, appID *string,
 	return r.rpcSendMessage(selector, argument)
 }
 
-func (r *RPCService) SendForwardSocketData(connectionID *string, appID *string, pageID int, senderID *string, data *[]byte) error {
+func (r *RPCService) SendForwardSocketData(connectionID *string, appID *string, pageID int, senderID *string, data []byte) error {
 	if connectionID == nil || appID == nil || senderID == nil || data == nil {
 		return fmt.Errorf("SendForwardSocketData func params is null")
 	}
@@ -162,10 +163,20 @@ func (r *RPCService) ReceiveAndProcess() error {
 	}
 	if isDebug {
 		log.Print("<-----")
-		log.Println("recv data")
+		log.Println("receive data")
 		log.Println(plistRaw)
 		fmt.Println()
 	}
+	//b, _ := json.Marshal(&plistRaw)
+	//var m map[string]interface{}
+	//_ = json.Unmarshal(b, &m)
+	//for _, v := range m{
+	//	if v=="_rpc_applicationSentData:" {
+	//		fmt.Println("=============================")
+	//		fmt.Println(plistRaw)
+	//		fmt.Println("=============================")
+	//	}
+	//}
 	wirMessageStruct, err := r.parseDataToWIRMessageStruct(plistRaw)
 	if err != nil {
 		return err
@@ -257,7 +268,7 @@ func (r *RPCService) ReceiveApplicationSentData(arg entity.WIRArgument) error {
 	if data == nil {
 		return fmt.Errorf("selector:%s argumentKey: %s is nil", entity.ON_APP_SENT_DATA, "WIRMessageDataKey")
 	}
-	r.WirEvent <- *data
+	r.WirEvent <- data
 	return nil
 }
 
