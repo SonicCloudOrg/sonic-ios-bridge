@@ -1,6 +1,7 @@
 package webinspector
 
 import (
+	"context"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	giDevice "github.com/electricbubble/gidevice"
@@ -18,25 +19,32 @@ type WebkitDebugService struct {
 	device               *giDevice.Device
 	connectedApplication map[string]*entity.WebInspectorApplication
 	applicationPages     map[string]map[string]*entity.WebInspectorPage
-	// 摘出？
-	senderID string
+	senderID             string
+	ctx                  context.Context
 }
 
-func NewWebkitDebugService(device *giDevice.Device) *WebkitDebugService {
+var isProtocolDebug = false
+
+func SetProtocolDebug(flag bool) {
+	isProtocolDebug = flag
+}
+
+func NewWebkitDebugService(device *giDevice.Device, ctx context.Context) *WebkitDebugService {
 	return &WebkitDebugService{
 		device:    device,
 		connectID: strings.ToUpper(uuid.New().String()),
 		senderID:  strings.ToUpper(uuid.New().String()),
+		ctx:       ctx,
 	}
 }
 
-func (w *WebkitDebugService) ConnectInspector() error {
+func (w *WebkitDebugService) ConnectInspector() (context.CancelFunc, error) {
 	if w.device == nil {
-		return fmt.Errorf("device is null")
+		return nil, fmt.Errorf("device is null")
 	}
 	webInspectorService, err := (*w.device).WebInspectorService()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// init
@@ -48,22 +56,38 @@ func (w *WebkitDebugService) ConnectInspector() error {
 	if len(w.rpcService.ApplicationPages) == 0 {
 		err = w.rpcService.SendReportIdentifier(&w.connectID)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
+	ctx, cancel := context.WithCancel(w.ctx)
+
 	go func() {
 		for {
-			err = w.rpcService.ReceiveAndProcess()
-			if err != nil {
-				if strings.Contains(err.Error(), "timeout") {
-					continue
+			select {
+			case <-ctx.Done():
+				w.Close()
+			default:
+				err = w.rpcService.ReceiveAndProcess()
+				if err != nil {
+					if strings.Contains(err.Error(), "timeout") {
+						continue
+					}
+					fmt.Println(err)
+					return
 				}
-				return
 			}
 		}
 	}()
-	return err
+
+	return cancel, err
+}
+
+func (w *WebkitDebugService) Close() {
+	if w.rpcService.WirEvent != nil {
+		close(w.rpcService.WirEvent)
+		w.rpcService.WirEvent = nil
+	}
 }
 
 func (w *WebkitDebugService) StartCDP(appID *string, pageID *int) error {
@@ -117,12 +141,6 @@ func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.UrlItem, error) {
 	return pages, nil
 }
 
-var isProtocolDebug = false
-
-func SetProtocolDebug(flag bool) {
-	isProtocolDebug = flag
-}
-
 func (w *WebkitDebugService) SendProtocolCommand(applicationID *string, pageID *int, message []byte) {
 	if isProtocolDebug {
 		log.Println(fmt.Sprintf("protocol send command:%s", string(message)))
@@ -139,8 +157,7 @@ func (w *WebkitDebugService) ReceiveProtocolData(conn *websocket.Conn) {
 	case message, ok := <-w.rpcService.WirEvent:
 		if ok {
 			if isProtocolDebug {
-				log.Println("protocol receive command:")
-				log.Println(string(message))
+				log.Println(fmt.Sprintf("protocol receive command:%s", string(message)))
 				fmt.Println()
 			}
 			err := conn.WriteMessage(websocket.TextMessage, message)

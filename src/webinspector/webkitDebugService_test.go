@@ -1,10 +1,12 @@
 package webinspector
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
+	"log"
 	"testing"
 	"time"
 )
@@ -17,23 +19,23 @@ func setupDeviceSrv() {
 
 func TestWebkitDebugService(t *testing.T) {
 	setupDeviceSrv()
-
-	webkitDebug := NewWebkitDebugService(&device)
-	SetRPCDebug(true)
+	var ctx context.Context
+	webkitDebug := NewWebkitDebugService(&device, ctx)
+	SetProtocolDebug(true)
 	// init
-	err := webkitDebug.ConnectInspector()
+	cannel, err := webkitDebug.ConnectInspector()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	time.Sleep(6 * time.Second)
 	// get all page
-	pages, err := webkitDebug.GetOpenPages(port)
+	pages, err := webkitDebug.GetOpenPages(localPort)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	time.Sleep(6 * time.Second)
 	if arr, err1 := json.MarshalIndent(pages, "", "\t"); err1 != nil {
-		panic(err1)
+		log.Fatal(err)
 	} else {
 		fmt.Println(string(arr))
 	}
@@ -41,13 +43,14 @@ func TestWebkitDebugService(t *testing.T) {
 	// find page
 	app, page, err := webkitDebug.FindPagesByID("1")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	time.Sleep(6 * time.Second)
 	// start cdp
 	err = webkitDebug.StartCDP(app.ApplicationID, page.PageID)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	time.Sleep(40 * time.Second)
+	cannel()
 }

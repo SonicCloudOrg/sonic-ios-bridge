@@ -2,7 +2,6 @@ package webinspector
 
 import (
 	"fmt"
-	giDevice "github.com/electricbubble/gidevice"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
@@ -11,14 +10,14 @@ import (
 
 func TestCDPWebSocket(t *testing.T) {
 	r := gin.Default()
-	giDevice.SetDebug(true, true)
+	//giDevice.SetDebug(true, true)
 	SetProtocolDebug(true)
-	r.GET("/", pagesHandle)
-	r.GET("/json", pagesHandle)
-	r.GET("/json/list", pagesHandle)
-	r.GET("/devtools/page/:id", pageDebugHandle)
+	r.GET("/", PagesHandle)
+	r.GET("/json", PagesHandle)
+	r.GET("/json/list", PagesHandle)
+	r.GET("/devtools/page/:id", PageDebugHandle)
 
-	r.Run(fmt.Sprintf("127.0.0.1:%d", port))
+	r.Run(fmt.Sprintf("127.0.0.1:%d", localPort))
 }
 
 func TestGetWSData(t *testing.T) {
