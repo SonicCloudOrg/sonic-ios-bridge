@@ -19,22 +19,23 @@ package util
 import "fmt"
 
 const (
-	ErrConnect     = "failed connecting to "
-	ErrReadingMsg  = "failed reading msg "
-	ErrSendCommand = "failed send the command "
+	ErrConnect     = "failed connecting to"
+	ErrReadingMsg  = "failed reading msg"
+	ErrSendCommand = "failed send the command"
 	ErrMissingArgs = "missing arg(s)"
 	ErrUnknown     = "unknown error"
+	MountTips      = "you can use [sib mount] command to fix it and retry"
 )
 
 func NewErrorPrint(t string, msg string, err error) error {
 	if len(msg) == 0 && err == nil {
-		return fmt.Errorf("%s", t)
+		return fmt.Errorf("%s, %s", t, MountTips)
 	}
 	if len(msg) == 0 {
-		return fmt.Errorf("%s : %w", t, err)
+		return fmt.Errorf("%s, %s : %w", t, MountTips, err)
 	}
 	if err == nil {
-		return fmt.Errorf("%s %s", t, msg)
+		return fmt.Errorf("%s [%s], %s", t, msg, MountTips)
 	}
-	return fmt.Errorf("%s %s : %w", t, msg, err)
+	return fmt.Errorf("%s [%s], %s, err : %w", t, msg, MountTips, err)
 }

@@ -38,7 +38,7 @@ var syslogCmd = &cobra.Command{
 		}
 		output, err := device.Syslog()
 		if err != nil {
-			fmt.Printf("Get syslog failed: %s", err)
+			return util.NewErrorPrint(util.ErrSendCommand, "syslog", err)
 		}
 		defer device.SyslogStop()
 		done := make(chan os.Signal, syscall.SIGTERM)
