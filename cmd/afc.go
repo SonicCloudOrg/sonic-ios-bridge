@@ -23,8 +23,8 @@ import (
 
 var afcCmd = &cobra.Command{
 	Use:   "afc",
-	Short: "manipulate device files through afc commands",
-	Long:  "manipulate device files through afc commands",
+	Short: "Manipulate device files through afc commands",
+	Long:  "Manipulate device files through afc commands",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

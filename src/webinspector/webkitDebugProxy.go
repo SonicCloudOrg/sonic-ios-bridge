@@ -1,8 +1,10 @@
 package webinspector
 
 import (
+	"context"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
+	giDevice "github.com/electricbubble/gidevice"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
@@ -10,20 +12,32 @@ import (
 )
 
 var webDebug *WebkitDebugService
-var port = 9222
+var localPort = 9222
 
-// todo add lock
-func pagesHandle(c *gin.Context) {
+func InitWebInspectorServer(udid string, port int, isDebug bool) context.CancelFunc {
+	var err error
+	var cannel context.CancelFunc
 	if webDebug == nil {
 		// 优化初始化过程
-		device := util.GetDeviceByUdId("")
-		webDebug = NewWebkitDebugService(&device)
-		err := webDebug.ConnectInspector()
+		ctx := context.Background()
+		device := util.GetDeviceByUdId(udid)
+		webDebug = NewWebkitDebugService(&device, ctx)
+		cannel, err = webDebug.ConnectInspector()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
-	pages, err := webDebug.GetOpenPages(port)
+	localPort = port
+	if isDebug {
+		SetProtocolDebug(true)
+		giDevice.SetDebug(true, true)
+	}
+	return cannel
+}
+
+func PagesHandle(c *gin.Context) {
+
+	pages, err := webDebug.GetOpenPages(localPort)
 	if err != nil {
 		c.JSONP(http.StatusNotExtended, err)
 	}
@@ -39,7 +53,7 @@ var upGrader = websocket.Upgrader{
 	},
 } // use default options
 
-func pageDebugHandle(c *gin.Context) {
+func PageDebugHandle(c *gin.Context) {
 	id := c.Param("id")
 
 	application, page, err := webDebug.FindPagesByID(id)
@@ -70,7 +84,6 @@ func pageDebugHandle(c *gin.Context) {
 	}()
 
 	for {
-		//todo target SendF
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Println("Error during message reading:", err)
@@ -80,7 +93,7 @@ func pageDebugHandle(c *gin.Context) {
 			if len(message) == 0 {
 				continue
 			}
-			go webDebug.SendProtocolCommand(application.ApplicationID, page.PageID, message)
+			webDebug.SendProtocolCommand(application.ApplicationID, page.PageID, message)
 		}
 	}
 }

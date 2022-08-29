@@ -10,18 +10,12 @@ import (
 	"strings"
 )
 
-var isDebug = false
-
 type RPCService struct {
 	inspector            giDevice.WebInspector
 	state                entity.AutomationAvailabilityType
 	ConnectedApplication map[string]*entity.WebInspectorApplication
 	ApplicationPages     map[string]map[string]*entity.WebInspectorPage
 	WirEvent             chan []byte
-}
-
-func SetRPCDebug(flag bool) {
-	isDebug = flag
 }
 
 func NewRPCServer(inspector giDevice.WebInspector) *RPCService {
@@ -35,12 +29,6 @@ func NewRPCServer(inspector giDevice.WebInspector) *RPCService {
 }
 
 func (r *RPCService) rpcSendMessage(selector entity.WebInspectorSelectorEnum, args entity.WIRArgument) error {
-	if isDebug {
-		log.Println("-----> send message")
-		log.Println(fmt.Sprintf("selector:%s", selector))
-		log.Println(args)
-		fmt.Println()
-	}
 	err := r.inspector.SendWebkitMsg(string(selector), args)
 	if err != nil {
 		return err
@@ -154,29 +142,11 @@ func (r *RPCService) parseDataToWIRMessageStruct(plistRaw interface{}) (*entity.
 	return &paresPlist, nil
 }
 
-// todo isDebug print error
-// todo channel close server
 func (r *RPCService) ReceiveAndProcess() error {
 	plistRaw, err := r.inspector.ReceiveWebkitMsg()
 	if err != nil {
 		return err
 	}
-	if isDebug {
-		log.Print("<-----")
-		log.Println("receive data")
-		log.Println(plistRaw)
-		fmt.Println()
-	}
-	//b, _ := json.Marshal(&plistRaw)
-	//var m map[string]interface{}
-	//_ = json.Unmarshal(b, &m)
-	//for _, v := range m{
-	//	if v=="_rpc_applicationSentData:" {
-	//		fmt.Println("=============================")
-	//		fmt.Println(plistRaw)
-	//		fmt.Println("=============================")
-	//	}
-	//}
 	wirMessageStruct, err := r.parseDataToWIRMessageStruct(plistRaw)
 	if err != nil {
 		return err
@@ -220,9 +190,7 @@ func (r *RPCService) ReceiveReportConnectedApplicationList(arg entity.WIRArgumen
 	}
 	for key, applicationInfo := range arg.WIRApplicationDictionaryKey {
 		if app, err1 := r.parseApp(applicationInfo); err1 != nil {
-			if isDebug {
-				log.Fatal(err1)
-			}
+			log.Println(err1)
 			continue
 		} else {
 			r.ConnectedApplication[key] = app
@@ -268,7 +236,9 @@ func (r *RPCService) ReceiveApplicationSentData(arg entity.WIRArgument) error {
 	if data == nil {
 		return fmt.Errorf("selector:%s argumentKey: %s is nil", entity.ON_APP_SENT_DATA, "WIRMessageDataKey")
 	}
-	r.WirEvent <- data
+	if r.WirEvent != nil {
+		r.WirEvent <- data
+	}
 	return nil
 }
 
