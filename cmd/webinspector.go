@@ -11,8 +11,8 @@ import (
 
 var webInspectorCmd = &cobra.Command{
 	Use:   "webinspector",
-	Short: "manipulate device files through afc commands",
-	Long:  "manipulate device files through afc commands",
+	Short: "Enable iOS webinspector communication service",
+	Long:  "Enable iOS webinspector communication service",
 	Run: func(cmd *cobra.Command, args []string) {
 		done := make(chan os.Signal, 1)
 		signal.Notify(done)
