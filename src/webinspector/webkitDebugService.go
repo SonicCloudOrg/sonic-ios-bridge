@@ -21,6 +21,8 @@ type WebkitDebugService struct {
 	applicationPages     map[string]map[string]*entity.WebInspectorPage
 	senderID             string
 	ctx                  context.Context
+	conn                 *websocket.Conn
+	closeSendWS          context.Context
 }
 
 var isProtocolDebug = false
@@ -33,7 +35,6 @@ func NewWebkitDebugService(device *giDevice.Device, ctx context.Context) *Webkit
 	return &WebkitDebugService{
 		device:    device,
 		connectID: strings.ToUpper(uuid.New().String()),
-		senderID:  strings.ToUpper(uuid.New().String()),
 		ctx:       ctx,
 	}
 }
@@ -90,7 +91,20 @@ func (w *WebkitDebugService) Close() {
 	}
 }
 
-func (w *WebkitDebugService) StartCDP(appID *string, pageID *int) error {
+func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocket.Conn) error {
+	senderID := strings.ToUpper(uuid.New().String())
+	w.senderID = senderID
+	w.conn = conn
+	var closeSendProtocol context.CancelFunc
+	w.closeSendWS, closeSendProtocol = context.WithCancel(w.ctx)
+
+	w.conn.SetCloseHandler(func(code int, text string) error {
+		log.Println("try close ws")
+		conn = nil
+		closeSendProtocol()
+		return w.rpcService.SendForwardDidClose(&w.connectID, appID, *pageID, &senderID)
+	})
+	//w.connectID = strings.ToUpper(uuid.New().String())
 	return w.rpcService.SendForwardSocketSetup(&w.connectID, appID, *pageID, &w.senderID, false)
 }
 
@@ -151,17 +165,25 @@ func (w *WebkitDebugService) SendProtocolCommand(applicationID *string, pageID *
 	}
 }
 
-func (w *WebkitDebugService) ReceiveProtocolData(conn *websocket.Conn) {
-	select {
-	case message, ok := <-w.rpcService.WirEvent:
-		if ok {
-			if isProtocolDebug {
-				log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
+func (w *WebkitDebugService) ReceiveProtocolData(conn *websocket.Conn) error {
+	if w.rpcService.WirEvent != nil {
+		select {
+		case message, ok := <-w.rpcService.WirEvent:
+			if ok {
+				if isProtocolDebug {
+					log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
+				}
+				if conn != nil {
+					err := conn.WriteMessage(websocket.TextMessage, message)
+					if err != nil {
+						log.Println("ws send error:", err)
+						return err
+					}
+				}
 			}
-			err := conn.WriteMessage(websocket.TextMessage, message)
-			if err != nil {
-				log.Fatal(err)
-			}
+		case <-w.closeSendWS.Done():
+			return fmt.Errorf("close send protocol")
 		}
 	}
+	return nil
 }
