@@ -26,6 +26,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"regexp"
@@ -96,13 +97,60 @@ var wdaCmd = &cobra.Command{
 		signal.Notify(shutWdaDown, os.Interrupt, os.Kill)
 
 		go func() {
-			for s := range output {
-				fmt.Print(s)
-				if strings.Contains(s, "ServerURLHere->") {
-					fmt.Println("WebDriverAgent server start successful")
+			for {
+				select {
+				case s, ok := <-output:
+					if ok {
+						fmt.Print(s)
+						if strings.Contains(s, "ServerURLHere->") {
+							fmt.Println("WebDriverAgent server start successful")
+						}
+					} else {
+						return
+					}
+				case <-shutWdaDown:
+					return
 				}
 			}
 			shutWdaDown <- os.Interrupt
+		}()
+
+		go func() {
+			var resp *http.Response
+			var httpErr error
+			var checkTime = 0
+			ticker := time.NewTicker(time.Second * 10)
+			for {
+				select {
+				case <-ticker.C:
+					resp, httpErr = http.Get(fmt.Sprintf("http://127.0.0.1:%d/health", serverLocalPort))
+					if httpErr != nil {
+						fmt.Printf("request fail: %s", httpErr)
+						continue
+					}
+					if resp.StatusCode == 200 {
+						fmt.Printf("wda server health checked %d times: ok\n", checkTime)
+					} else {
+						stopTest()
+						var upTimes = 0
+						for {
+							output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
+							upTimes++
+							if err2 != nil {
+								fmt.Printf("WebDriverAgent server start failed in %d times: %s\n", upTimes, err2)
+								if upTimes >= 3 {
+									fmt.Printf("WebDriverAgent server start failed more than 3 times, giving up...\n")
+									os.Exit(0)
+								}
+							} else {
+								break
+							}
+						}
+					}
+				case <-shutWdaDown:
+					return
+				}
+			}
 		}()
 
 		<-shutWdaDown
