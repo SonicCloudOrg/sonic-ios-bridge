@@ -165,3 +165,37 @@ func (w *WebkitDebugService) ReceiveProtocolData(conn *websocket.Conn) {
 		}
 	}
 }
+
+func (w *WebkitDebugService) ReceiveProtocolDataAdapter(conn *websocket.Conn) {
+	select {
+	case message, ok := <-w.rpcService.WirEvent:
+		if ok {
+			if isProtocolDebug {
+				log.Println(fmt.Sprintf("protocol receive origin command:%s\n", string(message)))
+			}
+
+			err := conn.WriteMessage(websocket.TextMessage, message)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+}
+
+//var callTransform =
+
+//func (w *WebkitDebugService) SendProtocolCommandAndReceiveDataAdapter(conn *websocket.Conn)  {
+//	for {
+//		_, message, err := conn.ReadMessage()
+//		if err != nil {
+//			log.Println("Error during message reading:", err)
+//			break
+//		}
+//		if message != nil {
+//			if len(message) == 0 {
+//				continue
+//			}
+//			webDebug.SendProtocolCommand(application.ApplicationID, page.PageID, message)
+//		}
+//	}
+//}

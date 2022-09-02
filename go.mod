@@ -13,6 +13,8 @@ require (
 	howett.net/plist v1.0.0
 )
 
+require github.com/valyala/fastjson v1.6.3 // indirect
+
 replace github.com/electricbubble/gidevice v0.6.2 => github.com/SonicCloudOrg/sonic-gidevice v0.0.0-20220827051900-b54b5c523e71
 
 require (
@@ -29,7 +31,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
-
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
