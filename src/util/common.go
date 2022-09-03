@@ -190,3 +190,16 @@ func CheckMount(device giDevice.Device) {
 		}
 	}
 }
+
+func GetApplicationPID(device giDevice.Device, appName string) (pid int, err error) {
+	processes, err := device.AppRunningProcesses()
+	if err != nil {
+		return -1, err
+	}
+	for _, p := range processes {
+		if p.Name == appName {
+			return p.Pid, nil
+		}
+	}
+	return -1, nil
+}

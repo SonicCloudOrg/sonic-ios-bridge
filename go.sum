@@ -1,3 +1,5 @@
+github.com/SonicCloudOrg/sonic-gidevice v0.0.0-20220809142714-8bef4cc76426 h1:dYh1taBQ8avld7NiSgbJGIoJAUkn0o6KqydQMTY3C54=
+github.com/SonicCloudOrg/sonic-gidevice v0.0.0-20220809142714-8bef4cc76426/go.mod h1:bRHL2M9qgeEKju8KRvKMZUVEg7t5zMnTiG3SJ3QDH5o=
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/electricbubble/gidevice v0.6.2 h1:eIeCHH7Xn5fTwnUv3qL8c7L4anKIHtjlTBkgr1LDVTc=
 github.com/electricbubble/gidevice v0.6.2/go.mod h1:bRHL2M9qgeEKju8KRvKMZUVEg7t5zMnTiG3SJ3QDH5o=
