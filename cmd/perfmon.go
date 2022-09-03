@@ -75,15 +75,8 @@ var pefmonCmd = &cobra.Command{
 				return nil
 			default:
 				if data, ok := <-output; ok {
-					var perfmonData = entity.CreatePerformanceData(data)
-					if isJson {
-						fmt.Println(perfmonData.ToJson())
-					} else if isFormat {
-						fmt.Println(perfmonData.ToFormat())
-					} else {
-						fmt.Println(perfmonData.ToString())
-					}
-					fmt.Println()
+					d := util.ResultData(entity.CreatePerformanceData(data))
+					fmt.Println(util.Format(d, isFormat, isJson))
 				}
 			}
 		}
