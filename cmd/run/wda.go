@@ -24,10 +24,8 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"regexp"
@@ -97,66 +95,26 @@ var wdaCmd = &cobra.Command{
 		shutWdaDown := make(chan os.Signal, syscall.SIGTERM)
 		signal.Notify(shutWdaDown, os.Interrupt, os.Kill)
 
-		go func() {
-			for {
-				select {
-				case s, ok := <-output:
-					if ok {
-						fmt.Print(s)
-						if strings.Contains(s, "ServerURLHere->") {
-							fmt.Println("WebDriverAgent server start successful")
+		if !disableShowLog {
+			go func() {
+				for {
+					select {
+					case s, ok := <-output:
+						if ok {
+							fmt.Print(s)
+							if strings.Contains(s, "ServerURLHere->") {
+								fmt.Println("WebDriverAgent server start successful")
+							}
+						} else {
+							return
 						}
-					} else {
+					case <-shutWdaDown:
 						return
 					}
-				case <-shutWdaDown:
-					return
 				}
-			}
-			shutWdaDown <- os.Interrupt
-		}()
-
-		go func() {
-			var resp *http.Response
-			var httpErr error
-			ticker := time.NewTicker(time.Second * 10)
-			c := &http.Client{
-				Timeout: 2 * time.Second,
-			}
-			for {
-				select {
-				case <-ticker.C:
-					resp, httpErr = c.Get(fmt.Sprintf("http://127.0.0.1:%d/health", serverLocalPort))
-					var re string
-					if httpErr != nil {
-						fmt.Println("WebDriverAgent server health timeout.")
-					} else {
-						defer resp.Body.Close()
-						body, _ := ioutil.ReadAll(resp.Body)
-						re = string(body)
-					}
-					if httpErr != nil || re != "I-AM-ALIVE" {
-						fmt.Println("WebDriverAgent server unhealthy.")
-						var upTimes = 0
-						for {
-							output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
-							upTimes++
-							if err2 != nil {
-								fmt.Printf("WebDriverAgent server start failed in %d times: %s\n", upTimes, err2)
-								if upTimes >= 3 {
-									fmt.Printf("WebDriverAgent server start failed more than 3 times, giving up...\n")
-									os.Exit(0)
-								}
-							} else {
-								break
-							}
-						}
-					}
-				case <-shutWdaDown:
-					return
-				}
-			}
-		}()
+				shutWdaDown <- os.Interrupt
+			}()
+		}
 
 		<-shutWdaDown
 		stopTest()
@@ -173,11 +131,13 @@ var (
 	serverLocalPort   int
 	mjpegLocalPort    int
 	disableMjpegProxy bool
+	disableShowLog    bool
 )
 
 func initWda() {
 	runRootCMD.AddCommand(wdaCmd)
 	wdaCmd.Flags().BoolVarP(&disableMjpegProxy, "disable-mjpeg-proxy", "", false, "disable mjpeg-server proxy")
+	wdaCmd.Flags().BoolVarP(&disableShowLog, "disable-show-log", "", false, "disable print wda logs")
 	wdaCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	wdaCmd.Flags().StringVarP(&wdaBundleID, "bundleId", "b", "com.facebook.WebDriverAgentRunner.xctrunner", "WebDriverAgentRunner bundleId")
 	wdaCmd.Flags().IntVarP(&serverRemotePort, "server-remote-port", "", 8100, "WebDriverAgentRunner server remote port")
@@ -194,6 +154,7 @@ func proxy() func(listener net.Listener, port int, device giDevice.Device) {
 			if accept, err = listener.Accept(); err != nil {
 				log.Println("accept:", err)
 			}
+			fmt.Println("accept", accept.RemoteAddr())
 			rInnerConn, err := device.NewConnect(port)
 			if err != nil {
 				fmt.Println("connect to device fail")
