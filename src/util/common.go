@@ -72,8 +72,9 @@ func GetDeviceByUdId(udId string) (device giDevice.Device) {
 }
 
 func downloadZip(url, version string) (string, error) {
+	vm := version
 	if versionMap[version] != "" {
-		version = versionMap[version]
+		vm = versionMap[version]
 	}
 	f, err := os.Stat(".sib")
 	if err != nil {
@@ -86,7 +87,7 @@ func downloadZip(url, version string) (string, error) {
 		client := http.Client{
 			Timeout: DownLoadTimeOut,
 		}
-		res, err := client.Get(fmt.Sprintf("%s/iOSDeviceSupport/raw/master/DeviceSupport/%s.zip", url, version))
+		res, err := client.Get(fmt.Sprintf("%s/iOSDeviceSupport/raw/master/DeviceSupport/%s.zip", url, vm))
 		if err != nil {
 			return "", err
 		}
