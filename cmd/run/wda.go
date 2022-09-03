@@ -24,6 +24,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -118,20 +119,24 @@ var wdaCmd = &cobra.Command{
 		go func() {
 			var resp *http.Response
 			var httpErr error
-			var checkTime = 0
 			ticker := time.NewTicker(time.Second * 10)
+			c := &http.Client{
+				Timeout: 2 * time.Second,
+			}
 			for {
 				select {
 				case <-ticker.C:
-					resp, httpErr = http.Get(fmt.Sprintf("http://127.0.0.1:%d/health", serverLocalPort))
+					resp, httpErr = c.Get(fmt.Sprintf("http://127.0.0.1:%d/health", serverLocalPort))
+					var re string
 					if httpErr != nil {
-						fmt.Printf("request fail: %s", httpErr)
-						continue
-					}
-					if resp.StatusCode == 200 {
-						fmt.Printf("wda server health checked %d times: ok\n", checkTime)
+						fmt.Println("WebDriverAgent server health timeout.")
 					} else {
-						stopTest()
+						defer resp.Body.Close()
+						body, _ := ioutil.ReadAll(resp.Body)
+						re = string(body)
+					}
+					if httpErr != nil || re != "I-AM-ALIVE" {
+						fmt.Println("WebDriverAgent server unhealthy.")
 						var upTimes = 0
 						for {
 							output, stopTest, err2 = device.XCTest(wdaBundleID, giDevice.WithXCTestEnv(testEnv))
@@ -189,7 +194,6 @@ func proxy() func(listener net.Listener, port int, device giDevice.Device) {
 			if accept, err = listener.Accept(); err != nil {
 				log.Println("accept:", err)
 			}
-			fmt.Println("accept", accept.RemoteAddr())
 			rInnerConn, err := device.NewConnect(port)
 			if err != nil {
 				fmt.Println("connect to device fail")
