@@ -9,7 +9,7 @@ require (
 	github.com/spf13/cobra v1.4.0
 )
 
-replace github.com/electricbubble/gidevice v0.6.2 => github.com/SonicCloudOrg/sonic-gidevice v0.0.0-20220809142714-8bef4cc76426
+replace github.com/electricbubble/gidevice v0.6.2 => github.com/SonicCloudOrg/sonic-gidevice v0.6.2
 
 require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
