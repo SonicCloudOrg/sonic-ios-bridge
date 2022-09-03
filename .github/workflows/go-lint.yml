@@ -1,4 +1,4 @@
-name: Release
+name: Go lint Check
 
 on:
   workflow_dispatch:
