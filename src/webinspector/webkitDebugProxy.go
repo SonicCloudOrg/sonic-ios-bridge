@@ -70,16 +70,16 @@ func PageDebugHandle(c *gin.Context) {
 	defer conn.Close()
 
 	go func() {
-		err = webDebug.StartCDP(application.ApplicationID, page.PageID)
+		err = webDebug.StartCDP(application.ApplicationID, page.PageID, conn)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}()
 	//// 确保初始化完成
-	webDebug.ReceiveProtocolData(conn)
+	webDebug.ReceiveProtocolData()
 	go func() {
 		for {
-			webDebug.ReceiveProtocolData(conn)
+			webDebug.ReceiveProtocolData()
 		}
 	}()
 

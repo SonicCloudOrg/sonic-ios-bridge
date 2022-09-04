@@ -21,6 +21,7 @@ type WebkitDebugService struct {
 	applicationPages     map[string]map[string]*entity.WebInspectorPage
 	senderID             string
 	ctx                  context.Context
+	wsConn               *websocket.Conn
 }
 
 var isProtocolDebug = false
@@ -90,7 +91,8 @@ func (w *WebkitDebugService) Close() {
 	}
 }
 
-func (w *WebkitDebugService) StartCDP(appID *string, pageID *int) error {
+func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocket.Conn) error {
+	w.wsConn = conn
 	return w.rpcService.SendForwardSocketSetup(&w.connectID, appID, *pageID, &w.senderID, false)
 }
 
@@ -151,42 +153,62 @@ func (w *WebkitDebugService) SendProtocolCommand(applicationID *string, pageID *
 	}
 }
 
-func (w *WebkitDebugService) ReceiveProtocolData(conn *websocket.Conn) {
+func (w *WebkitDebugService) ReceiveProtocolData() {
 	select {
 	case message, ok := <-w.rpcService.WirEvent:
 		if ok {
 			if isProtocolDebug {
 				log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
 			}
-			err := conn.WriteMessage(websocket.TextMessage, message)
-			if err != nil {
-				log.Fatal(err)
-			}
+			w.SendMessageTool(message)
 		}
 	}
 }
 
-func (w *WebkitDebugService) ReceiveProtocolDataAdapter(conn *websocket.Conn) {
-	select {
-	case message, ok := <-w.rpcService.WirEvent:
-		if ok {
-			if isProtocolDebug {
-				log.Println(fmt.Sprintf("protocol receive origin command:%s\n", string(message)))
-			}
-
-			err := conn.WriteMessage(websocket.TextMessage, message)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
+func (w *WebkitDebugService) SendMessageTool(rawMessage []byte) {
+	err := w.wsConn.WriteMessage(websocket.TextMessage, rawMessage)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
+
+//func (w *WebkitDebugService) SendProtocolCommandAdapter(applicationID *string, pageID *int, message []byte) {
+//	if isProtocolDebug {
+//		log.Println(fmt.Sprintf("protocol send command:%s\n", string(message)))
+//	}
+//	var p fastjson.Parser
+//	v,err:=p.Parse(string(message))
+//	if err!=nil {
+//		log.Fatal(err)
+//	}
+//
+//	err = w.rpcService.SendForwardSocketData(&w.connectID, applicationID, *pageID, &w.senderID, message)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//}
+//
+//func (w *WebkitDebugService) ReceiveProtocolDataAdapter(wsConn *websocket.Conn) {
+//	select {
+//	case message, ok := <-w.rpcService.WirEvent:
+//		if ok {
+//			if isProtocolDebug {
+//				log.Println(fmt.Sprintf("protocol receive origin command:%s\n", string(message)))
+//			}
+//
+//			err := wsConn.WriteMessage(websocket.TextMessage, message)
+//			if err != nil {
+//				log.Fatal(err)
+//			}
+//		}
+//	}
+//}
 
 //var callTransform =
 
-//func (w *WebkitDebugService) SendProtocolCommandAndReceiveDataAdapter(conn *websocket.Conn)  {
+//func (w *WebkitDebugService) SendProtocolCommandAndReceiveDataAdapter(wsConn *websocket.Conn)  {
 //	for {
-//		_, message, err := conn.ReadMessage()
+//		_, message, err := wsConn.ReadMessage()
 //		if err != nil {
 //			log.Println("Error during message reading:", err)
 //			break
