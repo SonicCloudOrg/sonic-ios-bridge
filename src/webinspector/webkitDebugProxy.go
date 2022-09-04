@@ -76,10 +76,16 @@ func PageDebugHandle(c *gin.Context) {
 		}
 	}()
 	//// 确保初始化完成
-	webDebug.ReceiveProtocolData()
+	err = webDebug.ReceiveProtocolData()
+	if err != nil {
+		fmt.Println(err)
+	}
 	go func() {
 		for {
-			webDebug.ReceiveProtocolData()
+			err = webDebug.ReceiveProtocolData()
+			if err != nil {
+				return
+			}
 		}
 	}()
 

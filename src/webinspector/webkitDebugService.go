@@ -22,6 +22,7 @@ type WebkitDebugService struct {
 	senderID             string
 	ctx                  context.Context
 	wsConn               *websocket.Conn
+	closeSendWS          context.Context
 }
 
 var isProtocolDebug = false
@@ -34,7 +35,6 @@ func NewWebkitDebugService(device *giDevice.Device, ctx context.Context) *Webkit
 	return &WebkitDebugService{
 		device:    device,
 		connectID: strings.ToUpper(uuid.New().String()),
-		senderID:  strings.ToUpper(uuid.New().String()),
 		ctx:       ctx,
 	}
 }
@@ -93,6 +93,19 @@ func (w *WebkitDebugService) Close() {
 
 func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocket.Conn) error {
 	w.wsConn = conn
+	senderID := strings.ToUpper(uuid.New().String())
+	w.senderID = senderID
+	var closeSendProtocol context.CancelFunc
+	w.closeSendWS, closeSendProtocol = context.WithCancel(w.ctx)
+
+	w.wsConn.SetCloseHandler(func(code int, text string) error {
+		log.Println("try close ws")
+		// 用于保证页面刷新
+		w.wsConn = nil
+		closeSendProtocol()
+		return w.rpcService.SendForwardDidClose(&w.connectID, appID, *pageID, &senderID)
+	})
+	//w.connectID = strings.ToUpper(uuid.New().String())
 	return w.rpcService.SendForwardSocketSetup(&w.connectID, appID, *pageID, &w.senderID, false)
 }
 
@@ -153,22 +166,31 @@ func (w *WebkitDebugService) SendProtocolCommand(applicationID *string, pageID *
 	}
 }
 
-func (w *WebkitDebugService) ReceiveProtocolData() {
-	select {
-	case message, ok := <-w.rpcService.WirEvent:
-		if ok {
-			if isProtocolDebug {
-				log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
+func (w *WebkitDebugService) ReceiveProtocolData() error {
+	if w.rpcService.WirEvent != nil {
+		select {
+		case message, ok := <-w.rpcService.WirEvent:
+			if ok {
+				if isProtocolDebug {
+					log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
+				}
+				w.SendMessageTool(message)
 			}
-			w.SendMessageTool(message)
+		case <-w.closeSendWS.Done():
+			return fmt.Errorf("close send protocol")
 		}
 	}
+	return nil
 }
 
 func (w *WebkitDebugService) SendMessageTool(rawMessage []byte) {
-	err := w.wsConn.WriteMessage(websocket.TextMessage, rawMessage)
-	if err != nil {
-		log.Fatal(err)
+	if w.wsConn != nil {
+		err := w.wsConn.WriteMessage(websocket.TextMessage, rawMessage)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		return
 	}
 }
 
