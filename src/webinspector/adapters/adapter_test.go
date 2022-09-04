@@ -4,6 +4,12 @@ import (
 	"testing"
 )
 
+var adapter *Adapter
+
+func setAdapter() {
+	adapter = &Adapter{}
+}
+
 func TestAdapter(t *testing.T) {
 	//a := Adapter{}
 	//var  me = "Debugger.setBreakpointsActive"
