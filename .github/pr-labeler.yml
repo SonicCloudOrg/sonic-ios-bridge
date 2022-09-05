@@ -1,0 +1,11 @@
+alwaysReplace: true
+caseSensitive: true
+customLabels:
+  - text: '#bug'
+    label: 'bug'
+  - text: '#feature'
+    label: 'feature'
+  - text: '#feat'
+    label: 'feature'
+searchBody: true
+searchTitle: true
