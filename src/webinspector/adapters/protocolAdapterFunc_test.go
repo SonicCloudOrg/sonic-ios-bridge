@@ -93,3 +93,19 @@ func TestSJsonArrayInsertion(t *testing.T) {
 		log.Panic(fmt.Errorf("failed to convert object"))
 	}
 }
+
+func TestGJson(t *testing.T) {
+	text := `{
+			  "name": {"first": "Tom", "last": "Anderson"},
+			  "age":37,
+			  "children": ["Sara","Alex","Jack"],
+			  "fav.movie": "Deer Hunter",
+			  "friends": [
+				{"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]},
+				{"first": "Roger", "last": "Craig", "age": 68, "nets": ["fb", "tw"]},
+				{"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
+			  ]
+			}`
+	path := gjson.Get(text, "name").Get("last").Path(text)
+	fmt.Println(path)
+}
