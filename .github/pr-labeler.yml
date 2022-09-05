@@ -1,11 +1,11 @@
 alwaysReplace: true
 caseSensitive: true
 customLabels:
-  - text: '#fix'
+  - text: 'fix'
     label: 'fix'
-  - text: '#feature'
+  - text: 'feature'
     label: 'feature'
-  - text: '#feat'
+  - text: 'feat'
     label: 'feature'
 searchBody: true
 searchTitle: true
