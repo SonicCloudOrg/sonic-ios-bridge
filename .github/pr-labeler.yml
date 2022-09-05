@@ -1,8 +1,8 @@
 alwaysReplace: true
 caseSensitive: true
 customLabels:
-  - text: '#bug'
-    label: 'bug'
+  - text: '#fix'
+    label: 'fix'
   - text: '#feature'
     label: 'feature'
   - text: '#feat'
