@@ -7,5 +7,9 @@ customLabels:
     label: 'feature'
   - text: 'feat'
     label: 'feature'
+  - text: 'bug'
+    label: 'fix'
+  - text: 'doc'
+    label: 'document'
 searchBody: true
 searchTitle: true
