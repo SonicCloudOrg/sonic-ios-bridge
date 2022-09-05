@@ -81,7 +81,7 @@ func toGPUInfoString(GPUInfo *giDevice.GPUInfo) string {
 	if GPUInfo == nil {
 		return ""
 	}
-	s.WriteString(fmt.Sprintf("GPUInfo\nTilerUtilization:%d, DeviceUtilization:%d, RendererUtilization:%d",
+	s.WriteString(fmt.Sprintf("GPUInfo:\nTilerUtilization:%d, DeviceUtilization:%d, RendererUtilization:%d",
 		GPUInfo.TilerUtilization, GPUInfo.DeviceUtilization, GPUInfo.RendererUtilization))
 	s.WriteString(fmt.Sprintf(", TimeStamp:%d", GPUInfo.TimeStamp))
 	return s.String()
