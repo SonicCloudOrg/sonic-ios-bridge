@@ -24,8 +24,8 @@ jobs:
         run: go build -o sib
 
       - name: run
-        run: CURRENT_VERSION=$(./sib version)
+        run: CURRENT_VERSION=$(./sib version) && TAG_VERSION=${{ steps.previoustag.outputs.tag }}
 
       - name: compare
-        run: [[ "${{ steps.previoustag.outputs.tag }}" == $CURRENT_VERSION ]] && echo $?
+        run: [[ TAG_VERSION == $CURRENT_VERSION ]] && echo $?
 
