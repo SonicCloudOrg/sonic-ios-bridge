@@ -28,8 +28,8 @@ jobs:
         run: echo "::set-output name=version::$(./sib version)"
 
       - name: compare
-        #if: ${{ env.CURRENT == env.TAG }}
-        run: echo ${{ env.VERSION }} && echo ${{env.TAG}}
+        if: ${{ env.VERSION != env.TAG }}
+        run: exit 1
         env: 
          VERSION: ${{ steps.ver.outputs.version }}
          TAG: ${{ steps.previoustag.outputs.tag }}
