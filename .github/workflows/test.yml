@@ -24,8 +24,11 @@ jobs:
         run: go build -o sib
 
       - name: run
-        run: CURRENT_VERSION=$(./sib version) && TAG_VERSION=${{ steps.previoustag.outputs.tag }}
+        run: CURRENT_VERSION=$(./sib version)
 
-      - name: compare
-        run: [[ TAG_VERSION == $CURRENT_VERSION ]] && echo $?
+      - name: Action Equals
+        uses: Thog/action-equals@v1
+        with:
+         a: ${CURRENT_VERSION}
+         b: ${{ steps.previoustag.outputs.tag }}
 
