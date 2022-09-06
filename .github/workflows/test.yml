@@ -27,5 +27,5 @@ jobs:
         run: CURRENT_VERSION=$(./sib version)
 
       - name: compare
-        run: ${{ steps.previoustag.outputs.tag }} == $CURRENT_VERSION
+        run: [[ "${{ steps.previoustag.outputs.tag }}" == $CURRENT_VERSION ]] && echo $?
 
