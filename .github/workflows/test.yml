@@ -27,7 +27,7 @@ jobs:
         run: CURRENT_VERSION=$(./sib version)
 
       - name: compare
-        if: ${{ env.CURRENT_VERSION == env.TAG }}
+        if: ${{ env.CURRENT == env.TAG }}
         run: exit 1
         env: 
          CURRENT: $CURRENT_VERSION
