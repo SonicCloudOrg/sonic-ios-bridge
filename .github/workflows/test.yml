@@ -24,11 +24,10 @@ jobs:
         run: go build -o sib
 
       - name: run
-        run: CURRENT_VERSION=$(./sib version) $$ echo $CURRENT_VERSION && echo '${{ steps.previoustag.outputs.tag }}'
+        run: CURRENT_VERSION=$(./sib version) && echo $CURRENT_VERSION && echo ${{ steps.previoustag.outputs.tag }}
 
       - name: compare
-        if: ${{ env.CURRENT == env.TAG }}
-        run: exit 1
+        #if: ${{ env.CURRENT == env.TAG }}
+        run: echo ${{env.CURRENT_VERSION}} && echo ${{env.TAG}}
         env: 
-         CURRENT: $CURRENT_VERSION
          TAG: ${{ steps.previoustag.outputs.tag }}
