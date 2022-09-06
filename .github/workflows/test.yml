@@ -24,10 +24,12 @@ jobs:
         run: go build -o sib
 
       - name: run
-        run: CURRENT_VERSION=$(./sib version) && echo $CURRENT_VERSION && echo ${{ steps.previoustag.outputs.tag }}
+        id: ver
+        run: echo "::set-output name=version::$(./sib version)"
 
       - name: compare
         #if: ${{ env.CURRENT == env.TAG }}
-        run: echo ${{env.CURRENT_VERSION}} && echo ${{env.TAG}}
+        run: echo ${{ env.VERSION }} && echo ${{env.TAG}}
         env: 
+         VERSION: ${{ steps.ver.outputs.version }}
          TAG: ${{ steps.previoustag.outputs.tag }}
