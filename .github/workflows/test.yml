@@ -26,9 +26,6 @@ jobs:
       - name: run
         run: CURRENT_VERSION=$(./sib version)
 
-      - name: Action Equals
-        uses: Thog/action-equals@v1
-        with:
-         a: ${CURRENT_VERSION}2
-         b: ${{ steps.previoustag.outputs.tag }}
-
+      - name: compare
+        if: ${{ $CURRENT_VERSION == ${{ steps.previoustag.outputs.tag }} }}
+        run: exit 1
