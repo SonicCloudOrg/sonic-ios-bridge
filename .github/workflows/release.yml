@@ -14,10 +14,28 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18
+
+      - name: Build
+        run: go build -o sib
+
+      - name: run
+        id: ver
+        run: echo "::set-output name=version::$(./sib version)"
+
+      - name: compare
+        if: ${{ env.VERSION != env.TAG }}
+        run: exit 1
+        env:
+          VERSION: v${{ steps.ver.outputs.version }}
+          TAG: ${{ steps.previoustag.outputs.tag }}
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
