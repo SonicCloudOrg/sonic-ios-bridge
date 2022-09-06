@@ -27,5 +27,8 @@ jobs:
         run: CURRENT_VERSION=$(./sib version)
 
       - name: compare
-        if: ${{ $CURRENT_VERSION == ${{ steps.previoustag.outputs.tag }} }}
+        if: ${{ env.CURRENT_VERSION == env.TAG }}
         run: exit 1
+        env: 
+         CURRENT: $CURRENT_VERSION
+         TAG: ${{ steps.previoustag.outputs.tag }}
