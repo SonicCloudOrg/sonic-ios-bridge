@@ -29,6 +29,6 @@ jobs:
       - name: Action Equals
         uses: Thog/action-equals@v1
         with:
-         a: ${CURRENT_VERSION}
+         a: ${CURRENT_VERSION}2
          b: ${{ steps.previoustag.outputs.tag }}
 
