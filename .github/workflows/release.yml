@@ -26,21 +26,13 @@ jobs:
       - name: Build
         run: go build -o sib
 
-      - name: run
-        id: ver
-        run: echo "::set-output name=version::$(./sib version)"
-
-      - name: compare
-        if: ${{ env.VERSION != env.TAG }}
-        run: exit 1
-        env:
-          VERSION: v${{ steps.ver.outputs.version }}
-          TAG: ${{ steps.previoustag.outputs.tag }}
+      - name: replace version
+        run: sed -i "s/SONIC_VERSION/${{ steps.previoustag.outputs.tag }}/g" cmd/version.go
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
-          args: release --rm-dist
+          args: release --rm-dist --skip-validate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
