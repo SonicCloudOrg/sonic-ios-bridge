@@ -3,6 +3,7 @@ module github.com/SonicCloudOrg/sonic-ios-bridge
 go 1.18
 
 require (
+	github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.3
 	github.com/electricbubble/gidevice v0.6.2
 	github.com/gin-gonic/gin v1.8.1
 	github.com/google/uuid v1.3.0
@@ -11,11 +12,6 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.4.0
 	howett.net/plist v1.0.0
-)
-
-require (
-	github.com/buger/jsonparser v1.1.1
-	github.com/tidwall/gjson v1.14.3
 )
 
 replace github.com/electricbubble/gidevice v0.6.2 => github.com/SonicCloudOrg/sonic-gidevice v0.0.0-20220827051900-b54b5c523e71
@@ -35,6 +31,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/tidwall/gjson v1.14.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect

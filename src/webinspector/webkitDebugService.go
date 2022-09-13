@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
+	adapters "github.com/SonicCloudOrg/sonic-ios-webkit-adapter/adapter"
 	giDevice "github.com/electricbubble/gidevice"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -23,6 +24,8 @@ type WebkitDebugService struct {
 	ctx                  context.Context
 	wsConn               *websocket.Conn
 	closeSendWS          context.Context
+	adapter              *adapters.Adapter
+	version              string
 }
 
 var isProtocolDebug = false
@@ -194,52 +197,32 @@ func (w *WebkitDebugService) SendMessageTool(rawMessage []byte) {
 	}
 }
 
-//func (w *WebkitDebugService) SendProtocolCommandAdapter(applicationID *string, pageID *int, message []byte) {
-//	if isProtocolDebug {
-//		log.Println(fmt.Sprintf("protocol send command:%s\n", string(message)))
-//	}
-//	var p fastjson.Parser
-//	v,err:=p.Parse(string(message))
-//	if err!=nil {
-//		log.Fatal(err)
-//	}
-//
-//	err = w.rpcService.SendForwardSocketData(&w.connectID, applicationID, *pageID, &w.senderID, message)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//}
-//
-//func (w *WebkitDebugService) ReceiveProtocolDataAdapter(wsConn *websocket.Conn) {
-//	select {
-//	case message, ok := <-w.rpcService.WirEvent:
-//		if ok {
-//			if isProtocolDebug {
-//				log.Println(fmt.Sprintf("protocol receive origin command:%s\n", string(message)))
-//			}
-//
-//			err := wsConn.WriteMessage(websocket.TextMessage, message)
-//			if err != nil {
-//				log.Fatal(err)
-//			}
-//		}
-//	}
-//}
+func (w *WebkitDebugService) SendProtocolCommandAdapter(applicationID *string, pageID *int, message []byte) {
+	if isProtocolDebug {
+		log.Println(fmt.Sprintf("protocol send command:%s\n", string(message)))
+	}
+	if w.adapter == nil {
+		w.adapter = adapters.NewAdapter(w.wsConn, w.version)
+	}
+	w.adapter.SetSendWebkit(func(bytes []byte) {
+		err := w.rpcService.SendForwardSocketData(&w.connectID, applicationID, *pageID, &w.senderID, bytes)
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
 
-//var callTransform =
+}
 
-//func (w *WebkitDebugService) SendProtocolCommandAndReceiveDataAdapter(wsConn *websocket.Conn)  {
-//	for {
-//		_, message, err := wsConn.ReadMessage()
-//		if err != nil {
-//			log.Println("Error during message reading:", err)
-//			break
-//		}
-//		if message != nil {
-//			if len(message) == 0 {
-//				continue
-//			}
-//			webDebug.SendProtocolCommand(application.ApplicationID, page.PageID, message)
-//		}
-//	}
-//}
+func (w *WebkitDebugService) SendMessageToolAdapter(rawMessage []byte) {
+	if w.adapter == nil {
+		w.adapter = adapters.NewAdapter(w.wsConn, w.version)
+	}
+	if w.wsConn != nil {
+		err := w.wsConn.WriteMessage(websocket.TextMessage, rawMessage)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		return
+	}
+}
