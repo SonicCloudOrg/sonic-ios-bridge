@@ -2,6 +2,7 @@ package webinspector
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	adapters "github.com/SonicCloudOrg/sonic-ios-webkit-adapter/adapter"
@@ -26,6 +27,8 @@ type WebkitDebugService struct {
 	closeSendWS          context.Context
 	adapter              *adapters.Adapter
 	version              string
+	applicationID        *string
+	pageID               *int
 }
 
 var isProtocolDebug = false
@@ -108,6 +111,8 @@ func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocke
 		closeSendProtocol()
 		return w.rpcService.SendForwardDidClose(&w.connectID, appID, *pageID, &senderID)
 	})
+	w.applicationID = appID
+	w.pageID = pageID
 	//w.connectID = strings.ToUpper(uuid.New().String())
 	return w.rpcService.SendForwardSocketSetup(&w.connectID, appID, *pageID, &w.senderID, false)
 }
@@ -159,7 +164,7 @@ func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.UrlItem, error) {
 	return pages, nil
 }
 
-func (w *WebkitDebugService) SendProtocolCommand(applicationID *string, pageID *int, message []byte) {
+func (w *WebkitDebugService) SendWebkitProtocolCommand(applicationID *string, pageID *int, message []byte) {
 	if isProtocolDebug {
 		log.Println(fmt.Sprintf("protocol send command:%s\n", string(message)))
 	}
@@ -169,7 +174,7 @@ func (w *WebkitDebugService) SendProtocolCommand(applicationID *string, pageID *
 	}
 }
 
-func (w *WebkitDebugService) ReceiveProtocolData() error {
+func (w *WebkitDebugService) ReceiveWebkitProtocolData() error {
 	if w.rpcService.WirEvent != nil {
 		select {
 		case message, ok := <-w.rpcService.WirEvent:
@@ -197,7 +202,22 @@ func (w *WebkitDebugService) SendMessageTool(rawMessage []byte) {
 	}
 }
 
-func (w *WebkitDebugService) SendProtocolCommandAdapter(applicationID *string, pageID *int, message []byte) {
+func (w *WebkitDebugService) ReceiveMessageTool() error {
+	_, message, err := w.wsConn.ReadMessage()
+	if err != nil {
+		log.Println("Error during message reading:", err)
+		return err
+	}
+	if message != nil {
+		if len(message) == 0 {
+			return errors.New("message is null")
+		}
+		webDebug.SendWebkitProtocolCommand(w.applicationID, w.pageID, message)
+	}
+	return nil
+}
+
+func (w *WebkitDebugService) SendWebkitProtocolCommandAdapter(message []byte) {
 	if isProtocolDebug {
 		log.Println(fmt.Sprintf("protocol send command:%s\n", string(message)))
 	}
@@ -205,24 +225,61 @@ func (w *WebkitDebugService) SendProtocolCommandAdapter(applicationID *string, p
 		w.adapter = adapters.NewAdapter(w.wsConn, w.version)
 	}
 	w.adapter.SetSendWebkit(func(bytes []byte) {
-		err := w.rpcService.SendForwardSocketData(&w.connectID, applicationID, *pageID, &w.senderID, bytes)
+		err := w.rpcService.SendForwardSocketData(&w.connectID, w.applicationID, *w.pageID, &w.senderID, bytes)
 		if err != nil {
 			log.Fatal(err)
 		}
 	})
-
+	w.adapter.SendMessageWebkit(message)
 }
 
 func (w *WebkitDebugService) SendMessageToolAdapter(rawMessage []byte) {
 	if w.adapter == nil {
 		w.adapter = adapters.NewAdapter(w.wsConn, w.version)
 	}
-	if w.wsConn != nil {
-		err := w.wsConn.WriteMessage(websocket.TextMessage, rawMessage)
-		if err != nil {
-			log.Fatal(err)
+
+	w.adapter.SetSendDevTool(func(bytes []byte) {
+		if w.wsConn != nil {
+			err := w.wsConn.WriteMessage(websocket.TextMessage, rawMessage)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			return
 		}
-	} else {
-		return
+	})
+
+	w.adapter.SendMessageDevTool(rawMessage)
+}
+
+func (w *WebkitDebugService) ReceiveWebkitProtocolDataAdapter() error {
+	if w.rpcService.WirEvent != nil {
+		select {
+		case message, ok := <-w.rpcService.WirEvent:
+			if ok {
+				if isProtocolDebug {
+					log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
+				}
+				w.SendMessageToolAdapter(message)
+			}
+		case <-w.closeSendWS.Done():
+			return fmt.Errorf("close send protocol")
+		}
 	}
+	return nil
+}
+
+func (w *WebkitDebugService) ReceiveMessageToolAdapter() error {
+	_, message, err := w.wsConn.ReadMessage()
+	if err != nil {
+		log.Println("Error during message reading:", err)
+		return err
+	}
+	if message != nil {
+		if len(message) == 0 {
+			return errors.New("message is null")
+		}
+		webDebug.SendWebkitProtocolCommandAdapter(message)
+	}
+	return nil
 }

@@ -13,6 +13,11 @@ import (
 
 var webDebug *WebkitDebugService
 var localPort = 9222
+var isAdapter = false
+
+func SetIsAdapter(flag bool) {
+	isAdapter = flag
+}
 
 func InitWebInspectorServer(udid string, port int, isDebug bool) context.CancelFunc {
 	var err error
@@ -76,30 +81,52 @@ func PageDebugHandle(c *gin.Context) {
 		}
 	}()
 	//// 确保初始化完成
-	err = webDebug.ReceiveProtocolData()
-	if err != nil {
-		fmt.Println(err)
+	if isAdapter {
+		err = webDebug.ReceiveWebkitProtocolDataAdapter()
+		if err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		err = webDebug.ReceiveWebkitProtocolData()
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
+
 	go func() {
 		for {
-			err = webDebug.ReceiveProtocolData()
-			if err != nil {
-				return
+			if isAdapter {
+				err = webDebug.ReceiveWebkitProtocolDataAdapter()
+				if err != nil {
+					fmt.Println(err)
+				}
+			} else {
+				err = webDebug.ReceiveWebkitProtocolData()
+				if err != nil {
+					fmt.Println(err)
+				}
 			}
 		}
 	}()
-
-	for {
-		_, message, err := conn.ReadMessage()
-		if err != nil {
-			log.Println("Error during message reading:", err)
-			break
-		}
-		if message != nil {
-			if len(message) == 0 {
+	if isAdapter {
+		for {
+			err = webDebug.ReceiveMessageToolAdapter()
+			if err != nil {
+				log.Panic(err)
+			}
+			if err == nil || err.Error() == "message is null" {
 				continue
 			}
-			webDebug.SendProtocolCommand(application.ApplicationID, page.PageID, message)
+		}
+	} else {
+		for {
+			err = webDebug.ReceiveMessageTool()
+			if err != nil {
+				log.Panic(err)
+			}
+			if err == nil || err.Error() == "message is null" {
+				continue
+			}
 		}
 	}
 }
