@@ -41,16 +41,16 @@ func TestWebkitDebugService(t *testing.T) {
 	}
 	time.Sleep(6 * time.Second)
 	// find page
-	app, page, err := webkitDebug.FindPagesByID("1")
-	if err != nil {
-		log.Fatal(err)
-	}
-	time.Sleep(6 * time.Second)
+	//app, page, err := webkitDebug.FindPagesByID("1")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//time.Sleep(6 * time.Second)
 	// start cdp
-	err = webkitDebug.StartCDP(app.ApplicationID, page.PageID)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//err = webkitDebug.StartCDP(app.ApplicationID, page.PageID)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	time.Sleep(40 * time.Second)
 	cannel()
 }

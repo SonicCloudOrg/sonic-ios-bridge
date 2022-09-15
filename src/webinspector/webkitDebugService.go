@@ -123,6 +123,9 @@ func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocke
 		log.Println(string(bytes))
 		log.Println()
 		if w.wsConn != nil {
+			//if strings.Contains(string(bytes),"error"){
+			//	return
+			//}
 			err := w.wsConn.WriteMessage(websocket.TextMessage, bytes)
 			if err != nil {
 				log.Fatal(err)
