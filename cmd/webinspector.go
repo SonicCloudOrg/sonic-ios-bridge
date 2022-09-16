@@ -29,6 +29,7 @@ var webInspectorCmd = &cobra.Command{
 		r.GET("/", webinspector.PagesHandle)
 		r.GET("/json", webinspector.PagesHandle)
 		r.GET("/json/list", webinspector.PagesHandle)
+		webinspector.SetIsAdapter(true)
 		r.GET("/devtools/page/:id", webinspector.PageDebugHandle)
 		r.Run(fmt.Sprintf("127.0.0.1:%d", port))
 	},

@@ -1,7 +1,9 @@
 package webinspector
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/SonicCloudOrg/sonic-ios-webkit-adapter/entity"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
@@ -58,5 +60,14 @@ func TestGetWSData(t *testing.T) {
 		default:
 
 		}
+	}
+}
+
+func TestJsonToStruct(t *testing.T) {
+	msg := "{\"id\":15,\"method\":\"Log.enable\",\"params\":{}}"
+	protocolMessage := &entity.TargetProtocol{}
+	err := json.Unmarshal([]byte(msg), protocolMessage)
+	if err != nil {
+		log.Panic(err)
 	}
 }

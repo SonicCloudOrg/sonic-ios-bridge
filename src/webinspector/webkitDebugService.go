@@ -2,8 +2,10 @@ package webinspector
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
+	adapters "github.com/SonicCloudOrg/sonic-ios-webkit-adapter/adapter"
 	giDevice "github.com/electricbubble/gidevice"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -21,6 +23,12 @@ type WebkitDebugService struct {
 	applicationPages     map[string]map[string]*entity.WebInspectorPage
 	senderID             string
 	ctx                  context.Context
+	wsConn               *websocket.Conn
+	closeSendWS          context.Context
+	adapter              *adapters.Adapter
+	version              string
+	applicationID        *string
+	pageID               *int
 }
 
 var isProtocolDebug = false
@@ -33,8 +41,8 @@ func NewWebkitDebugService(device *giDevice.Device, ctx context.Context) *Webkit
 	return &WebkitDebugService{
 		device:    device,
 		connectID: strings.ToUpper(uuid.New().String()),
-		senderID:  strings.ToUpper(uuid.New().String()),
 		ctx:       ctx,
+		version:   "15.4",
 	}
 }
 
@@ -90,7 +98,53 @@ func (w *WebkitDebugService) Close() {
 	}
 }
 
-func (w *WebkitDebugService) StartCDP(appID *string, pageID *int) error {
+func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocket.Conn) error {
+	w.wsConn = conn
+	senderID := strings.ToUpper(uuid.New().String())
+	w.senderID = senderID
+	var closeSendProtocol context.CancelFunc
+	w.closeSendWS, closeSendProtocol = context.WithCancel(w.ctx)
+
+	w.wsConn.SetCloseHandler(func(code int, text string) error {
+		log.Println("try close ws")
+		// 用于保证页面刷新
+		w.wsConn = nil
+		closeSendProtocol()
+		return w.rpcService.SendForwardDidClose(&w.connectID, appID, *pageID, &senderID)
+	})
+	w.applicationID = appID
+	w.pageID = pageID
+	//w.connectID = strings.ToUpper(uuid.New().String())
+	w.adapter = adapters.NewAdapter(w.wsConn, "15.4")
+	w.adapter.SetIsConnect(true)
+
+	w.adapter.SetSendDevTool(func(bytes []byte) {
+		log.Println("向devtool发送信息")
+		log.Println(string(bytes))
+		log.Println()
+		if w.wsConn != nil {
+			//if strings.Contains(string(bytes),"error"){
+			//	return
+			//}
+			err := w.wsConn.WriteMessage(websocket.TextMessage, bytes)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			return
+		}
+	})
+
+	w.adapter.SetSendWebkit(func(bytes []byte) {
+		log.Println("向webkit发送信息")
+		log.Println(string(bytes))
+		log.Println()
+		err := w.rpcService.SendForwardSocketData(&w.connectID, w.applicationID, *w.pageID, &w.senderID, bytes)
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
+
 	return w.rpcService.SendForwardSocketSetup(&w.connectID, appID, *pageID, &w.senderID, false)
 }
 
@@ -141,7 +195,7 @@ func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.UrlItem, error) {
 	return pages, nil
 }
 
-func (w *WebkitDebugService) SendProtocolCommand(applicationID *string, pageID *int, message []byte) {
+func (w *WebkitDebugService) SendWebkitProtocolCommand(applicationID *string, pageID *int, message []byte) {
 	if isProtocolDebug {
 		log.Println(fmt.Sprintf("protocol send command:%s\n", string(message)))
 	}
@@ -151,17 +205,79 @@ func (w *WebkitDebugService) SendProtocolCommand(applicationID *string, pageID *
 	}
 }
 
-func (w *WebkitDebugService) ReceiveProtocolData(conn *websocket.Conn) {
-	select {
-	case message, ok := <-w.rpcService.WirEvent:
-		if ok {
-			if isProtocolDebug {
-				log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
+func (w *WebkitDebugService) ReceiveWebkitProtocolData() error {
+	if w.rpcService.WirEvent != nil {
+		select {
+		case message, ok := <-w.rpcService.WirEvent:
+			if ok {
+				if isProtocolDebug {
+					log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
+				}
+				w.SendMessageTool(message)
 			}
-			err := conn.WriteMessage(websocket.TextMessage, message)
-			if err != nil {
-				log.Fatal(err)
-			}
+		case <-w.closeSendWS.Done():
+			return fmt.Errorf("close send protocol")
 		}
 	}
+	return nil
+}
+
+func (w *WebkitDebugService) SendMessageTool(rawMessage []byte) {
+	if w.wsConn != nil {
+		err := w.wsConn.WriteMessage(websocket.TextMessage, rawMessage)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		return
+	}
+}
+
+func (w *WebkitDebugService) ReceiveMessageTool() error {
+	_, message, err := w.wsConn.ReadMessage()
+	if err != nil {
+		log.Println("Error during message reading:", err)
+		return err
+	}
+	if message != nil {
+		if len(message) == 0 {
+			return errors.New("message is null")
+		}
+		webDebug.SendWebkitProtocolCommand(w.applicationID, w.pageID, message)
+	}
+	return nil
+}
+
+func (w *WebkitDebugService) ReceiveWebkitProtocolDataAdapter() error {
+	if w.rpcService.WirEvent != nil {
+		select {
+		case message, ok := <-w.rpcService.WirEvent:
+			if ok {
+				if isProtocolDebug {
+					log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
+				}
+				log.Println(fmt.Sprintf("从 webkit 接收原始信息:%s\n", string(message)))
+				w.adapter.ReceiveMessageWebkit(message)
+			}
+		case <-w.closeSendWS.Done():
+			return fmt.Errorf("close send protocol")
+		}
+	}
+	return nil
+}
+
+func (w *WebkitDebugService) ReceiveMessageToolAdapter() error {
+	_, message, err := w.wsConn.ReadMessage()
+	if err != nil {
+		log.Println("Error during message reading:", err)
+		return err
+	}
+	if message != nil {
+		if len(message) == 0 {
+			return errors.New("message is null")
+		}
+		log.Println(fmt.Sprintf("从devtool 接收原始信息:%s\n", string(message)))
+		w.adapter.ReceiveMessageDevTool(message)
+	}
+	return nil
 }
