@@ -3,7 +3,7 @@ module github.com/SonicCloudOrg/sonic-ios-bridge
 go 1.18
 
 require (
-	github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7-0.20220915150420-c80dfa57f289
+	github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7-0.20220917115026-dc53685a5437
 	github.com/electricbubble/gidevice v0.6.2
 	github.com/gin-gonic/gin v1.8.1
 	github.com/google/uuid v1.3.0
