@@ -16,7 +16,7 @@ var webInspectorCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		done := make(chan os.Signal, 1)
 		signal.Notify(done)
-		cannel := webinspector.InitWebInspectorServer(udid, port, isDebug)
+		cannel := webinspector.InitWebInspectorServer(udid, port, isProtocolDebug, isDTXDebug)
 		fmt.Println("service started successfully")
 		go func() {
 			select {
@@ -36,14 +36,16 @@ var webInspectorCmd = &cobra.Command{
 }
 
 var (
-	port    int
-	isDebug bool
+	port            int
+	isProtocolDebug bool
+	isDTXDebug      bool
 )
 
 func init() {
 	rootCmd.AddCommand(webInspectorCmd)
 	webInspectorCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	webInspectorCmd.Flags().IntVarP(&port, "port", "p", 9222, "local proxy inspector communication port")
-	webInspectorCmd.Flags().BoolVarP(&isDebug, "debug", "d", false, "whether to enable debug mode")
+	webInspectorCmd.Flags().BoolVar(&isProtocolDebug, "protocol-debug", false, "whether to enable protocol debug mode")
+	webInspectorCmd.Flags().BoolVar(&isDTXDebug, "dtx-debug", false, "whether to enable dtx debug mode")
 	//afc.InitAfc(afcCmd)
 }

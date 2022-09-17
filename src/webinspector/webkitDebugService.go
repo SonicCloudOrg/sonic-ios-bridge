@@ -29,6 +29,7 @@ type WebkitDebugService struct {
 	version              string
 	applicationID        *string
 	pageID               *int
+	lock                 sync.Mutex
 }
 
 var isProtocolDebug = false
@@ -115,20 +116,21 @@ func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocke
 	w.applicationID = appID
 	w.pageID = pageID
 	//w.connectID = strings.ToUpper(uuid.New().String())
-	w.adapter = adapters.NewAdapter(w.wsConn, "15.4")
+	w.adapter = adapters.NewAdapter(w.wsConn, w.version)
 	w.adapter.SetIsConnect(true)
 
 	w.adapter.SetSendDevTool(func(bytes []byte) {
-		log.Println("向devtool发送信息")
-		log.Println(string(bytes))
-		log.Println()
 		if w.wsConn != nil {
-			//if strings.Contains(string(bytes),"error"){
-			//	return
-			//}
-			err := w.wsConn.WriteMessage(websocket.TextMessage, bytes)
-			if err != nil {
-				log.Fatal(err)
+			if isProtocolDebug {
+				log.Println(fmt.Sprintf("devtool send protocol:\n%s\n", string(bytes)))
+			}
+			if bytes != nil && len(bytes) > 0 {
+				w.lock.Lock()
+				defer w.lock.Unlock()
+				err := w.wsConn.WriteMessage(websocket.TextMessage, bytes)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 		} else {
 			return
@@ -136,12 +138,14 @@ func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocke
 	})
 
 	w.adapter.SetSendWebkit(func(bytes []byte) {
-		log.Println("向webkit发送信息")
-		log.Println(string(bytes))
-		log.Println()
-		err := w.rpcService.SendForwardSocketData(&w.connectID, w.applicationID, *w.pageID, &w.senderID, bytes)
-		if err != nil {
-			log.Fatal(err)
+		if isProtocolDebug {
+			log.Println(fmt.Sprintf("webkit send protocol:\n%s\n", string(bytes)))
+		}
+		if bytes != nil && len(bytes) > 0 {
+			err := w.rpcService.SendForwardSocketData(&w.connectID, w.applicationID, *w.pageID, &w.senderID, bytes)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	})
 
@@ -211,7 +215,7 @@ func (w *WebkitDebugService) ReceiveWebkitProtocolData() error {
 		case message, ok := <-w.rpcService.WirEvent:
 			if ok {
 				if isProtocolDebug {
-					log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
+					log.Println(fmt.Sprintf("protocol receive command:\n%s\n", string(message)))
 				}
 				w.SendMessageTool(message)
 			}
@@ -224,6 +228,8 @@ func (w *WebkitDebugService) ReceiveWebkitProtocolData() error {
 
 func (w *WebkitDebugService) SendMessageTool(rawMessage []byte) {
 	if w.wsConn != nil {
+		w.lock.Lock()
+		defer w.lock.Unlock()
 		err := w.wsConn.WriteMessage(websocket.TextMessage, rawMessage)
 		if err != nil {
 			log.Fatal(err)
@@ -254,9 +260,8 @@ func (w *WebkitDebugService) ReceiveWebkitProtocolDataAdapter() error {
 		case message, ok := <-w.rpcService.WirEvent:
 			if ok {
 				if isProtocolDebug {
-					log.Println(fmt.Sprintf("protocol receive command:%s\n", string(message)))
+					log.Println(fmt.Sprintf("webkit receive protocol:\n%s\n", string(message)))
 				}
-				log.Println(fmt.Sprintf("从 webkit 接收原始信息:%s\n", string(message)))
 				w.adapter.ReceiveMessageWebkit(message)
 			}
 		case <-w.closeSendWS.Done():
@@ -276,7 +281,9 @@ func (w *WebkitDebugService) ReceiveMessageToolAdapter() error {
 		if len(message) == 0 {
 			return errors.New("message is null")
 		}
-		log.Println(fmt.Sprintf("从devtool 接收原始信息:%s\n", string(message)))
+		if isProtocolDebug {
+			log.Println(fmt.Sprintf("devtool receive protocol:\n%s\n", string(message)))
+		}
 		w.adapter.ReceiveMessageDevTool(message)
 	}
 	return nil
