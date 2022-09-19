@@ -14,7 +14,7 @@ require (
 	howett.net/plist v1.0.0
 )
 
-replace github.com/electricbubble/gidevice v0.6.2 => github.com/SonicCloudOrg/sonic-gidevice v0.0.0-20220827051900-b54b5c523e71
+replace github.com/electricbubble/gidevice v0.6.2 => github.com/SonicCloudOrg/sonic-gidevice v0.6.2
 
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect

@@ -23,10 +23,10 @@ func InitWebInspectorServer(udid string, port int, isProtocolDebug bool, isDTXDe
 	var err error
 	var cannel context.CancelFunc
 	if webDebug == nil {
-		// 优化初始化过程
+		// optimize the initialization process
 		ctx := context.Background()
 		device := util.GetDeviceByUdId(udid)
-		webDebug = NewWebkitDebugService(&device, ctx)
+		webDebug = NewWebkitDebugService(&device, ctx, util.GetDeviceVersion(device))
 		cannel, err = webDebug.ConnectInspector()
 		if err != nil {
 			log.Fatal(err)
@@ -54,7 +54,7 @@ func PagesHandle(c *gin.Context) {
 var upGrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	// 解决跨域问题
+	// solve cross domain problems
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
@@ -76,58 +76,34 @@ func PageDebugHandle(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	err = webDebug.StartCDP(application.ApplicationID, page.PageID, conn)
+	err = webDebug.StartCDP(application.ApplicationID, page.PageID, conn, isAdapter)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//// 确保初始化完成
-	if isAdapter {
-		err = webDebug.ReceiveWebkitProtocolDataAdapter()
-		if err != nil {
-			fmt.Println(err)
-		}
-	} else {
-		err = webDebug.ReceiveWebkitProtocolData()
-		if err != nil {
-			fmt.Println(err)
-		}
+	// make sure initialization is complete
+	err = webDebug.receiveWebkitProtocolData()
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	go func() {
 		for {
-			if isAdapter {
-				err = webDebug.ReceiveWebkitProtocolDataAdapter()
-				if err != nil {
-					fmt.Println(err)
-				}
-			} else {
-				err = webDebug.ReceiveWebkitProtocolData()
-				if err != nil {
-					fmt.Println(err)
-				}
+			err = webDebug.receiveWebkitProtocolData()
+			if err != nil {
+				fmt.Println(err)
 			}
 		}
 	}()
-	if isAdapter {
-		for {
-			err = webDebug.ReceiveMessageToolAdapter()
-			if err != nil {
-				log.Panic(err)
-			}
-			if err == nil || err.Error() == "message is null" {
-				continue
-			}
+
+	for {
+		err = webDebug.receiveMessageTool()
+		if err != nil {
+			log.Panic(err)
 		}
-	} else {
-		for {
-			err = webDebug.ReceiveMessageTool()
-			if err != nil {
-				log.Panic(err)
-			}
-			if err == nil || err.Error() == "message is null" {
-				continue
-			}
+		if err == nil || err.Error() == "message is null" {
+			continue
 		}
 	}
+
 }

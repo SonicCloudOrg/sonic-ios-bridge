@@ -29,6 +29,7 @@ type WebkitDebugService struct {
 	version              string
 	applicationID        *string
 	pageID               *int
+	isAdapter            bool
 	lock                 sync.Mutex
 }
 
@@ -38,12 +39,12 @@ func SetProtocolDebug(flag bool) {
 	isProtocolDebug = flag
 }
 
-func NewWebkitDebugService(device *giDevice.Device, ctx context.Context) *WebkitDebugService {
+func NewWebkitDebugService(device *giDevice.Device, ctx context.Context, version string) *WebkitDebugService {
 	return &WebkitDebugService{
 		device:    device,
 		connectID: strings.ToUpper(uuid.New().String()),
 		ctx:       ctx,
-		version:   "15.4",
+		version:   version,
 	}
 }
 
@@ -99,7 +100,7 @@ func (w *WebkitDebugService) Close() {
 	}
 }
 
-func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocket.Conn) error {
+func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocket.Conn, isAdapter bool) error {
 	w.wsConn = conn
 	senderID := strings.ToUpper(uuid.New().String())
 	w.senderID = senderID
@@ -115,7 +116,15 @@ func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocke
 	})
 	w.applicationID = appID
 	w.pageID = pageID
-	//w.connectID = strings.ToUpper(uuid.New().String())
+	w.isAdapter = isAdapter
+	if isAdapter {
+		w.initAdapter()
+	}
+
+	return w.rpcService.SendForwardSocketSetup(&w.connectID, appID, *pageID, &w.senderID, false)
+}
+
+func (w *WebkitDebugService) initAdapter() {
 	w.adapter = adapters.NewAdapter(w.wsConn, w.version)
 	w.adapter.SetIsConnect(true)
 
@@ -148,8 +157,6 @@ func (w *WebkitDebugService) StartCDP(appID *string, pageID *int, conn *websocke
 			}
 		}
 	})
-
-	return w.rpcService.SendForwardSocketSetup(&w.connectID, appID, *pageID, &w.senderID, false)
 }
 
 func (w *WebkitDebugService) FindPagesByID(pageId string) (application *entity.WebInspectorApplication, page *entity.WebInspectorPage, err error) {
@@ -199,7 +206,7 @@ func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.UrlItem, error) {
 	return pages, nil
 }
 
-func (w *WebkitDebugService) SendWebkitProtocolCommand(applicationID *string, pageID *int, message []byte) {
+func (w *WebkitDebugService) sendWebkitProtocolCommand(applicationID *string, pageID *int, message []byte) {
 	if isProtocolDebug {
 		log.Println(fmt.Sprintf("protocol send command:%s\n", string(message)))
 	}
@@ -209,7 +216,7 @@ func (w *WebkitDebugService) SendWebkitProtocolCommand(applicationID *string, pa
 	}
 }
 
-func (w *WebkitDebugService) ReceiveWebkitProtocolData() error {
+func (w *WebkitDebugService) receiveWebkitProtocolData() error {
 	if w.rpcService.WirEvent != nil {
 		select {
 		case message, ok := <-w.rpcService.WirEvent:
@@ -217,7 +224,11 @@ func (w *WebkitDebugService) ReceiveWebkitProtocolData() error {
 				if isProtocolDebug {
 					log.Println(fmt.Sprintf("protocol receive command:\n%s\n", string(message)))
 				}
-				w.SendMessageTool(message)
+				if w.isAdapter {
+					w.adapter.ReceiveMessageWebkit(message)
+				} else {
+					w.sendMessageTool(message)
+				}
 			}
 		case <-w.closeSendWS.Done():
 			return fmt.Errorf("close send protocol")
@@ -226,7 +237,7 @@ func (w *WebkitDebugService) ReceiveWebkitProtocolData() error {
 	return nil
 }
 
-func (w *WebkitDebugService) SendMessageTool(rawMessage []byte) {
+func (w *WebkitDebugService) sendMessageTool(rawMessage []byte) {
 	if w.wsConn != nil {
 		w.lock.Lock()
 		defer w.lock.Unlock()
@@ -239,7 +250,7 @@ func (w *WebkitDebugService) SendMessageTool(rawMessage []byte) {
 	}
 }
 
-func (w *WebkitDebugService) ReceiveMessageTool() error {
+func (w *WebkitDebugService) receiveMessageTool() error {
 	_, message, err := w.wsConn.ReadMessage()
 	if err != nil {
 		log.Println("Error during message reading:", err)
@@ -249,42 +260,11 @@ func (w *WebkitDebugService) ReceiveMessageTool() error {
 		if len(message) == 0 {
 			return errors.New("message is null")
 		}
-		webDebug.SendWebkitProtocolCommand(w.applicationID, w.pageID, message)
-	}
-	return nil
-}
-
-func (w *WebkitDebugService) ReceiveWebkitProtocolDataAdapter() error {
-	if w.rpcService.WirEvent != nil {
-		select {
-		case message, ok := <-w.rpcService.WirEvent:
-			if ok {
-				if isProtocolDebug {
-					log.Println(fmt.Sprintf("webkit receive protocol:\n%s\n", string(message)))
-				}
-				w.adapter.ReceiveMessageWebkit(message)
-			}
-		case <-w.closeSendWS.Done():
-			return fmt.Errorf("close send protocol")
+		if w.isAdapter {
+			w.adapter.ReceiveMessageDevTool(message)
+		} else {
+			webDebug.sendWebkitProtocolCommand(w.applicationID, w.pageID, message)
 		}
-	}
-	return nil
-}
-
-func (w *WebkitDebugService) ReceiveMessageToolAdapter() error {
-	_, message, err := w.wsConn.ReadMessage()
-	if err != nil {
-		log.Println("Error during message reading:", err)
-		return err
-	}
-	if message != nil {
-		if len(message) == 0 {
-			return errors.New("message is null")
-		}
-		if isProtocolDebug {
-			log.Println(fmt.Sprintf("devtool receive protocol:\n%s\n", string(message)))
-		}
-		w.adapter.ReceiveMessageDevTool(message)
 	}
 	return nil
 }
