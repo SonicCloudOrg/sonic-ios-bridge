@@ -161,20 +161,27 @@ func loadDevelopImage(version string) (string, bool) {
 	return path, done
 }
 
+func GetDeviceVersion(device giDevice.Device) string {
+	value, err3 := device.GetValue("", "ProductVersion")
+	if err3 != nil {
+		NewErrorPrint(ErrSendCommand, "get value", err3)
+		os.Exit(0)
+	}
+	ver := strings.Split(value.(string), ".")
+	var reVer string
+	if len(ver) >= 2 {
+		reVer = ver[0] + "." + ver[1]
+	}
+	return reVer
+}
+
 func CheckMount(device giDevice.Device) {
 	sign, errImage := device.Images()
 	if errImage != nil || len(sign) == 0 {
 		fmt.Println("try to mount developer disk image...")
-		value, err3 := device.GetValue("", "ProductVersion")
-		if err3 != nil {
-			NewErrorPrint(ErrSendCommand, "get value", err3)
-			os.Exit(0)
-		}
-		ver := strings.Split(value.(string), ".")
-		var reVer string
-		if len(ver) >= 2 {
-			reVer = ver[0] + "." + ver[1]
-		}
+
+		reVer := GetDeviceVersion(device)
+
 		p, done := loadDevelopImage(reVer)
 		if done {
 			var dmg = "DeveloperDiskImage.dmg"

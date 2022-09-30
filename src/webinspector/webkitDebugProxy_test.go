@@ -30,32 +30,27 @@ func TestGetWSData(t *testing.T) {
 		log.Println(err)
 		return
 	}
-	//离开作用域关闭连接，go 的常规操作
 	defer connect.Close()
 
-	//启动数据读取循环，读取客户端发送来的数据
 	for {
-		//从 websocket 中读取数据
-		//messageType 消息类型，websocket 标准
-		//messageData 消息数据
 		messageType, messageData, err := connect.ReadMessage()
 		if nil != err {
 			log.Println(err)
 			break
 		}
 		switch messageType {
-		case websocket.TextMessage: //文本数据
+		case websocket.TextMessage:
 			// {"method":"Target.targetCreated","params":{"targetInfo":{"targetId":"page-31","type":"page"}}}
 			fmt.Println(string(messageData))
 			fmt.Println("text data")
-		case websocket.BinaryMessage: //二进制数据
+		case websocket.BinaryMessage:
 			fmt.Println("binary data")
 			fmt.Println(messageData)
-		case websocket.CloseMessage: //关闭
+		case websocket.CloseMessage:
 			fmt.Println("end close")
-		case websocket.PingMessage: //Ping
+		case websocket.PingMessage:
 			fmt.Println("ping service")
-		case websocket.PongMessage: //Pong
+		case websocket.PongMessage:
 			fmt.Println("pong service")
 		default:
 
