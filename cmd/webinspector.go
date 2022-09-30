@@ -47,7 +47,7 @@ func init() {
 	rootCmd.AddCommand(webInspectorCmd)
 	webInspectorCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	webInspectorCmd.Flags().IntVarP(&port, "port", "p", 9222, "local proxy inspector communication port")
-	webInspectorCmd.Flags().BoolVar(&isAdapter, "cdp", false, "whether to enable chrome devtool protocol compatibility mode")
+	webInspectorCmd.Flags().BoolVar(&isAdapter, "cdp", false, "whether to enable chrome devtool protocol compatibility mode ( experimental function to be improved )")
 	webInspectorCmd.Flags().BoolVar(&isProtocolDebug, "protocol-debug", false, "whether to enable protocol debug mode")
 	webInspectorCmd.Flags().BoolVar(&isDTXDebug, "dtx-debug", false, "whether to enable dtx debug mode")
 }
