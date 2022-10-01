@@ -95,15 +95,26 @@ var wdaCmd = &cobra.Command{
 		shutWdaDown := make(chan os.Signal, syscall.SIGTERM)
 		signal.Notify(shutWdaDown, os.Interrupt, os.Kill)
 
-		go func() {
-			for s := range output {
-				fmt.Print(s)
-				if strings.Contains(s, "ServerURLHere->") {
-					fmt.Println("WebDriverAgent server start successful")
+		if !disableShowLog {
+			go func() {
+				for {
+					select {
+					case s, ok := <-output:
+						if ok {
+							fmt.Print(s)
+							if strings.Contains(s, "ServerURLHere->") {
+								fmt.Println("WebDriverAgent server start successful")
+							}
+						} else {
+							return
+						}
+					case <-shutWdaDown:
+						return
+					}
 				}
-			}
-			shutWdaDown <- os.Interrupt
-		}()
+				shutWdaDown <- os.Interrupt
+			}()
+		}
 
 		<-shutWdaDown
 		stopTest()
@@ -120,11 +131,13 @@ var (
 	serverLocalPort   int
 	mjpegLocalPort    int
 	disableMjpegProxy bool
+	disableShowLog    bool
 )
 
 func initWda() {
 	runRootCMD.AddCommand(wdaCmd)
 	wdaCmd.Flags().BoolVarP(&disableMjpegProxy, "disable-mjpeg-proxy", "", false, "disable mjpeg-server proxy")
+	wdaCmd.Flags().BoolVarP(&disableShowLog, "disable-show-log", "", false, "disable print wda logs")
 	wdaCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	wdaCmd.Flags().StringVarP(&wdaBundleID, "bundleId", "b", "com.facebook.WebDriverAgentRunner.xctrunner", "WebDriverAgentRunner bundleId")
 	wdaCmd.Flags().IntVarP(&serverRemotePort, "server-remote-port", "", 8100, "WebDriverAgentRunner server remote port")
