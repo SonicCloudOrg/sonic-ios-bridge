@@ -51,6 +51,7 @@ type NetworkInfo struct {
 	IPv6 string
 }
 
+// GetNetworkIP @link https://github.com/danielpaulus/go-ios/blob/main/ios/pcap/ipfinder.go
 func GetNetworkIP(device giDevice.Device) error {
 	mac, err := device.GetValue("", "WiFiAddress")
 	if err != nil {
@@ -79,26 +80,24 @@ func GetNetworkIP(device giDevice.Device) error {
 
 func findIP(p []byte, info *NetworkInfo) error {
 	packet := gopacket.NewPacket(p, layers.LayerTypeEthernet, gopacket.Default)
-	// Get the TCP layer from this packet
 	if tcpLayer := packet.Layer(layers.LayerTypeEthernet); tcpLayer != nil {
 		tcp, _ := tcpLayer.(*layers.Ethernet)
 		if tcp.SrcMAC.String() == info.Mac {
 			for _, layer := range packet.Layers() {
-				log.Printf("layer:%s", layer.LayerType().String())
-
+				log.Printf("layer: %s", layer.LayerType().String())
 			}
 			if ipv4Layer := packet.Layer(layers.LayerTypeIPv4); ipv4Layer != nil {
 				ipv4, ok := ipv4Layer.(*layers.IPv4)
 				if ok {
 					info.IPv4 = ipv4.SrcIP.String()
-					log.Printf("ip4 found:%s", info.IPv4)
+					log.Printf("ip4 found: %s", info.IPv4)
 				}
 			}
 			if ipv6Layer := packet.Layer(layers.LayerTypeIPv6); ipv6Layer != nil {
 				ipv6, ok := ipv6Layer.(*layers.IPv6)
 				if ok {
 					info.IPv6 = ipv6.SrcIP.String()
-					log.Printf("ip6 found:%s", info.IPv6)
+					log.Printf("ip6 found: %s", info.IPv6)
 				}
 			}
 		}
