@@ -16,15 +16,17 @@ var webInspectorCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		done := make(chan os.Signal, 1)
 		signal.Notify(done)
-		cannel := webinspector.InitWebInspectorServer(udid, port, isProtocolDebug, isDTXDebug)
+		cancel := webinspector.InitWebInspectorServer(udid, port, isProtocolDebug, isDTXDebug)
 		fmt.Println("service started successfully")
 		go func() {
 			select {
 			case <-done:
-				cannel()
+				cancel()
+				os.Exit(0)
 			}
 		}()
 
+		gin.SetMode(gin.ReleaseMode)
 		r := gin.Default()
 		r.GET("/", webinspector.PagesHandle)
 		r.GET("/json", webinspector.PagesHandle)
