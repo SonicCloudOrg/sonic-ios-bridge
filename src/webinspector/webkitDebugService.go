@@ -172,10 +172,17 @@ func (w *WebkitDebugService) FindPagesByID(pageId string) (application *entity.W
 	return nil, nil, fmt.Errorf("not find page")
 }
 
-func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.UrlItem, error) {
+func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.BundleItem, error) {
 	var wg = sync.WaitGroup{}
-	for key, _ := range w.connectedApplication {
+	var result []entity.BundleItem
+	for key, app := range w.connectedApplication {
 		wg.Add(1)
+		var bundleItem = &entity.BundleItem{
+			BundleId: *app.ApplicationBundle,
+			Name:     *app.ApplicationName,
+			PID:      *app.ApplicationID,
+		}
+		result = append(result, *bundleItem)
 		go func(key string) {
 			err := w.rpcService.SendForwardGetListing(&w.connectID, &key)
 			if err != nil {
@@ -185,8 +192,8 @@ func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.UrlItem, error) {
 		}(key)
 	}
 	wg.Wait()
-	var pages []entity.UrlItem
 	for appID, _ := range w.applicationPages {
+		var pages []entity.UrlItem
 		for pageID, page := range w.applicationPages[appID] {
 			//if page.PageType != entity.WEB && page.PageType != entity.WEB_PAGE {
 			//	continue
@@ -202,8 +209,14 @@ func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.UrlItem, error) {
 			}
 			pages = append(pages, *pageItem)
 		}
+		for k, v := range result {
+			if v.PID == appID {
+				result[k].Pages = pages
+				break
+			}
+		}
 	}
-	return pages, nil
+	return result, nil
 }
 
 func (w *WebkitDebugService) sendWebkitProtocolCommand(applicationID *string, pageID *int, message []byte) {

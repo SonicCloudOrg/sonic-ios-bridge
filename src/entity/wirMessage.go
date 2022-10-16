@@ -115,3 +115,10 @@ type UrlItem struct {
 	WebSocketDebuggerUrl string  `json:"webSocketDebuggerUrl"`
 	DevtoolsFrontendUrl  string  `json:"devtoolsFrontendUrl"`
 }
+
+type BundleItem struct {
+	PID      string    `json:"pid,omitempty"`
+	BundleId string    `json:"bundleId,omitempty"`
+	Name     string    `json:"name,omitempty"`
+	Pages    []UrlItem `json:"pages,omitempty"`
+}
