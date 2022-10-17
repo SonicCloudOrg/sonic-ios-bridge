@@ -109,6 +109,7 @@ const (
 type UrlItem struct {
 	Description          string  `json:"description"`
 	ID                   string  `json:"id"`
+	Port                 int     `json:"port"`
 	Title                *string `json:"title"`
 	Type                 string  `json:"type"`
 	Url                  *string `json:"url"`

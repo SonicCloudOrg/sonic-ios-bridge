@@ -201,6 +201,7 @@ func (w *WebkitDebugService) GetOpenPages(port int) ([]entity.BundleItem, error)
 			var pageItem = &entity.UrlItem{
 				Description:          "",
 				ID:                   pageID,
+				Port:                 port,
 				Title:                page.PageWebTitle,
 				Type:                 "page",
 				Url:                  page.PageWebUrl,
