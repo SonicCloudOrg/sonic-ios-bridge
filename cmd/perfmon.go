@@ -18,13 +18,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	giDevice "github.com/electricbubble/gidevice"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
-	"strconv"
 )
 
 var pefmonCmd = &cobra.Command{
@@ -34,50 +32,75 @@ var pefmonCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		device := util.GetDeviceByUdId(udid)
 		if device == nil {
+			fmt.Println("device is not found")
 			os.Exit(0)
-		}
-		if appName != "" && pid != -1 {
-			fmt.Println("pid and appName cannot be used at the same time")
-			os.Exit(0)
-		}
-		if appName != "" {
-			var err error
-			pid, err = util.GetApplicationPID(device, appName)
-			if err != nil {
-				os.Exit(0)
-			}
 		}
 		util.CheckMount(device)
-		var opts = &giDevice.PerfmonOption{
-			PID:             strconv.Itoa(pid),
-			OpenChanMEM:     getMEM,
-			OpenChanNetWork: getNetWork,
-			OpenChanCPU:     getCPU,
-			OpenChanFPS:     getFPS,
-			OpenChanGPU:     getGPU,
+
+		var data <-chan []byte
+		var err error
+
+		if processCpu {
+			addCpuAttr()
 		}
-		output, cancelFunc, err := device.GetPerfmon(opts)
+
+		if processMem {
+			addMemAttr()
+		}
+
+		if pid != -1 {
+			data, err = device.PerfStart(
+				giDevice.WithPerfSystemCPU(sysCPU),
+				giDevice.WithPerfSystemMem(sysMEM),
+				giDevice.WithPerfSystemDisk(sysDisk),
+				giDevice.WithPerfSystemNetwork(sysNetwork),
+				giDevice.WithPerfNetwork(processNetwork),
+				giDevice.WithPerfFPS(getFPS),
+				giDevice.WithPerfGPU(getGPU),
+				giDevice.WithPerfProcessAttributes(processAttributes...),
+				giDevice.WithPerfPID(pid),
+				giDevice.WithPerfOutputInterval(refreshTime),
+			)
+		} else if bundleId != "" {
+			data, err = device.PerfStart(
+				giDevice.WithPerfSystemCPU(sysCPU),
+				giDevice.WithPerfSystemMem(sysMEM),
+				giDevice.WithPerfSystemDisk(sysDisk),
+				giDevice.WithPerfSystemNetwork(sysNetwork),
+				giDevice.WithPerfNetwork(processNetwork),
+				giDevice.WithPerfFPS(getFPS),
+				giDevice.WithPerfGPU(getGPU),
+				giDevice.WithPerfBundleID(bundleId),
+				giDevice.WithPerfProcessAttributes(processAttributes...),
+				giDevice.WithPerfOutputInterval(refreshTime),
+			)
+		} else {
+			data, err = device.PerfStart(
+				giDevice.WithPerfSystemCPU(sysCPU),
+				giDevice.WithPerfSystemMem(sysMEM),
+				giDevice.WithPerfSystemDisk(sysDisk),
+				giDevice.WithPerfSystemNetwork(sysNetwork),
+				giDevice.WithPerfFPS(getFPS),
+				giDevice.WithPerfGPU(getGPU),
+				giDevice.WithPerfOutputInterval(refreshTime),
+			)
+		}
 
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(0)
 		}
 		done := make(chan os.Signal, 1)
-		signal.Notify(done)
+		signal.Notify(done, os.Interrupt, os.Kill)
 		// add timer?
-
 		for {
 			select {
 			case <-done:
-				if cancelFunc != nil {
-					cancelFunc()
-				}
-				return nil
-			default:
-				if data, ok := <-output; ok {
-					d := util.ResultData(entity.CreatePerformanceData(data))
-					fmt.Println(util.Format(d, isFormat, isJson))
-				}
+				device.PerfStop()
+				fmt.Println("force end perfmon")
+				os.Exit(0)
+			case d := <-data:
+				fmt.Println(string(d))
 			}
 		}
 		return nil
@@ -85,25 +108,44 @@ var pefmonCmd = &cobra.Command{
 }
 
 var (
-	getCPU     bool
-	getGPU     bool
-	getMEM     bool
-	getFPS     bool
-	getNetWork bool
-	pid        int
-	appName    string
+	sysCPU            bool
+	getGPU            bool
+	sysMEM            bool
+	getFPS            bool
+	sysDisk           bool
+	sysNetwork        bool
+	pid               int
+	bundleId          string
+	processNetwork    bool
+	processCpu        bool
+	processMem        bool
+	processAttributes []string
+	refreshTime       int
 )
+
+func addCpuAttr() {
+	processAttributes = append(processAttributes, "cpuUsage")
+}
+
+func addMemAttr() {
+	processAttributes = append(processAttributes, "memVirtualSize", "physFootprint", "memResidentSize", "memAnon")
+}
 
 func init() {
 	rootCmd.AddCommand(pefmonCmd)
 	pefmonCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
 	pefmonCmd.Flags().IntVarP(&pid, "pid", "p", -1, "get PID data")
-	pefmonCmd.Flags().StringVarP(&appName, "app-name", "a", "", "get app data ( Valid for memory and CPU only )")
-	pefmonCmd.Flags().BoolVar(&getCPU, "cpu", false, "get cpu data")
-	pefmonCmd.Flags().BoolVar(&getMEM, "mem", false, "get memory data")
+	pefmonCmd.Flags().StringVarP(&bundleId, "bundleId", "b", "", "target bundleId")
+	pefmonCmd.Flags().BoolVar(&sysCPU, "sys-cpu", false, "get system cpu data")
+	pefmonCmd.Flags().BoolVar(&sysMEM, "sys-mem", false, "get system memory data")
+	pefmonCmd.Flags().BoolVar(&sysDisk, "sys-disk", false, "get system disk data")
+	pefmonCmd.Flags().BoolVar(&sysNetwork, "sys-network", false, "get system networking data")
 	pefmonCmd.Flags().BoolVar(&getGPU, "gpu", false, "get gpu data")
 	pefmonCmd.Flags().BoolVar(&getFPS, "fps", false, "get fps data")
-	pefmonCmd.Flags().BoolVar(&getNetWork, "network", false, "get networking data")
+	pefmonCmd.Flags().BoolVar(&processNetwork, "proc-network", false, "get process network data")
+	pefmonCmd.Flags().BoolVar(&processCpu, "proc-cpu", false, "get process cpu data")
+	pefmonCmd.Flags().BoolVar(&processMem, "proc-mem", false, "get process mem data")
+	pefmonCmd.Flags().IntVarP(&refreshTime, "refresh", "r", 1000, "data refresh time(millisecond)")
 	pefmonCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
 	pefmonCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")
 }

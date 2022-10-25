@@ -1,5 +1,5 @@
-github.com/SonicCloudOrg/sonic-gidevice v0.6.2 h1:BVNrHOAb16v6Z+b3+m02A58r0BlO5hTQ18Z7FyiHIRc=
-github.com/SonicCloudOrg/sonic-gidevice v0.6.2/go.mod h1:bRHL2M9qgeEKju8KRvKMZUVEg7t5zMnTiG3SJ3QDH5o=
+github.com/SonicCloudOrg/sonic-gidevice v0.6.6 h1:YIKbArYk1elOY8KMKvjK0AUdXQVG139/RPp5UT4xp8o=
+github.com/SonicCloudOrg/sonic-gidevice v0.6.6/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
 github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7-0.20220917125600-2502f70d3a3b h1:ncyYnCqnk4vn03fO3JRkPkP5wdcje4lehpjPRqmeho0=
 github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7-0.20220917125600-2502f70d3a3b/go.mod h1:q5dSyO/kX8Mkypy6DkFuqgWnBmHZE7oU7m+pW7kdT+8=
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=

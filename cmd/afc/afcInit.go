@@ -18,8 +18,8 @@ package afc
 
 import (
 	"fmt"
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	giDevice "github.com/electricbubble/gidevice"
 	"github.com/spf13/cobra"
 	"os"
 )

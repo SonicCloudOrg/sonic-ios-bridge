@@ -18,7 +18,7 @@ package afc
 
 import (
 	"fmt"
-	giDevice "github.com/electricbubble/gidevice"
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/spf13/cobra"
 	"os"
 	gPath "path"

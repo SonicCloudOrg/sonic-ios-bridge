@@ -73,7 +73,7 @@ Thank you to all our sponsors!
 
 ## Thanks
 
-- [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice) 
+- [https://github.com/SonicCloudOrg/sonic-gidevice](https://github.com/SonicCloudOrg/sonic-gidevice) 
 - [https://github.com/libimobiledevice/libimobiledevice](https://github.com/libimobiledevice/libimobiledevice)
 
 ## LICENSE

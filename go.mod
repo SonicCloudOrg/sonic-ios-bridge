@@ -3,9 +3,10 @@ module github.com/SonicCloudOrg/sonic-ios-bridge
 go 1.18
 
 require (
+	github.com/SonicCloudOrg/sonic-gidevice v0.6.6
 	github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7-0.20220917125600-2502f70d3a3b
-	github.com/electricbubble/gidevice v0.6.2
 	github.com/gin-gonic/gin v1.8.1
+	github.com/google/gopacket v1.1.19
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/mitchellh/mapstructure v1.5.0
@@ -14,15 +15,12 @@ require (
 	howett.net/plist v1.0.0
 )
 
-replace github.com/electricbubble/gidevice v0.6.2 => github.com/SonicCloudOrg/sonic-gidevice v0.6.2
-
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
-	github.com/google/gopacket v1.1.19 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect

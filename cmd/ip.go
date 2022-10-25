@@ -17,8 +17,8 @@
 package cmd
 
 import (
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	giDevice "github.com/electricbubble/gidevice"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"log"

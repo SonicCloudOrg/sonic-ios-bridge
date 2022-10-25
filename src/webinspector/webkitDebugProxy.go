@@ -3,8 +3,8 @@ package webinspector
 import (
 	"context"
 	"fmt"
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	giDevice "github.com/electricbubble/gidevice"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
