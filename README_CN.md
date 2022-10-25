@@ -36,7 +36,7 @@
 ## 使用方法
 
 #### 1. 下载
-[点击这里](https://github.com/SonicCloudOrg/sonic-ios-bridge/releases) (如果您在中国大陆, 推荐点击这里[加速下载](https://download.sonic-cloud.wiki/sonic/sonic-ios-bridge))
+[点击这里](https://github.com/SonicCloudOrg/sonic-ios-bridge/releases)
 #### 2. 执行指令 (windows不需要)
 ```
 sudo chmod 777 sib && sib version
@@ -72,7 +72,7 @@ sib info
  
 ## 感谢
 
-- [https://github.com/SonicCloudOrg/sonic-gidevice](https://github.com/SonicCloudOrg/sonic-gidevice) 
+- [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice)
 - [https://github.com/libimobiledevice/libimobiledevice](https://github.com/libimobiledevice/libimobiledevice)
 
 ## 开源许可协议
