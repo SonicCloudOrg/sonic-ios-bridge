@@ -18,8 +18,8 @@ package cmd
 
 import (
 	"fmt"
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	giDevice "github.com/electricbubble/gidevice"
 	"os"
 	"os/signal"
 	"syscall"
@@ -43,7 +43,7 @@ var orientationCmd = &cobra.Command{
 				fmt.Println("get orientation failed.")
 			}
 			fmt.Println(fmt.Sprintf("orientation: %d", o))
-		}else {
+		} else {
 			shutDown := make(chan os.Signal, syscall.SIGTERM)
 			signal.Notify(shutDown, os.Interrupt, os.Kill)
 			go func() {

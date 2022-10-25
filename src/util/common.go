@@ -20,7 +20,7 @@ import (
 	"archive/zip"
 	"bufio"
 	"fmt"
-	giDevice "github.com/electricbubble/gidevice"
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"io"
 	"net/http"
 	"os"

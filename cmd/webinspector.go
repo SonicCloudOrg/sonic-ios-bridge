@@ -15,12 +15,13 @@ var webInspectorCmd = &cobra.Command{
 	Long:  "Enable iOS webinspector communication service",
 	Run: func(cmd *cobra.Command, args []string) {
 		done := make(chan os.Signal, 1)
-		signal.Notify(done)
+		signal.Notify(done, os.Interrupt, os.Kill)
 		cancel := webinspector.InitWebInspectorServer(udid, port, isProtocolDebug, isDTXDebug)
 		fmt.Println("service started successfully")
 		go func() {
 			select {
 			case <-done:
+				fmt.Println("force end of webinspector")
 				cancel()
 				os.Exit(0)
 			}

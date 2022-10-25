@@ -19,9 +19,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	giDevice "github.com/electricbubble/gidevice"
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"

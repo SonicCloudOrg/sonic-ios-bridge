@@ -2,8 +2,8 @@ package webinspector
 
 import (
 	"fmt"
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
-	giDevice "github.com/electricbubble/gidevice"
 	"howett.net/plist"
 	"log"
 	"strconv"
