@@ -22,7 +22,6 @@ import (
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -44,7 +43,7 @@ var orientationCmd = &cobra.Command{
 			}
 			fmt.Println(fmt.Sprintf("orientation: %d", o))
 		} else {
-			shutDown := make(chan os.Signal, syscall.SIGTERM)
+			shutDown := make(chan os.Signal, 1)
 			signal.Notify(shutDown, os.Interrupt, os.Kill)
 			go func() {
 				var lo giDevice.OrientationState

@@ -25,7 +25,6 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
-	"syscall"
 )
 
 var listenCmd = &cobra.Command{
@@ -43,7 +42,7 @@ var listenCmd = &cobra.Command{
 			return util.NewErrorPrint(util.ErrSendCommand, "listen", err2)
 		}
 
-		shutDown := make(chan os.Signal, syscall.SIGTERM)
+		shutDown := make(chan os.Signal, 1)
 		signal.Notify(shutDown, os.Interrupt, os.Kill)
 		var deviceIdMap = make(map[int]string)
 		for {

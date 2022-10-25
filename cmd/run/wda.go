@@ -30,7 +30,6 @@ import (
 	"os/signal"
 	"regexp"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -92,7 +91,7 @@ var wdaCmd = &cobra.Command{
 			go proxy()(mjpegListener, mjpegRemotePort, device)
 		}
 
-		shutWdaDown := make(chan os.Signal, syscall.SIGTERM)
+		shutWdaDown := make(chan os.Signal, 1)
 		signal.Notify(shutWdaDown, os.Interrupt, os.Kill)
 
 		if !disableShowLog {
