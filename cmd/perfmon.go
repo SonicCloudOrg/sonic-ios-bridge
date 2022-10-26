@@ -35,7 +35,6 @@ var pefmonCmd = &cobra.Command{
 			fmt.Println("device is not found")
 			os.Exit(0)
 		}
-		util.CheckMount(device)
 
 		var data <-chan []byte
 		var err error
