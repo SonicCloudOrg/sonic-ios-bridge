@@ -19,6 +19,7 @@ package cmd
 import (
 	"fmt"
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/spf13/cobra"
 	"os"
@@ -42,6 +43,9 @@ var pefmonCmd = &cobra.Command{
 
 		if (pid != -1 || bundleId != "") && !sysCPU && !sysMEM && !sysDisk && !sysNetwork && !getGPU && !getFPS && !processNetwork && !processMem && !processCpu {
 			sysAllParamsSet()
+			processNetwork = true
+			processMem = true
+			processCpu = true
 		}
 
 		var data <-chan []byte
@@ -99,7 +103,7 @@ var pefmonCmd = &cobra.Command{
 		}
 		done := make(chan os.Signal, 1)
 		signal.Notify(done, os.Interrupt, os.Kill)
-		// add timer?
+
 		for {
 			select {
 			case <-done:
@@ -107,7 +111,10 @@ var pefmonCmd = &cobra.Command{
 				fmt.Println("force end perfmon")
 				os.Exit(0)
 			case d := <-data:
-				fmt.Println(string(d))
+				p := &entity.PerfData{
+					PerfDataBytes: d,
+				}
+				util.Format(p, isFormat, isJson)
 			}
 		}
 		return nil
