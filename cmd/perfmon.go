@@ -37,17 +37,11 @@ var pefmonCmd = &cobra.Command{
 		}
 
 		if (pid == -1 || bundleId == "") && !sysCPU && !sysMEM && !sysDisk && !sysNetwork && !getGPU && !getFPS {
-			getFPS = true
-			getGPU = true
-			sysCPU = true
-			sysMEM = true
+			sysAllParamsSet()
 		}
 
 		if (pid != -1 || bundleId != "") && !sysCPU && !sysMEM && !sysDisk && !sysNetwork && !getGPU && !getFPS && !processNetwork && !processMem && !processCpu {
-			getFPS = true
-			getGPU = true
-			sysCPU = true
-			sysMEM = true
+			sysAllParamsSet()
 		}
 
 		var data <-chan []byte
@@ -142,6 +136,13 @@ func addCpuAttr() {
 
 func addMemAttr() {
 	processAttributes = append(processAttributes, "memVirtualSize", "physFootprint", "memResidentSize", "memAnon")
+}
+
+func sysAllParamsSet() {
+	getFPS = true
+	getGPU = true
+	sysCPU = true
+	sysMEM = true
 }
 
 func init() {
