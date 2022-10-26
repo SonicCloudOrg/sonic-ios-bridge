@@ -37,13 +37,17 @@ var pefmonCmd = &cobra.Command{
 		}
 
 		if (pid == -1 || bundleId == "") && !sysCPU && !sysMEM && !sysDisk && !sysNetwork && !getGPU && !getFPS {
-			fmt.Println("Please ensure that at least one performance check item is enabled!")
-			os.Exit(0)
+			getFPS = true
+			getGPU = true
+			sysCPU = true
+			sysMEM = true
 		}
 
 		if (pid != -1 || bundleId != "") && !sysCPU && !sysMEM && !sysDisk && !sysNetwork && !getGPU && !getFPS && !processNetwork && !processMem && !processCpu {
-			fmt.Println("Please ensure that at least one performance check item is enabled!")
-			os.Exit(0)
+			getFPS = true
+			getGPU = true
+			sysCPU = true
+			sysMEM = true
 		}
 
 		var data <-chan []byte
