@@ -48,9 +48,6 @@ var pefmonCmd = &cobra.Command{
 			processCpu = true
 		}
 
-		var data <-chan []byte
-		var err error
-
 		if processCpu {
 			addCpuAttr()
 		}
@@ -59,43 +56,26 @@ var pefmonCmd = &cobra.Command{
 			addMemAttr()
 		}
 
-		if pid != -1 {
-			data, err = device.PerfStart(
-				giDevice.WithPerfSystemCPU(sysCPU),
-				giDevice.WithPerfSystemMem(sysMEM),
-				giDevice.WithPerfSystemDisk(sysDisk),
-				giDevice.WithPerfSystemNetwork(sysNetwork),
-				giDevice.WithPerfNetwork(processNetwork),
-				giDevice.WithPerfFPS(getFPS),
-				giDevice.WithPerfGPU(getGPU),
-				giDevice.WithPerfProcessAttributes(processAttributes...),
-				giDevice.WithPerfPID(pid),
-				giDevice.WithPerfOutputInterval(refreshTime),
-			)
-		} else if bundleId != "" {
-			data, err = device.PerfStart(
-				giDevice.WithPerfSystemCPU(sysCPU),
-				giDevice.WithPerfSystemMem(sysMEM),
-				giDevice.WithPerfSystemDisk(sysDisk),
-				giDevice.WithPerfSystemNetwork(sysNetwork),
-				giDevice.WithPerfNetwork(processNetwork),
-				giDevice.WithPerfFPS(getFPS),
-				giDevice.WithPerfGPU(getGPU),
-				giDevice.WithPerfBundleID(bundleId),
-				giDevice.WithPerfProcessAttributes(processAttributes...),
-				giDevice.WithPerfOutputInterval(refreshTime),
-			)
-		} else {
-			data, err = device.PerfStart(
-				giDevice.WithPerfSystemCPU(sysCPU),
-				giDevice.WithPerfSystemMem(sysMEM),
-				giDevice.WithPerfSystemDisk(sysDisk),
-				giDevice.WithPerfSystemNetwork(sysNetwork),
-				giDevice.WithPerfFPS(getFPS),
-				giDevice.WithPerfGPU(getGPU),
-				giDevice.WithPerfOutputInterval(refreshTime),
-			)
+		var perfOpts = []giDevice.PerfOption{
+			giDevice.WithPerfSystemCPU(sysCPU),
+			giDevice.WithPerfSystemMem(sysMEM),
+			giDevice.WithPerfSystemDisk(sysDisk),
+			giDevice.WithPerfSystemNetwork(sysNetwork),
+			giDevice.WithPerfNetwork(processNetwork),
+			giDevice.WithPerfFPS(getFPS),
+			giDevice.WithPerfGPU(getGPU),
+			giDevice.WithPerfOutputInterval(refreshTime),
 		}
+
+		if pid != -1 {
+			perfOpts = append(perfOpts, giDevice.WithPerfPID(pid))
+			perfOpts = append(perfOpts, giDevice.WithPerfProcessAttributes(processAttributes...))
+		} else if bundleId != "" {
+			perfOpts = append(perfOpts, giDevice.WithPerfBundleID(bundleId))
+			perfOpts = append(perfOpts, giDevice.WithPerfProcessAttributes(processAttributes...))
+		}
+
+		data, err := device.PerfStart(perfOpts...)
 
 		if err != nil {
 			fmt.Println(err)
@@ -114,7 +94,7 @@ var pefmonCmd = &cobra.Command{
 				p := &entity.PerfData{
 					PerfDataBytes: d,
 				}
-				util.Format(p, isFormat, isJson)
+				fmt.Println(util.Format(p, isFormat, isJson))
 			}
 		}
 		return nil
