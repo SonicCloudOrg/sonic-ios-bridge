@@ -37,8 +37,12 @@ var listCmd = &cobra.Command{
 		if device == nil {
 			os.Exit(0)
 		}
+		appType := giDevice.ApplicationTypeUser
+		if showSystem {
+			appType = giDevice.ApplicationTypeAny
+		}
 		result, errList := device.InstallationProxyBrowse(
-			giDevice.WithApplicationType(giDevice.ApplicationTypeUser),
+			giDevice.WithApplicationType(appType),
 			giDevice.WithReturnAttributes("CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
 		if errList != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "app list", errList)
@@ -64,11 +68,15 @@ var listCmd = &cobra.Command{
 	},
 }
 
-var showIcon bool
+var (
+	showSystem bool
+	showIcon   bool
+)
 
 func initAppList() {
 	appRootCMD.AddCommand(listCmd)
 	listCmd.Flags().BoolVarP(&showIcon, "icon", "i", false, "show app icon")
+	listCmd.Flags().BoolVarP(&showSystem, "system", "s", false, "show system apps")
 	listCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	listCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")
 	listCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
