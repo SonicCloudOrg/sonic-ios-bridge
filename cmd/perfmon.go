@@ -114,7 +114,7 @@ var pefmonCmd = &cobra.Command{
 				p := &entity.PerfData{
 					PerfDataBytes: d,
 				}
-				util.Format(p, isFormat, isJson)
+				fmt.Println(util.Format(p, isFormat, isJson))
 			}
 		}
 		return nil
