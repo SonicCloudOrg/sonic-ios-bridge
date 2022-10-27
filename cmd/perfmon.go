@@ -37,7 +37,7 @@ var pefmonCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		if (pid == -1 || bundleId == "") && !sysCPU && !sysMEM && !sysDisk && !sysNetwork && !getGPU && !getFPS {
+		if (pid == -1 && bundleId == "") && !sysCPU && !sysMEM && !sysDisk && !sysNetwork && !getGPU && !getFPS {
 			sysAllParamsSet()
 		}
 
