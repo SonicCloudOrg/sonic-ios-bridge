@@ -47,7 +47,6 @@ var pefmonCmd = &cobra.Command{
 				os.Exit(0)
 			}
 		}
-		util.CheckMount(device)
 		var opts = &giDevice.PerfmonOption{
 			PID:             strconv.Itoa(pid),
 			OpenChanMEM:     getMEM,
@@ -63,7 +62,7 @@ var pefmonCmd = &cobra.Command{
 			os.Exit(0)
 		}
 		done := make(chan os.Signal, 1)
-		signal.Notify(done)
+		signal.Notify(done, os.Interrupt, os.Kill)
 		// add timer?
 
 		for {

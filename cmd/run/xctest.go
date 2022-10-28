@@ -22,14 +22,12 @@ import (
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	giDevice "github.com/electricbubble/gidevice"
 	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"os/signal"
 	"regexp"
 	"strings"
-	"syscall"
-
-	"github.com/spf13/cobra"
 )
 
 var xctestCmd = &cobra.Command{
@@ -78,7 +76,7 @@ var xctestCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		shutXcTestDown := make(chan os.Signal, syscall.SIGTERM)
+		shutXcTestDown := make(chan os.Signal, 1)
 		signal.Notify(shutXcTestDown, os.Interrupt, os.Kill)
 
 		go func() {

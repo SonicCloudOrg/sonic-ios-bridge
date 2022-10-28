@@ -19,12 +19,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
+	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
 	"strings"
-	"syscall"
-
-	"github.com/spf13/cobra"
 )
 
 var syslogCmd = &cobra.Command{
@@ -41,7 +39,7 @@ var syslogCmd = &cobra.Command{
 			return util.NewErrorPrint(util.ErrSendCommand, "syslog", err)
 		}
 		defer device.SyslogStop()
-		done := make(chan os.Signal, syscall.SIGTERM)
+		done := make(chan os.Signal, 1)
 		signal.Notify(done, os.Interrupt, os.Kill)
 
 		go func() {

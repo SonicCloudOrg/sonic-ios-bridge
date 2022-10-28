@@ -24,7 +24,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -45,7 +44,7 @@ var proxyCmd = &cobra.Command{
 		}
 		defer serverListener.Close()
 
-		shutdown := make(chan os.Signal, syscall.SIGTERM)
+		shutdown := make(chan os.Signal, 1)
 		signal.Notify(shutdown, os.Interrupt, os.Kill)
 
 		go func(listener net.Listener) {
