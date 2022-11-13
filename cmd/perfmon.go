@@ -130,6 +130,8 @@ func sysAllParamsSet() {
 	getGPU = true
 	sysCPU = true
 	sysMEM = true
+	sysDisk = true
+	sysNetwork = true
 }
 
 func init() {
