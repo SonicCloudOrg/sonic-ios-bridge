@@ -36,11 +36,15 @@
 ## 使用方法
 
 #### 1. 下载
-[点击这里](https://github.com/SonicCloudOrg/sonic-ios-bridge/releases) (如果您在中国大陆, 推荐点击这里[加速下载](https://download.sonic-cloud.wiki/sonic/sonic-ios-bridge))
+[点击这里](https://github.com/SonicCloudOrg/sonic-ios-bridge/releases)
+
 #### 2. 执行指令 (windows不需要)
 ```
-sudo chmod 777 sib && sib version
+sudo chmod 777 ./sib && ./sib version
 ```
+
+#### 3. 添加sib路径到本机PATH
+完成！
 
 ## 功能
 
