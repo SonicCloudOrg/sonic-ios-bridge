@@ -43,8 +43,10 @@
 sudo chmod 777 ./sib && ./sib version
 ```
 #### 3. Add sib to your PATH
+Finish!
 
-## function
+
+## Function
 ```
 sib run wda -b your.wda.bundleId
 sib run xctest -b your.wda.bundleId
