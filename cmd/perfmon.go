@@ -67,7 +67,6 @@ var pefmonCmd = &cobra.Command{
 			giDevice.WithPerfGPU(getGPU),
 			giDevice.WithPerfOutputInterval(refreshTime),
 		}
-
 		if pid != -1 {
 			perfOpts = append(perfOpts, giDevice.WithPerfPID(pid))
 			perfOpts = append(perfOpts, giDevice.WithPerfProcessAttributes(processAttributes...))
