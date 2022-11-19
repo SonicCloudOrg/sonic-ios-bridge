@@ -75,6 +75,7 @@ Thank you to all our sponsors!
 
 - [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice)
 - [https://github.com/libimobiledevice/libimobiledevice](https://github.com/libimobiledevice/libimobiledevice)
+- [https://github.com/danielpaulus/go-ios](https://github.com/danielpaulus/go-ios)
 
 ## LICENSE
 

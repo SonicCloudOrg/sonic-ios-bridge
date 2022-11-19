@@ -15,23 +15,29 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package cmd
+package entity
 
 import (
-	"github.com/SonicCloudOrg/sonic-ios-bridge/cmd/app"
-	"github.com/spf13/cobra"
+	"encoding/json"
+	"fmt"
 )
 
-var appCmd = &cobra.Command{
-	Use:   "app",
-	Short: "Manage your Apps.",
-	Long:  "Manage your Apps.",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
+type NetworkInfo struct {
+	Mac  string `json:"mac"`
+	IPv4 string `json:"ipv4"`
+	IPv6 string `json:"ipv6"`
 }
 
-func init() {
-	rootCmd.AddCommand(appCmd)
-	app.InitApp(appCmd)
+func (networkInfo NetworkInfo) ToString() string {
+	return fmt.Sprintf("%s %s %s", networkInfo.Mac, networkInfo.IPv4, networkInfo.IPv6)
+}
+
+func (networkInfo NetworkInfo) ToJson() string {
+	result, _ := json.Marshal(networkInfo)
+	return string(result)
+}
+
+func (networkInfo NetworkInfo) ToFormat() string {
+	result, _ := json.MarshalIndent(networkInfo, "", "\t")
+	return string(result)
 }

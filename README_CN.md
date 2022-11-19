@@ -74,6 +74,7 @@ sib info
 
 - [https://github.com/electricbubble/gidevice](https://github.com/electricbubble/gidevice)
 - [https://github.com/libimobiledevice/libimobiledevice](https://github.com/libimobiledevice/libimobiledevice)
+- [https://github.com/danielpaulus/go-ios](https://github.com/danielpaulus/go-ios)
 
 ## 开源许可协议
 
