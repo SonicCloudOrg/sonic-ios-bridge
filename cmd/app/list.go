@@ -1,27 +1,28 @@
 /*
- *  Copyright (C) [SonicCloudOrg] Sonic Project
+ *   sonic-ios-bridge  Connect to your iOS Devices.
+ *   Copyright (C) 2022 SonicCloudOrg
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package app
 
 import (
 	"encoding/base64"
 	"fmt"
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	giDevice "github.com/electricbubble/gidevice"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
 	"io/ioutil"
@@ -37,8 +38,12 @@ var listCmd = &cobra.Command{
 		if device == nil {
 			os.Exit(0)
 		}
+		appType := giDevice.ApplicationTypeUser
+		if showSystem {
+			appType = giDevice.ApplicationTypeAny
+		}
 		result, errList := device.InstallationProxyBrowse(
-			giDevice.WithApplicationType(giDevice.ApplicationTypeUser),
+			giDevice.WithApplicationType(appType),
 			giDevice.WithReturnAttributes("CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
 		if errList != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "app list", errList)
@@ -64,11 +69,15 @@ var listCmd = &cobra.Command{
 	},
 }
 
-var showIcon bool
+var (
+	showSystem bool
+	showIcon   bool
+)
 
 func initAppList() {
 	appRootCMD.AddCommand(listCmd)
 	listCmd.Flags().BoolVarP(&showIcon, "icon", "i", false, "show app icon")
+	listCmd.Flags().BoolVarP(&showSystem, "system", "s", false, "show system apps")
 	listCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	listCmd.Flags().BoolVarP(&isJson, "json", "j", false, "convert to JSON string")
 	listCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")

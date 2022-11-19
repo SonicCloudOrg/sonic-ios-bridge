@@ -15,23 +15,31 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package cmd
+package entity
 
 import (
-	"github.com/SonicCloudOrg/sonic-ios-bridge/cmd/app"
-	"github.com/spf13/cobra"
+	"encoding/json"
+	"log"
 )
 
-var appCmd = &cobra.Command{
-	Use:   "app",
-	Short: "Manage your Apps.",
-	Long:  "Manage your Apps.",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
+type PerfData struct {
+	PerfDataBytes []byte
 }
 
-func init() {
-	rootCmd.AddCommand(appCmd)
-	app.InitApp(appCmd)
+func (p *PerfData) ToString() string {
+	return string(p.PerfDataBytes)
+}
+
+func (p *PerfData) ToJson() string {
+	return string(p.PerfDataBytes)
+}
+
+func (p *PerfData) ToFormat() string {
+	data := make(map[string]interface{})
+	err := json.Unmarshal(p.PerfDataBytes, &data)
+	if err != nil {
+		log.Println(err)
+	}
+	result, _ := json.MarshalIndent(data, "", "\t")
+	return string(result)
 }
