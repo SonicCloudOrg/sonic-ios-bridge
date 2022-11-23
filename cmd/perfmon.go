@@ -78,9 +78,9 @@ var pefmonCmd = &cobra.Command{
 		data, err := device.PerfStart(perfOpts...)
 
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(0)
+			return util.NewErrorPrint(util.ErrSendCommand, "perfmon", err)
 		}
+
 		done := make(chan os.Signal, 1)
 		signal.Notify(done, os.Interrupt, os.Kill)
 
