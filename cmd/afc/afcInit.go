@@ -18,7 +18,6 @@
 package afc
 
 import (
-	"fmt"
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/spf13/cobra"
@@ -57,7 +56,7 @@ func getAFCServer() (afcServer giDevice.Afc) {
 		var houseArrestSrv giDevice.HouseArrest
 		houseArrestSrv, err = device.HouseArrestService()
 		if err != nil {
-			fmt.Println(err)
+			util.NewErrorPrint(util.ErrSendCommand, "house arrest", err)
 			os.Exit(0)
 		}
 		afcServer, err = houseArrestSrv.Documents(bundleId)
@@ -65,7 +64,7 @@ func getAFCServer() (afcServer giDevice.Afc) {
 		afcServer, err = device.AfcService()
 	}
 	if err != nil {
-		fmt.Println(err)
+		util.NewErrorPrint(util.ErrSendCommand, "afc", err)
 		os.Exit(0)
 	}
 	return afcServer
