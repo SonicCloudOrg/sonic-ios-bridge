@@ -157,7 +157,7 @@ func proxy() func(listener net.Listener, port int, device giDevice.Device) {
 			rInnerConn, err := device.NewConnect(port)
 			if err != nil {
 				fmt.Println("connect to device fail")
-				os.Exit(0)
+				continue
 			}
 			rConn := rInnerConn.RawConn()
 			rConn.SetDeadline(time.Time{})

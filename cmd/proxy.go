@@ -59,7 +59,7 @@ var proxyCmd = &cobra.Command{
 				rInnerConn, err := device.NewConnect(remotePort)
 				if err != nil {
 					fmt.Println("connect to device fail")
-					os.Exit(0)
+					continue
 				}
 				rConn := rInnerConn.RawConn()
 				rConn.SetDeadline(time.Time{})
