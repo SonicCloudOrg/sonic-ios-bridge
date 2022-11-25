@@ -47,7 +47,11 @@ sudo chmod 777 ./sib && ./sib version
 完成！
 
 ## 功能
-
+使用前应该要先mount
+```
+sib mount
+```
+然后
 ```
 sib run wda -b your.wda.bundleId
 sib run xctest -b your.wda.bundleId
