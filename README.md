@@ -47,6 +47,11 @@ Finish!
 
 
 ## Function
+You should mount before use it.
+```
+sib mount
+```
+then
 ```
 sib run wda -b your.wda.bundleId
 sib run xctest -b your.wda.bundleId
