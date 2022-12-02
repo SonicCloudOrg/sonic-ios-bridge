@@ -19,12 +19,16 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/cmd/remote"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"os"
+	"sync"
 )
 
 var devicesCmd = &cobra.Command{
@@ -37,6 +41,8 @@ var devicesCmd = &cobra.Command{
 			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
 		}
 		list, err1 := usbMuxClient.Devices()
+		remoteList, err2 := readRemote()
+
 		if err1 != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
 		}
@@ -54,11 +60,32 @@ var devicesCmd = &cobra.Command{
 				}
 				json.Unmarshal(deviceByte, device)
 				device.Status = device.GetStatus()
+				device.RemoteAddr = "localhost"
 				deviceList.DeviceList = append(deviceList.DeviceList, *device)
+			}
+			if err2 == nil {
+				for k, dev := range remoteList {
+					deviceByte, _ := json.Marshal(dev.Properties())
+					device := &entity.Device{}
+					if isDetail {
+						detail, err2 := entity.GetDetail(dev)
+						if err2 != nil {
+							return err2
+						}
+						device.DeviceDetail = *detail
+					}
+					json.Unmarshal(deviceByte, device)
+					device.Status = device.GetStatus()
+					device.RemoteAddr = k
+					deviceList.DeviceList = append(deviceList.DeviceList, *device)
+				}
 			}
 			data := util.ResultData(deviceList)
 			fmt.Println(util.Format(data, isFormat, isDetail))
 		} else {
+			for _, v := range remoteList {
+				list = append(list, v)
+			}
 			if len(list) != 0 {
 				device := &entity.Device{}
 				for _, d := range list {
@@ -97,4 +124,57 @@ func init() {
 	devicesCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	devicesCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
 	devicesCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail")
+}
+
+func readRemote() (remoteDevList map[string]giDevice.Device, err error) {
+	defer func() {
+
+		if r := recover(); r != nil {
+			fmt.Println("recover...:", r)
+		}
+	}()
+
+	file, err := os.Open(remote.RemoteInfoFilePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	content, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	if content == nil && len(content) != 0 {
+		return nil, errors.New("remote info file non existent remote data")
+	}
+	remoteInfoData := make(map[string]entity.RemoteInfo)
+	err = json.Unmarshal(content, &remoteInfoData)
+	if err != nil {
+		//fmt.Println(err)
+		return nil, err
+	}
+
+	if remoteDevList == nil {
+		remoteDevList = map[string]giDevice.Device{}
+	}
+	var lock sync.Mutex
+	var wait sync.WaitGroup
+	for k, v := range remoteInfoData {
+		//if v.Status!=remote.OnLine {
+		//	continue
+		//}
+		wait.Add(1)
+		go func(info entity.RemoteInfo) {
+			dev, _, err1 := remote.CheckRemoteConnect(*info.IP, *info.Port, 5)
+			if err1 != nil {
+				wait.Done()
+				lock.Lock()
+				delete(remoteInfoData, k)
+				return
+			}
+			remoteDevList[k] = dev
+			wait.Done()
+		}(v)
+	}
+	wait.Wait()
+	return remoteDevList, nil
 }

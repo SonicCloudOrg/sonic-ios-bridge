@@ -28,6 +28,7 @@ type DeviceList struct {
 }
 
 type Device struct {
+	RemoteAddr      string       `json:"remoteAddr"`
 	DeviceID        int          `json:"deviceId"`
 	ConnectionSpeed int          `json:"connectionSpeed"`
 	ConnectionType  string       `json:"connectionType"`
@@ -64,7 +65,7 @@ func (device Device) ToFormat() string {
 
 func (deviceList DeviceList) ToString() string {
 	for _, e := range deviceList.DeviceList {
-		fmt.Println(e.SerialNumber + " " + e.Status)
+		fmt.Println(e.SerialNumber + " " + e.Status + " " + e.RemoteAddr)
 	}
 	return ""
 }
