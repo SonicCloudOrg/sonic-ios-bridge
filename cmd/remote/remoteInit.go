@@ -20,11 +20,10 @@ package remote
 import "github.com/spf13/cobra"
 
 var (
-	remoteCmd          *cobra.Command
-	udid               string
-	port               int
-	ip                 string
-	RemoteInfoFilePath = ".sib/connect.txt"
+	remoteCmd *cobra.Command
+	udid      string
+	port      int
+	ip        string
 )
 
 const (
@@ -37,4 +36,5 @@ func InitRemote(remote *cobra.Command) {
 	remoteCmd = remote
 	shareInit()
 	connectInit()
+	disConnectInit()
 }

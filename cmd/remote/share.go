@@ -31,6 +31,7 @@ var shareCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		device := util.GetDeviceByUdId(udid)
 		if device == nil {
+			log.Println("device not connected")
 			os.Exit(0)
 		}
 		log.Printf("start sharing, the device the shared port is:%d", port)

@@ -20,14 +20,19 @@ package util
 import (
 	"archive/zip"
 	"bufio"
+	"encoding/json"
+	"errors"
 	"fmt"
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -40,6 +45,7 @@ var versionMap = map[string]string{
 var urlList = [...]string{"https://tool.appetizer.io/JinjunHan", "https://code.aliyun.com/hanjinjun", "https://github.com/JinjunHan"}
 
 func GetDeviceByUdId(udId string) (device giDevice.Device) {
+	remoteList, err2 := ReadRemote()
 	usbMuxClient, err := giDevice.NewUsbmux()
 	if err != nil {
 		NewErrorPrint(ErrConnect, "usbMux", err)
@@ -50,7 +56,15 @@ func GetDeviceByUdId(udId string) (device giDevice.Device) {
 		NewErrorPrint(ErrSendCommand, "listDevices", err1)
 		return nil
 	}
-	if len(list) != 0 {
+	if len(list) != 0 || len(remoteList) != 0 {
+		if len(list) == 0 {
+			list = []giDevice.Device{}
+		}
+		if err2 == nil {
+			for _, v := range remoteList {
+				list = append(list, v)
+			}
+		}
 		if len(udId) != 0 {
 			for i, d := range list {
 				if d.Properties().SerialNumber == udId {
@@ -70,6 +84,70 @@ func GetDeviceByUdId(udId string) (device giDevice.Device) {
 		return nil
 	}
 	return
+}
+
+const RemoteInfoFilePath = ".sib/connect.txt"
+
+func ReadRemote() (remoteDevList map[string]giDevice.Device, err error) {
+	defer func() {
+
+		if r := recover(); r != nil {
+			fmt.Println("recover...:", r)
+		}
+	}()
+
+	file, err := os.Open(RemoteInfoFilePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	content, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	if content == nil && len(content) != 0 {
+		return nil, errors.New("remote info file non existent remote data")
+	}
+	remoteInfoData := make(map[string]entity.RemoteInfo)
+	err = json.Unmarshal(content, &remoteInfoData)
+	if err != nil {
+		//fmt.Println(err)
+		return nil, err
+	}
+
+	if remoteDevList == nil {
+		remoteDevList = map[string]giDevice.Device{}
+	}
+	var wait sync.WaitGroup
+	for k, v := range remoteInfoData {
+		//if v.Status!=remote.OnLine {
+		//	continue
+		//}
+		wait.Add(1)
+		go func(info entity.RemoteInfo) {
+			dev, _, err1 := CheckRemoteConnect(*info.IP, *info.Port, 5)
+			if err1 != nil {
+				wait.Done()
+				return
+			}
+			remoteDevList[k] = dev
+			wait.Done()
+		}(v)
+	}
+	wait.Wait()
+	return remoteDevList, nil
+}
+
+func CheckRemoteConnect(ip string, port int, timeout int) (dev giDevice.Device, version interface{}, err error) {
+	dev, err = giDevice.NewRemoteConnect(ip, port, timeout)
+	if err != nil {
+		return nil, nil, err
+	}
+	version, err = dev.GetValue("", "ProductVersion")
+	if err != nil {
+		return nil, nil, err
+	}
+	return dev, version, nil
 }
 
 func downloadZip(url, version string) (string, error) {

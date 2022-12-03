@@ -21,8 +21,8 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
@@ -34,7 +34,7 @@ var connectCmd = &cobra.Command{
 	Short: "connect remote device",
 	Long:  "connect remote device",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, version, err := CheckRemoteConnect(ip, port, 7)
+		_, version, err := util.CheckRemoteConnect(ip, port, 7)
 		if err != nil {
 			log.Panic(fmt.Sprintf("connection %s:%d failed,error:%v", ip, port, err))
 		}
@@ -45,13 +45,13 @@ var connectCmd = &cobra.Command{
 			os.Stat(".sib")
 		}
 
-		file, err := os.OpenFile(RemoteInfoFilePath, os.O_WRONLY|os.O_CREATE, 0666)
+		file, err := os.OpenFile(util.RemoteInfoFilePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 		defer file.Close()
 
 		if err != nil {
 			log.Panic(err)
 		}
-		jsonData, err1 := ioutil.ReadFile(RemoteInfoFilePath)
+		jsonData, err1 := ioutil.ReadAll(file)
 		if err1 != nil {
 			log.Panic(err1)
 		}
@@ -70,6 +70,14 @@ var connectCmd = &cobra.Command{
 			//Status: OnLine,
 		}
 
+		err = file.Truncate(0)
+		if err != nil {
+			log.Panic(err)
+		}
+		_, err = file.Seek(0, 0)
+		if err != nil {
+			log.Panic(err)
+		}
 		write := bufio.NewWriter(file)
 
 		jsonData, _ = json.Marshal(remoteMap)
@@ -84,16 +92,4 @@ func connectInit() {
 	remoteCmd.AddCommand(connectCmd)
 	connectCmd.Flags().StringVarP(&ip, "ip", "i", "", "remote device ip")
 	connectCmd.Flags().IntVarP(&port, "port", "p", 9123, "share port ( default port 9123 )")
-}
-
-func CheckRemoteConnect(ip string, port int, timeout int) (dev giDevice.Device, version interface{}, err error) {
-	dev, err = giDevice.NewRemoteConnect(ip, port, timeout)
-	if err != nil {
-		return nil, nil, err
-	}
-	version, err = dev.GetValue("", "ProductVersion")
-	if err != nil {
-		return nil, nil, err
-	}
-	return dev, version, nil
 }

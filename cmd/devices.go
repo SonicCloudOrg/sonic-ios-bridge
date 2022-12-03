@@ -19,16 +19,12 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
-	"github.com/SonicCloudOrg/sonic-ios-bridge/cmd/remote"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 	"os"
-	"sync"
 )
 
 var devicesCmd = &cobra.Command{
@@ -41,12 +37,15 @@ var devicesCmd = &cobra.Command{
 			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
 		}
 		list, err1 := usbMuxClient.Devices()
-		remoteList, err2 := readRemote()
+		remoteList, err2 := util.ReadRemote()
 
 		if err1 != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
 		}
-		if len(udid) == 0 {
+		if len(list) != 0 || len(remoteList) != 0 {
+			if len(list) == 0 {
+				list = []giDevice.Device{}
+			}
 			var deviceList entity.DeviceList
 			for _, d := range list {
 				deviceByte, _ := json.Marshal(d.Properties())
@@ -124,57 +123,4 @@ func init() {
 	devicesCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
 	devicesCmd.Flags().BoolVarP(&isFormat, "format", "f", false, "convert to JSON string and format")
 	devicesCmd.Flags().BoolVarP(&isDetail, "detail", "d", false, "output every device's detail")
-}
-
-func readRemote() (remoteDevList map[string]giDevice.Device, err error) {
-	defer func() {
-
-		if r := recover(); r != nil {
-			fmt.Println("recover...:", r)
-		}
-	}()
-
-	file, err := os.Open(remote.RemoteInfoFilePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	content, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-	if content == nil && len(content) != 0 {
-		return nil, errors.New("remote info file non existent remote data")
-	}
-	remoteInfoData := make(map[string]entity.RemoteInfo)
-	err = json.Unmarshal(content, &remoteInfoData)
-	if err != nil {
-		//fmt.Println(err)
-		return nil, err
-	}
-
-	if remoteDevList == nil {
-		remoteDevList = map[string]giDevice.Device{}
-	}
-	var lock sync.Mutex
-	var wait sync.WaitGroup
-	for k, v := range remoteInfoData {
-		//if v.Status!=remote.OnLine {
-		//	continue
-		//}
-		wait.Add(1)
-		go func(info entity.RemoteInfo) {
-			dev, _, err1 := remote.CheckRemoteConnect(*info.IP, *info.Port, 5)
-			if err1 != nil {
-				wait.Done()
-				lock.Lock()
-				delete(remoteInfoData, k)
-				return
-			}
-			remoteDevList[k] = dev
-			wait.Done()
-		}(v)
-	}
-	wait.Wait()
-	return remoteDevList, nil
 }
