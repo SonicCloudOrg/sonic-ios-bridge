@@ -55,6 +55,8 @@ sib mount
 ```
 sib run wda -b your.wda.bundleId
 sib run xctest -b your.wda.bundleId
+sib remote share
+sib remote connect --host 192.168.1.1
 sib app list
 sib app launch
 sib devices listen
