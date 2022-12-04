@@ -1,7 +1,7 @@
 package entity
 
 type RemoteInfo struct {
-	IP   *string
+	Host *string
 	Port *int
 	//Status string
 }

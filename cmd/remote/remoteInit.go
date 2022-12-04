@@ -23,7 +23,7 @@ var (
 	remoteCmd *cobra.Command
 	udid      string
 	port      int
-	ip        string
+	host      string
 )
 
 const (

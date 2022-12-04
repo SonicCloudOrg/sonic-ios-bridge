@@ -24,8 +24,8 @@ import (
 
 var remoteCmd = &cobra.Command{
 	Use:   "remote",
-	Short: "device remote function",
-	Long:  "device remote function",
+	Short: "Device remote function",
+	Long:  "Device remote function",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

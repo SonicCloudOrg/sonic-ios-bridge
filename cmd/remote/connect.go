@@ -34,11 +34,11 @@ var connectCmd = &cobra.Command{
 	Short: "Connect remote device with sib share",
 	Long:  "Connect remote device with sib share",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		_, version, err := util.CheckRemoteConnect(ip, port, 7)
+		_, version, err := util.CheckRemoteConnect(host, port, 7)
 		if err != nil {
-			log.Panic(fmt.Sprintf("connection %s:%d failed,error:%v", ip, port, err))
+			log.Panic(fmt.Sprintf("connect to %s:%d failed, error:%v", host, port, err))
 		}
-		log.Printf("connection %s:%d succeeded, device version is:%v", ip, port, version)
+		log.Printf("connect to %s:%d succeeded, device os version :%v", host, port, version)
 		_, err = os.Stat(".sib")
 		if err != nil {
 			os.MkdirAll(".sib", os.ModePerm)
@@ -64,8 +64,8 @@ var connectCmd = &cobra.Command{
 				log.Panic(err)
 			}
 		}
-		remoteMap[fmt.Sprintf("%s:%d", ip, port)] = &entity.RemoteInfo{
-			IP:   &ip,
+		remoteMap[fmt.Sprintf("%s:%d", host, port)] = &entity.RemoteInfo{
+			Host: &host,
 			Port: &port,
 			//Status: OnLine,
 		}
@@ -90,6 +90,7 @@ var connectCmd = &cobra.Command{
 
 func connectInit() {
 	remoteCmd.AddCommand(connectCmd)
-	connectCmd.Flags().StringVarP(&ip, "ip", "i", "", "remote device ip")
+	connectCmd.Flags().StringVarP(&host, "host", "h", "", "remote device host")
 	connectCmd.Flags().IntVarP(&port, "port", "p", 9123, "share port ( default port 9123 )")
+	connectCmd.MarkFlagRequired("host")
 }

@@ -47,14 +47,14 @@ var disConnectCmd = &cobra.Command{
 			}
 		}
 
-		addr := fmt.Sprintf("%s:%d", ip, port)
+		addr := fmt.Sprintf("%s:%d", host, port)
 
 		if remoteMap[addr] == nil {
 			fmt.Println("no such addr")
 			return nil
 		}
 
-		delete(remoteMap, fmt.Sprintf("%s:%d", ip, port))
+		delete(remoteMap, fmt.Sprintf("%s:%d", host, port))
 
 		err = file.Truncate(0)
 		if err != nil {
@@ -78,6 +78,6 @@ var disConnectCmd = &cobra.Command{
 
 func disConnectInit() {
 	remoteCmd.AddCommand(disConnectCmd)
-	disConnectCmd.Flags().StringVarP(&ip, "ip", "i", "", "remote device ip")
+	disConnectCmd.Flags().StringVarP(&host, "host", "i", "", "remote device host")
 	disConnectCmd.Flags().IntVarP(&port, "port", "p", 9123, "share port ( default port 9123 )")
 }

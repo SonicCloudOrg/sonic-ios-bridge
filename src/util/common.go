@@ -127,7 +127,7 @@ func ReadRemote() (remoteDevList map[string]giDevice.Device, err error) {
 		//}
 		wait.Add(1)
 		go func(info entity.RemoteInfo) {
-			dev, _, err1 := CheckRemoteConnect(*info.IP, *info.Port, 5)
+			dev, _, err1 := CheckRemoteConnect(*info.Host, *info.Port, 5)
 			if err1 != nil {
 				wait.Done()
 				return
