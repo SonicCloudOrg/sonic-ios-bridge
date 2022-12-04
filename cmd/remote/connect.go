@@ -31,8 +31,8 @@ import (
 
 var connectCmd = &cobra.Command{
 	Use:   "connect",
-	Short: "connect remote device",
-	Long:  "connect remote device",
+	Short: "Connect remote device with sib share",
+	Long:  "Connect remote device with sib share",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		_, version, err := util.CheckRemoteConnect(ip, port, 7)
 		if err != nil {

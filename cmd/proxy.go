@@ -20,14 +20,10 @@ package cmd
 import (
 	"fmt"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	"io"
-	"log"
+	"github.com/spf13/cobra"
 	"net"
 	"os"
 	"os/signal"
-	"time"
-
-	"github.com/spf13/cobra"
 )
 
 var proxyCmd = &cobra.Command{
@@ -45,38 +41,11 @@ var proxyCmd = &cobra.Command{
 		}
 		defer serverListener.Close()
 
+		go util.StartProxy()(serverListener, remotePort, device)
+
 		shutdown := make(chan os.Signal, 1)
 		signal.Notify(shutdown, os.Interrupt, os.Kill)
 
-		go func(listener net.Listener) {
-			for {
-				var accept net.Conn
-				var err error
-				if accept, err = listener.Accept(); err != nil {
-					log.Println("accept:", err)
-				}
-				fmt.Println("accept", accept.RemoteAddr())
-				rInnerConn, err := device.NewConnect(remotePort)
-				if err != nil {
-					fmt.Println("connect to device fail")
-					continue
-				}
-				rConn := rInnerConn.RawConn()
-				rConn.SetDeadline(time.Time{})
-				go func(lConn net.Conn) {
-					go func(lConn, rConn net.Conn) {
-						if _, err := io.Copy(lConn, rConn); err != nil {
-							log.Println("local -> remote failed:", err)
-						}
-					}(lConn, rConn)
-					go func(lConn, rConn net.Conn) {
-						if _, err := io.Copy(rConn, lConn); err != nil {
-							log.Println("local <- remote failed:", err)
-						}
-					}(lConn, rConn)
-				}(accept)
-			}
-		}(serverListener)
 		<-shutdown
 		fmt.Println("stopped.")
 		return nil

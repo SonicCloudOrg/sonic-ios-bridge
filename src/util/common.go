@@ -27,6 +27,8 @@ import (
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"io"
 	"io/ioutil"
+	"log"
+	"net"
 	"net/http"
 	"os"
 	"path"
@@ -289,4 +291,46 @@ func GetApplicationPID(device giDevice.Device, appName string) (pid int, err err
 		}
 	}
 	return -1, nil
+}
+
+func StartProxy() func(listener net.Listener, port int, device giDevice.Device) {
+	return func(listener net.Listener, port int, device giDevice.Device) {
+		for {
+			var accept net.Conn
+			var err error
+			if accept, err = listener.Accept(); err != nil {
+				log.Println("accept:", err)
+			}
+			fmt.Println("accept", accept.RemoteAddr())
+			rInnerConn, err := device.NewConnect(port)
+			var retry = 0
+			for {
+				retry++
+				if retry > 5 {
+					break
+				}
+				if err != nil {
+					fmt.Println("connect to device fail...retry in 2s...")
+					time.Sleep(time.Duration(2) * time.Second)
+					rInnerConn, err = device.NewConnect(port)
+				} else {
+					break
+				}
+			}
+			rConn := rInnerConn.RawConn()
+			rConn.SetDeadline(time.Time{})
+			go func(lConn net.Conn) {
+				go func(lConn, rConn net.Conn) {
+					if _, err := io.Copy(lConn, rConn); err != nil {
+						log.Println("local -> remote failed:", err)
+					}
+				}(lConn, rConn)
+				go func(lConn, rConn net.Conn) {
+					if _, err := io.Copy(rConn, lConn); err != nil {
+						log.Println("local <- remote failed:", err)
+					}
+				}(lConn, rConn)
+			}(accept)
+		}
+	}
 }

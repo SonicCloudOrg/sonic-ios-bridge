@@ -24,14 +24,11 @@ import (
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
-	"io"
-	"log"
 	"net"
 	"os"
 	"os/signal"
 	"regexp"
 	"strings"
-	"time"
 )
 
 var wdaCmd = &cobra.Command{
@@ -80,7 +77,7 @@ var wdaCmd = &cobra.Command{
 			return err
 		}
 		defer serverListener.Close()
-		go proxy()(serverListener, serverRemotePort, device)
+		go util.StartProxy()(serverListener, serverRemotePort, device)
 
 		if !disableMjpegProxy {
 			mjpegListener, err := net.Listen("tcp", fmt.Sprintf(":%d", mjpegLocalPort))
@@ -88,7 +85,7 @@ var wdaCmd = &cobra.Command{
 				return err
 			}
 			defer mjpegListener.Close()
-			go proxy()(mjpegListener, mjpegRemotePort, device)
+			go util.StartProxy()(mjpegListener, mjpegRemotePort, device)
 		}
 
 		shutWdaDown := make(chan os.Signal, 1)
@@ -143,36 +140,4 @@ func initWda() {
 	wdaCmd.Flags().IntVarP(&mjpegRemotePort, "mjpeg-remote-port", "", 9100, "mjpeg-server remote port")
 	wdaCmd.Flags().IntVarP(&serverLocalPort, "server-local-port", "", 8100, "WebDriverAgentRunner server local port")
 	wdaCmd.Flags().IntVarP(&mjpegLocalPort, "mjpeg-local-port", "", 9100, "mjpeg-server local port")
-}
-
-func proxy() func(listener net.Listener, port int, device giDevice.Device) {
-	return func(listener net.Listener, port int, device giDevice.Device) {
-		for {
-			var accept net.Conn
-			var err error
-			if accept, err = listener.Accept(); err != nil {
-				log.Println("accept:", err)
-			}
-			fmt.Println("accept", accept.RemoteAddr())
-			rInnerConn, err := device.NewConnect(port)
-			if err != nil {
-				fmt.Println("connect to device fail")
-				continue
-			}
-			rConn := rInnerConn.RawConn()
-			rConn.SetDeadline(time.Time{})
-			go func(lConn net.Conn) {
-				go func(lConn, rConn net.Conn) {
-					if _, err := io.Copy(lConn, rConn); err != nil {
-						log.Println("local -> remote failed:", err)
-					}
-				}(lConn, rConn)
-				go func(lConn, rConn net.Conn) {
-					if _, err := io.Copy(rConn, lConn); err != nil {
-						log.Println("local <- remote failed:", err)
-					}
-				}(lConn, rConn)
-			}(accept)
-		}
-	}
 }

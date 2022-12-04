@@ -26,15 +26,14 @@ import (
 
 var shareCmd = &cobra.Command{
 	Use:   "share",
-	Short: "sharing device",
-	Long:  "sharing device",
+	Short: "Sharing device to remote",
+	Long:  "Sharing device to remote",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		device := util.GetDeviceByUdId(udid)
 		if device == nil {
-			log.Println("device not connected")
 			os.Exit(0)
 		}
-		log.Printf("start sharing, the device the shared port is:%d", port)
+		log.Printf("start sharing, target device will share on port:%d", port)
 		err := device.Share(port)
 		if err != nil {
 			log.Panic(err)

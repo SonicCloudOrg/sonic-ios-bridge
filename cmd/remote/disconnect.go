@@ -14,8 +14,8 @@ import (
 
 var disConnectCmd = &cobra.Command{
 	Use:   "disconnect",
-	Short: "disconnect remote device",
-	Long:  "disconnect remote device",
+	Short: "Disconnect remote device",
+	Long:  "Disconnect remote device",
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		_, err := os.Stat(".sib")
