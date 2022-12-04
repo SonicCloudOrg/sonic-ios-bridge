@@ -79,5 +79,6 @@ var disConnectCmd = &cobra.Command{
 func disConnectInit() {
 	remoteCmd.AddCommand(disConnectCmd)
 	disConnectCmd.Flags().StringVarP(&host, "host", "i", "", "remote device host")
-	disConnectCmd.Flags().IntVarP(&port, "port", "p", 9123, "share port ( default port 9123 )")
+	disConnectCmd.Flags().IntVarP(&port, "port", "p", 9123, "share port")
+	disConnectCmd.MarkFlagRequired("host")
 }

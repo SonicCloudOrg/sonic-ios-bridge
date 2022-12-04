@@ -45,5 +45,5 @@ var shareCmd = &cobra.Command{
 func shareInit() {
 	remoteCmd.AddCommand(shareCmd)
 	shareCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	shareCmd.Flags().IntVarP(&port, "port", "p", 9123, "share port ( default port 9123 )")
+	shareCmd.Flags().IntVarP(&port, "port", "p", 9123, "share port")
 }

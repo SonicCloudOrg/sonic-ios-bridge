@@ -90,7 +90,7 @@ var connectCmd = &cobra.Command{
 
 func connectInit() {
 	remoteCmd.AddCommand(connectCmd)
-	connectCmd.Flags().StringVarP(&host, "host", "h", "", "remote device host")
-	connectCmd.Flags().IntVarP(&port, "port", "p", 9123, "share port ( default port 9123 )")
+	connectCmd.Flags().StringVarP(&host, "host", "", "", "remote device host")
+	connectCmd.Flags().IntVarP(&port, "port", "p", 9123, "share port")
 	connectCmd.MarkFlagRequired("host")
 }
