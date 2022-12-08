@@ -25,32 +25,32 @@ import (
 
 type Battery struct {
 	Serial                string `json:"Serial,omitempty"`
-	CurrentCapacity       int64  `json:"CurrentCapacity,omitempty"`
-	CycleCount            int64  `json:"CycleCount"`
-	AbsoluteCapacity      int64  `json:"AbsoluteCapacity"`
-	NominalChargeCapacity int64  `json:"NominalChargeCapacity"`
-	DesignCapacity        int64  `json:"DesignCapacity"`
-	Voltage               int64  `json:"Voltage"`
-	BootVoltage           int64  `json:"BootVoltage"`
-	AdapterDetailsVoltage int64  `json:"AdapterDetailsVoltage,omitempty"`
-	AdapterDetailsWatts   int64  `json:"AdapterDetailsWatts,omitempty"`
-	InstantAmperage       int64  `json:"InstantAmperage"`
-	Temperature           int64  `json:"Temperature"`
+	CurrentCapacity       uint64 `json:"CurrentCapacity,omitempty"`
+	CycleCount            uint64 `json:"CycleCount"`
+	AbsoluteCapacity      uint64 `json:"AbsoluteCapacity"`
+	NominalChargeCapacity uint64 `json:"NominalChargeCapacity"`
+	DesignCapacity        uint64 `json:"DesignCapacity"`
+	Voltage               uint64 `json:"Voltage"`
+	BootVoltage           uint64 `json:"BootVoltage"`
+	AdapterDetailsVoltage uint64 `json:"AdapterDetailsVoltage,omitempty"`
+	AdapterDetailsWatts   uint64 `json:"AdapterDetailsWatts,omitempty"`
+	InstantAmperage       uint64 `json:"InstantAmperage"`
+	Temperature           uint64 `json:"Temperature"`
 }
 
-func (battery Battery) AnalyzeBatteryData(batteryData map[string]interface{}) error {
+func (battery *Battery) AnalyzeBatteryData(batteryData map[string]interface{}) error {
 	DiagnosticsData := batteryData["Diagnostics"].(map[string]interface{})
 	IORegistryData := DiagnosticsData["IORegistry"].(map[string]interface{})
 
 	AdapterDetailsData := IORegistryData["AdapterDetails"].(map[string]interface{})
-	battery.AdapterDetailsVoltage = AdapterDetailsData["Voltage"].(int64)
-	battery.AdapterDetailsWatts = AdapterDetailsData["Watts"].(int64)
+	battery.AdapterDetailsVoltage = AdapterDetailsData["Voltage"].(uint64)
+	battery.AdapterDetailsWatts = AdapterDetailsData["Watts"].(uint64)
 
 	registryDataBytes, err := json.Marshal(IORegistryData)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(registryDataBytes, &battery)
+	err = json.Unmarshal(registryDataBytes, battery)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (battery Battery) AnalyzeBatteryData(batteryData map[string]interface{}) er
 func (battery Battery) ToString() string {
 	var s strings.Builder
 	s.WriteString(fmt.Sprintf("Serial:%s\n", battery.Serial))
-	s.WriteString(fmt.Sprintf("Temperature:%d°C\n", battery.Temperature))
+	s.WriteString(fmt.Sprintf("Temperature:%d°C\n", battery.Temperature/100))
 	s.WriteString(fmt.Sprintf("CycleCount:%d\n", battery.CycleCount))
 
 	s.WriteString(fmt.Sprintf("NominalChargeCapacity:%dmAh\n", battery.NominalChargeCapacity))
@@ -88,7 +88,7 @@ type BatteryList struct {
 	DeviceBatteryInfo map[string]Battery
 }
 
-func (battery BatteryList) Put(key string, value Battery) {
+func (battery *BatteryList) Put(key string, value Battery) {
 	if battery.DeviceBatteryInfo == nil {
 		battery.DeviceBatteryInfo = make(map[string]Battery)
 	}
@@ -99,7 +99,8 @@ func (battery BatteryList) ToString() string {
 	if battery.DeviceBatteryInfo == nil {
 		return ""
 	}
-	for _, e := range battery.DeviceBatteryInfo {
+	for key, e := range battery.DeviceBatteryInfo {
+		fmt.Println("udId:" + key)
 		fmt.Println(e.ToString())
 	}
 	return ""
