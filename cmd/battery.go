@@ -22,7 +22,6 @@ import (
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
-	"github.com/mitchellh/mapstructure"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -38,17 +37,19 @@ var batteryCmd = &cobra.Command{
 			if device == nil {
 				os.Exit(0)
 			}
-			b := entity.Battery{}
-			bd, err := device.GetValue("com.apple.mobile.battery", "")
+
+			bi := entity.Battery{}
+			powerData, err := device.PowerSource()
 			if err != nil {
-				return util.NewErrorPrint(util.ErrSendCommand, "get value", err)
+				fmt.Println(err)
+				os.Exit(0)
 			}
-			bi := entity.BatteryInter{}
-			mapstructure.Decode(bd, &bi)
-			b.SerialNumber = device.Properties().SerialNumber
-			b.Level = bi.BatteryCurrentCapacity
-			b.Temperature = 0
-			data := util.ResultData(b)
+			err = bi.AnalyzeBatteryData(powerData)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(0)
+			}
+			data := util.ResultData(bi)
 			fmt.Println(util.Format(data, isFormat, isJson))
 		} else {
 			usbMuxClient, err := giDevice.NewUsbmux()
@@ -62,17 +63,18 @@ var batteryCmd = &cobra.Command{
 			if len(list) != 0 {
 				var batteryList entity.BatteryList
 				for _, d := range list {
-					b := entity.Battery{}
-					bd, err := d.GetValue("com.apple.mobile.battery", "")
+					bi := entity.Battery{}
+					powerData, err := d.PowerSource()
 					if err != nil {
-						continue
+						fmt.Println(err)
+						os.Exit(0)
 					}
-					bi := entity.BatteryInter{}
-					mapstructure.Decode(bd, &bi)
-					b.SerialNumber = d.Properties().SerialNumber
-					b.Level = bi.BatteryCurrentCapacity
-					b.Temperature = 0
-					batteryList.BatteryInfo = append(batteryList.BatteryInfo, b)
+					err = bi.AnalyzeBatteryData(powerData)
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(0)
+					}
+					batteryList.Put(d.Properties().SerialNumber, bi)
 				}
 				data := util.ResultData(batteryList)
 				fmt.Println(util.Format(data, isFormat, isJson))
