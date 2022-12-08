@@ -23,23 +23,54 @@ import (
 	"strings"
 )
 
-type BatteryInter struct {
-	BatteryCurrentCapacity int
-}
-
 type Battery struct {
-	SerialNumber string `json:"serialNumber,omitempty"`
-	Level        int    `json:"level"`
-	Temperature  int    `json:"temperature"`
+	Serial                string `json:"Serial,omitempty"`
+	CurrentCapacity       int64  `json:"CurrentCapacity,omitempty"`
+	CycleCount            int64  `json:"CycleCount"`
+	AbsoluteCapacity      int64  `json:"AbsoluteCapacity"`
+	NominalChargeCapacity int64  `json:"NominalChargeCapacity"`
+	DesignCapacity        int64  `json:"DesignCapacity"`
+	Voltage               int64  `json:"Voltage"`
+	BootVoltage           int64  `json:"BootVoltage"`
+	AdapterDetailsVoltage int64  `json:"AdapterDetailsVoltage,omitempty"`
+	AdapterDetailsWatts   int64  `json:"AdapterDetailsWatts,omitempty"`
+	InstantAmperage       int64  `json:"InstantAmperage"`
+	Temperature           int64  `json:"Temperature"`
 }
 
-type BatteryList struct {
-	BatteryInfo []Battery `json:"batteryList"`
+func (battery Battery) AnalyzeBatteryData(batteryData map[string]interface{}) error {
+	DiagnosticsData := batteryData["Diagnostics"].(map[string]interface{})
+	IORegistryData := DiagnosticsData["IORegistry"].(map[string]interface{})
+
+	AdapterDetailsData := IORegistryData["AdapterDetails"].(map[string]interface{})
+	battery.AdapterDetailsVoltage = AdapterDetailsData["Voltage"].(int64)
+	battery.AdapterDetailsWatts = AdapterDetailsData["Watts"].(int64)
+
+	registryDataBytes, err := json.Marshal(IORegistryData)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(registryDataBytes, &battery)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (battery Battery) ToString() string {
 	var s strings.Builder
-	s.WriteString(fmt.Sprintf("%s %d %d", battery.SerialNumber, battery.Level, battery.Temperature))
+	s.WriteString(fmt.Sprintf("Serial:%s\n", battery.Serial))
+	s.WriteString(fmt.Sprintf("Temperature:%d°C\n", battery.Temperature))
+	s.WriteString(fmt.Sprintf("CycleCount:%d\n", battery.CycleCount))
+
+	s.WriteString(fmt.Sprintf("NominalChargeCapacity:%dmAh\n", battery.NominalChargeCapacity))
+	s.WriteString(fmt.Sprintf("DesignCapacity:%dmAh\n", battery.DesignCapacity))
+	s.WriteString(fmt.Sprintf("AbsoluteCapacity:%dmAh\n", battery.AbsoluteCapacity))
+	s.WriteString(fmt.Sprintf("CurrentCapacity:%d\n", battery.CurrentCapacity))
+
+	s.WriteString(fmt.Sprintf("Voltage:%dmV\nBootVoltage:%dmV\n", battery.Voltage, battery.BootVoltage))
+	s.WriteString(fmt.Sprintf("InstantAmperage:%dmA\nAdapterDetailsVoltage:%dmV\n", battery.InstantAmperage, battery.AdapterDetailsVoltage))
+	s.WriteString(fmt.Sprintf("AdapterDetailsWatts:%dW", battery.AdapterDetailsWatts))
 	return s.String()
 }
 
@@ -53,24 +84,39 @@ func (battery Battery) ToFormat() string {
 	return string(result)
 }
 
-func (batteryList BatteryList) ToString() string {
-	var s strings.Builder
-	for i, e := range batteryList.BatteryInfo {
-		if i != len(batteryList.BatteryInfo)-1 {
-			s.WriteString(fmt.Sprintf("%s %d %d\n", e.SerialNumber, e.Level, e.Temperature))
-		} else {
-			s.WriteString(fmt.Sprintf("%s %d %d", e.SerialNumber, e.Level, e.Temperature))
-		}
-	}
-	return s.String()
+type BatteryList struct {
+	DeviceBatteryInfo map[string]Battery
 }
 
-func (batteryList BatteryList) ToJson() string {
-	result, _ := json.Marshal(batteryList)
+func (battery BatteryList) Put(key string, value Battery) {
+	if battery.DeviceBatteryInfo == nil {
+		battery.DeviceBatteryInfo = make(map[string]Battery)
+	}
+	battery.DeviceBatteryInfo[key] = value
+}
+
+func (battery BatteryList) ToString() string {
+	if battery.DeviceBatteryInfo == nil {
+		return ""
+	}
+	for _, e := range battery.DeviceBatteryInfo {
+		fmt.Println(e.ToString())
+	}
+	return ""
+}
+
+func (battery BatteryList) ToJson() string {
+	if battery.DeviceBatteryInfo == nil {
+		return ""
+	}
+	result, _ := json.Marshal(battery.DeviceBatteryInfo)
 	return string(result)
 }
 
-func (batteryList BatteryList) ToFormat() string {
-	result, _ := json.MarshalIndent(batteryList, "", "\t")
+func (battery BatteryList) ToFormat() string {
+	if battery.DeviceBatteryInfo == nil {
+		return ""
+	}
+	result, _ := json.MarshalIndent(battery.DeviceBatteryInfo, "", "\t")
 	return string(result)
 }
