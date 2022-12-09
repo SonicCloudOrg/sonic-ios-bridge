@@ -100,8 +100,9 @@ func (battery BatteryList) ToString() string {
 		return ""
 	}
 	for key, e := range battery.DeviceBatteryInfo {
-		fmt.Println("udId:" + key)
+		fmt.Sprintf("udId:%s\n", key)
 		fmt.Println(e.ToString())
+		fmt.Println("")
 	}
 	return ""
 }
