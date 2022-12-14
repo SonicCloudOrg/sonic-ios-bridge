@@ -2,9 +2,9 @@ before:
   hooks:
     - go mod tidy
 builds:
-  - env:
-      - CGO_ENABLED=0
   - id: "sonic-ios-bridge"
+    env:
+      - CGO_ENABLED=0
     asmflags:
       - all=-trimpath=C:/Users/ZHOUYIXUN/Desktop/sonic-ios-bridge
     gcflags:
