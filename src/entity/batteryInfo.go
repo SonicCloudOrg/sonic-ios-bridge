@@ -60,17 +60,17 @@ func (battery *Battery) AnalyzeBatteryData(batteryData map[string]interface{}) e
 func (battery Battery) ToString() string {
 	var s strings.Builder
 	s.WriteString(fmt.Sprintf("Serial:%s\n", battery.Serial))
-	s.WriteString(fmt.Sprintf("Temperature:%d\n", battery.Temperature))
-	s.WriteString(fmt.Sprintf("CycleCount:%d\n", battery.CycleCount))
+	s.WriteString(fmt.Sprintf("Temperature:%v\n", battery.Temperature))
+	s.WriteString(fmt.Sprintf("CycleCount:%v\n", battery.CycleCount))
 
-	s.WriteString(fmt.Sprintf("NominalChargeCapacity:%dmAh\n", battery.NominalChargeCapacity))
-	s.WriteString(fmt.Sprintf("DesignCapacity:%dmAh\n", battery.DesignCapacity))
-	s.WriteString(fmt.Sprintf("AbsoluteCapacity:%dmAh\n", battery.AbsoluteCapacity))
-	s.WriteString(fmt.Sprintf("CurrentCapacity:%d\n", battery.CurrentCapacity))
+	s.WriteString(fmt.Sprintf("NominalChargeCapacity:%vmAh\n", battery.NominalChargeCapacity))
+	s.WriteString(fmt.Sprintf("DesignCapacity:%vmAh\n", battery.DesignCapacity))
+	s.WriteString(fmt.Sprintf("AbsoluteCapacity:%vmAh\n", battery.AbsoluteCapacity))
+	s.WriteString(fmt.Sprintf("CurrentCapacity:%v\n", battery.CurrentCapacity))
 
-	s.WriteString(fmt.Sprintf("Voltage:%dmV\nBootVoltage:%dmV\n", battery.Voltage, battery.BootVoltage))
-	s.WriteString(fmt.Sprintf("InstantAmperage:%dmA\nAdapterDetailsVoltage:%dmV\n", battery.InstantAmperage, battery.AdapterDetailsVoltage))
-	s.WriteString(fmt.Sprintf("AdapterDetailsWatts:%dW", battery.AdapterDetailsWatts))
+	s.WriteString(fmt.Sprintf("Voltage:%vmV\nBootVoltage:%vmV\n", battery.Voltage, battery.BootVoltage))
+	s.WriteString(fmt.Sprintf("InstantAmperage:%vmA\nAdapterDetailsVoltage:%vmV\n", battery.InstantAmperage, battery.AdapterDetailsVoltage))
+	s.WriteString(fmt.Sprintf("AdapterDetailsWatts:%vW", battery.AdapterDetailsWatts))
 	return s.String()
 }
 
