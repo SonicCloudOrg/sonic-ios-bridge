@@ -135,7 +135,7 @@ func initWda() {
 	wdaCmd.Flags().BoolVarP(&disableMjpegProxy, "disable-mjpeg-proxy", "", false, "disable mjpeg-server proxy")
 	wdaCmd.Flags().BoolVarP(&disableShowLog, "disable-show-log", "", false, "disable print wda logs")
 	wdaCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber ( default first device )")
-	wdaCmd.Flags().StringVarP(&wdaBundleID, "bundleId", "b", "com.*.xctrunner", "WebDriverAgentRunner bundleId")
+	wdaCmd.Flags().StringVarP(&wdaBundleID, "bundleId", "b", "com.facebook.WebDriverAgentRunner.xctrunner", "WebDriverAgentRunner bundleId")
 	wdaCmd.Flags().IntVarP(&serverRemotePort, "server-remote-port", "", 8100, "WebDriverAgentRunner server remote port")
 	wdaCmd.Flags().IntVarP(&mjpegRemotePort, "mjpeg-remote-port", "", 9100, "mjpeg-server remote port")
 	wdaCmd.Flags().IntVarP(&serverLocalPort, "server-local-port", "", 8100, "WebDriverAgentRunner server local port")
