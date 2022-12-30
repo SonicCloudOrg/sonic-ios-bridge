@@ -45,5 +45,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-// 在本地相对路径进行build打包，用于调试
-// replace github.com/SonicCloudOrg/sonic-ios-bridge => ./sonic-ios-bridge
