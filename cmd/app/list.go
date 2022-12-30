@@ -44,7 +44,7 @@ var listCmd = &cobra.Command{
 		}
 		result, errList := device.InstallationProxyBrowse(
 			giDevice.WithApplicationType(appType),
-			giDevice.WithReturnAttributes("CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
+			giDevice.WithReturnAttributes("CFBundleShortVersionString", "CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
 		if errList != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "app list", errList)
 		}
@@ -52,7 +52,7 @@ var listCmd = &cobra.Command{
 		for _, app := range result {
 			a := entity.Application{}
 			mapstructure.Decode(app, &a)
-			if a.CFBundleIdentifier != "" && a.CFBundleDisplayName != "" && a.CFBundleVersion != "" {
+			if a.CFBundleIdentifier != "" && a.CFBundleDisplayName != "" && a.CFBundleShortVersionString != "" && a.CFBundleVersion != "" {
 				if showIcon {
 					icon, errIcon := device.GetIconPNGData(a.CFBundleIdentifier)
 					if errIcon == nil {

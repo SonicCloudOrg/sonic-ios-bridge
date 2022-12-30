@@ -24,6 +24,7 @@ import (
 )
 
 type Application struct {
+	CFBundleShortVersionString string `json:"shortversion"`
 	CFBundleVersion     string `json:"version"`
 	CFBundleDisplayName string `json:"name"`
 	CFBundleIdentifier  string `json:"bundleId"`
@@ -38,9 +39,9 @@ func (appList AppList) ToString() string {
 	var s strings.Builder
 	for i, e := range appList.ApplicationList {
 		if i != len(appList.ApplicationList)-1 {
-			s.WriteString(fmt.Sprintf("%s %s %s\n", e.CFBundleDisplayName, e.CFBundleIdentifier, e.CFBundleVersion))
+			s.WriteString(fmt.Sprintf("%s %s %s %s\n", e.CFBundleDisplayName, e.CFBundleIdentifier, e.CFBundleVersion, e.CFBundleShortVersionString))
 		} else {
-			s.WriteString(fmt.Sprintf("%s %s %s", e.CFBundleDisplayName, e.CFBundleIdentifier, e.CFBundleVersion))
+			s.WriteString(fmt.Sprintf("%s %s %s %s", e.CFBundleDisplayName, e.CFBundleIdentifier, e.CFBundleVersion, e.CFBundleShortVersionString))
 		}
 	}
 	return s.String()
