@@ -45,7 +45,7 @@ var wdaCmd = &cobra.Command{
 		}
 		appList, errList := device.InstallationProxyBrowse(
 			giDevice.WithApplicationType(giDevice.ApplicationTypeUser),
-			giDevice.WithReturnAttributes("CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
+			giDevice.WithReturnAttributes("CFBundleShortVersionString", "CFBundleVersion", "CFBundleDisplayName", "CFBundleIdentifier"))
 		if errList != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "app list", errList)
 		}
