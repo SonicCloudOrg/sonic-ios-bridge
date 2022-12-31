@@ -24,7 +24,7 @@ import (
 )
 
 type Application struct {
-	CFBundleShortVersionString string `json:"shortVersion"`
+	CFBundleShortVersionString string `json:"shortVersion,omitempty"`
 	CFBundleVersion     string `json:"version"`
 	CFBundleDisplayName string `json:"name"`
 	CFBundleIdentifier  string `json:"bundleId"`

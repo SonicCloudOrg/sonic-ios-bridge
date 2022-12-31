@@ -52,7 +52,7 @@ var listCmd = &cobra.Command{
 		for _, app := range result {
 			a := entity.Application{}
 			mapstructure.Decode(app, &a)
-			if a.CFBundleIdentifier != "" && a.CFBundleDisplayName != "" && a.CFBundleShortVersionString != "" && a.CFBundleVersion != "" {
+			if a.CFBundleIdentifier != "" || a.CFBundleDisplayName != "" || a.CFBundleShortVersionString != "" || a.CFBundleVersion != "" {
 				if showIcon {
 					icon, errIcon := device.GetIconPNGData(a.CFBundleIdentifier)
 					if errIcon == nil {
