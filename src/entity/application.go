@@ -25,10 +25,10 @@ import (
 
 type Application struct {
 	CFBundleShortVersionString string `json:"shortVersion,omitempty"`
-	CFBundleVersion     string `json:"version"`
-	CFBundleDisplayName string `json:"name"`
-	CFBundleIdentifier  string `json:"bundleId"`
-	IconBase64          string `json:"iconBase64,omitempty"`
+	CFBundleVersion            string `json:"version"`
+	CFBundleDisplayName        string `json:"name"`
+	CFBundleIdentifier         string `json:"bundleId"`
+	IconBase64                 string `json:"iconBase64,omitempty"`
 }
 
 type AppList struct {
