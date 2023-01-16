@@ -42,6 +42,7 @@ const DownLoadTimeOut = 30 * time.Second
 
 var versionMap = map[string]string{
 	"12.5": "12.4",
+	"16.2": "16.1",
 }
 
 var urlList = [...]string{"https://tool.appetizer.io/JinjunHan", "https://code.aliyun.com/hanjinjun", "https://github.com/JinjunHan"}
