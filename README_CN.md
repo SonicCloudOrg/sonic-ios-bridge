@@ -70,7 +70,7 @@ sib battery
 sib info
 ...
 ```
-👉[ (推荐) 点击这里查看更多!](https://sonic-cloud.gitee.io/#/SIB)
+👉[ (推荐) 点击这里查看更多!](https://sonic-cloud.cn/sib/re-sib.html)
 
 ## 赞助商
 
