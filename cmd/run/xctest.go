@@ -64,8 +64,11 @@ var xctestCmd = &cobra.Command{
 		testEnv := make(map[string]interface{})
 		if len(env) != 0 {
 			for _, value := range env {
-				kv := strings.Split(value, "=")
-				testEnv[kv[0]] = kv[1]
+				if strings.Contains(value, "=") {
+					k := value[0:strings.Index(value, "=")]
+					v := value[strings.Index(value, "=")+1:]
+					testEnv[k] = v
+				}
 			}
 			log.Println("Read env:", testEnv)
 		}
