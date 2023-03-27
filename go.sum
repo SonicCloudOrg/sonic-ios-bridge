@@ -1,15 +1,5 @@
-github.com/SonicCloudOrg/sonic-gidevice v0.6.9-0.20221130145946-a874da6e3a2b h1:Rhp1ZUrE0k13x8IfaZCwqXOoK5YS4U3r6eY0gjcnm5Q=
-github.com/SonicCloudOrg/sonic-gidevice v0.6.9-0.20221130145946-a874da6e3a2b/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.0 h1:n1hMuZ3V1i0D5gFbUi4C9fVG31EVJau66jSifhoK3Q4=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.0/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.1-0.20221130151251-def21acce750 h1:QOaax0u5kAt7qvIIM9AcQeo3/NvqBYoT9Qrp6yuQ+xY=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.1-0.20221130151251-def21acce750/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.1-0.20221202135227-d0e50024f400 h1:ERXGIRXc40dlsw80QFZJTagpVzt7z0IeKS03eAyE+4Q=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.1-0.20221202135227-d0e50024f400/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.1 h1:NWomulj+P7/NVgzwMhySo7NYjAp7RkWNDaRtCQyRszc=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.1/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.2 h1:IRiRjNvmVvLvw3P34O9gqs1dzsLHMVOl6DywDmanpHQ=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.2/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
+github.com/SonicCloudOrg/sonic-gidevice v0.7.3 h1:1+p2vE+mr79ZOhhtSnQDls1bYk5o8mWlfgEI1IiU7w4=
+github.com/SonicCloudOrg/sonic-gidevice v0.7.3/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
 github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7 h1:s4OTcJ0VG4mg3501Ec+aSR6gQ8eTWz26fdgCUjxlmJQ=
 github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7/go.mod h1:q5dSyO/kX8Mkypy6DkFuqgWnBmHZE7oU7m+pW7kdT+8=
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
