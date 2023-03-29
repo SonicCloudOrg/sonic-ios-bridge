@@ -37,16 +37,16 @@ var pefmonCmd = &cobra.Command{
 			fmt.Println("device is not found")
 			os.Exit(0)
 		}
-
-		if (pid == -1 && bundleId == "") && !sysCPU && !sysMEM && !sysDisk && !sysNetwork && !getGPU && !getFPS {
-			sysAllParamsSet()
-		}
-
+		
 		if (pid != -1 || bundleId != "") && !sysCPU && !sysMEM && !sysDisk && !sysNetwork && !getGPU && !getFPS && !processNetwork && !processMem && !processCpu {
 			sysAllParamsSet()
 			processNetwork = true
 			processMem = true
 			processCpu = true
+		}
+
+		if (pid == -1 && bundleId == "") && !sysCPU && !sysMEM && !sysDisk && !sysNetwork && !getGPU && !getFPS {
+			sysAllParamsSet()
 		}
 
 		if processCpu {
