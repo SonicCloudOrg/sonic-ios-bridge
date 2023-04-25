@@ -38,7 +38,11 @@ import (
 	"time"
 )
 
-const DownLoadTimeOut = 30 * time.Second
+const (
+	DownLoadTimeOut    = 30 * time.Second
+	baseDir            = ".sib"
+	RemoteInfoFilePath = baseDir + string(filepath.Separator) + "connect.txt"
+)
 
 var versionMap = map[string]string{
 	"12.5": "12.4",
@@ -87,8 +91,6 @@ func GetDeviceByUdId(udId string) (device giDevice.Device) {
 	}
 	return
 }
-
-const RemoteInfoFilePath = ".sib/connect.txt"
 
 func ReadRemote() (remoteDevList map[string]giDevice.Device, err error) {
 	defer func() {
@@ -157,13 +159,14 @@ func downloadZip(url, version string) (string, error) {
 	if versionMap[version] != "" {
 		vm = versionMap[version]
 	}
-	f, err := os.Stat(".sib")
+	f, err := os.Stat(baseDir)
 	if err != nil {
-		os.MkdirAll(".sib", os.ModePerm)
-		f, err = os.Stat(".sib")
+		os.MkdirAll(baseDir, os.ModePerm)
+		f, err = os.Stat(baseDir)
 	}
 	localAbs, _ := filepath.Abs(f.Name())
-	_, errT := os.Stat(fmt.Sprintf(".sib/%s.zip", version))
+	filePath := fmt.Sprintf("%s.zip", baseDir+string(filepath.Separator)+version)
+	_, errT := os.Stat(filePath)
 	if errT != nil {
 		client := http.Client{
 			Timeout: DownLoadTimeOut,
@@ -174,11 +177,11 @@ func downloadZip(url, version string) (string, error) {
 		}
 		defer res.Body.Close()
 		r := bufio.NewReaderSize(res.Body, 32*1024)
-		newFile, err := os.Create(fmt.Sprintf(".sib/%s.zip", version))
+		newFile, err := os.Create(filePath)
 		w := bufio.NewWriter(newFile)
 		io.Copy(w, r)
 		abs, _ := filepath.Abs(newFile.Name())
-		errZip := unzip(abs, ".sib", version)
+		errZip := unzip(abs, baseDir, version)
 		if errZip != nil {
 			os.Remove(newFile.Name())
 			return "", errZip
@@ -199,7 +202,7 @@ func unzip(zipFile, destDir, version string) error {
 		if strings.HasPrefix(f.Name, version) && f.FileInfo().IsDir() {
 			fpath = filepath.Join(destDir, version)
 		} else {
-			fpath = filepath.Join(destDir, version+"/"+path.Base(f.Name))
+			fpath = filepath.Join(destDir, version+string(filepath.Separator)+path.Base(f.Name))
 		}
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(fpath, os.ModePerm)
