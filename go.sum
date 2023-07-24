@@ -2,6 +2,8 @@ github.com/SonicCloudOrg/sonic-gidevice v0.7.3 h1:1+p2vE+mr79ZOhhtSnQDls1bYk5o8m
 github.com/SonicCloudOrg/sonic-gidevice v0.7.3/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
 github.com/SonicCloudOrg/sonic-gidevice v0.7.4 h1:Yt9lCzZdziQr4efBWV+fUWakqvxqb/ksT9T6LULrHDY=
 github.com/SonicCloudOrg/sonic-gidevice v0.7.4/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
+github.com/SonicCloudOrg/sonic-gidevice v0.7.5 h1:8liJHks2EQoA7INfHeid5+/9GgGV3/KAnyPEPQw8XKE=
+github.com/SonicCloudOrg/sonic-gidevice v0.7.5/go.mod h1:sww8Tk3iZ/FMhCJtZT+gQgWg7F4u5M2858OARwjC3Yc=
 github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7 h1:s4OTcJ0VG4mg3501Ec+aSR6gQ8eTWz26fdgCUjxlmJQ=
 github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7/go.mod h1:q5dSyO/kX8Mkypy6DkFuqgWnBmHZE7oU7m+pW7kdT+8=
 github.com/cpuguy83/go-md2man/v2 v2.0.1/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
