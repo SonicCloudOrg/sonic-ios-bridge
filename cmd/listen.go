@@ -20,12 +20,13 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/signal"
+
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/spf13/cobra"
-	"os"
-	"os/signal"
 )
 
 var listenCmd = &cobra.Command{
@@ -62,9 +63,10 @@ var listenCmd = &cobra.Command{
 				if device.Status == "online" && isDetail {
 					detail, err1 := entity.GetDetail(d)
 					if err1 != nil {
-						continue
+						fmt.Fprintf(os.Stderr, "%+v\n", err1)
+					} else {
+						device.DeviceDetail = *detail
 					}
-					device.DeviceDetail = *detail
 				}
 				data := util.ResultData(device)
 				fmt.Println(util.Format(data, isFormat, isDetail))

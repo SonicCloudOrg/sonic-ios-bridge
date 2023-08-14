@@ -20,11 +20,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var devicesCmd = &cobra.Command{
@@ -37,11 +38,12 @@ var devicesCmd = &cobra.Command{
 			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
 		}
 		list, err1 := usbMuxClient.Devices()
-		remoteList, err2 := util.ReadRemote()
+		remoteList, errRemoto := util.ReadRemote()
 
 		if err1 != nil {
 			return util.NewErrorPrint(util.ErrSendCommand, "listDevices", err1)
 		}
+		todosErrores := []error{}
 		if len(list) != 0 || len(remoteList) != 0 {
 			if len(list) == 0 {
 				list = []giDevice.Device{}
@@ -53,25 +55,27 @@ var devicesCmd = &cobra.Command{
 				if isDetail {
 					detail, err2 := entity.GetDetail(d)
 					if err2 != nil {
-						return err2
+						todosErrores = append(todosErrores, err2)
+					} else {
+						device.DeviceDetail = *detail
 					}
-					device.DeviceDetail = *detail
 				}
 				json.Unmarshal(deviceByte, device)
 				device.Status = device.GetStatus()
 				device.RemoteAddr = "localhost"
 				deviceList.DeviceList = append(deviceList.DeviceList, *device)
 			}
-			if err2 == nil {
+			if errRemoto == nil {
 				for k, dev := range remoteList {
 					deviceByte, _ := json.Marshal(dev.Properties())
 					device := &entity.Device{}
 					if isDetail {
 						detail, err2 := entity.GetDetail(dev)
 						if err2 != nil {
-							return err2
+							todosErrores = append(todosErrores, err2)
+						} else {
+							device.DeviceDetail = *detail
 						}
-						device.DeviceDetail = *detail
 					}
 					json.Unmarshal(deviceByte, device)
 					device.Status = device.GetStatus()
@@ -93,9 +97,10 @@ var devicesCmd = &cobra.Command{
 						if isDetail {
 							detail, err2 := entity.GetDetail(d)
 							if err2 != nil {
-								return err2
+								todosErrores = append(todosErrores, err2)
+							} else {
+								device.DeviceDetail = *detail
 							}
-							device.DeviceDetail = *detail
 						}
 						json.Unmarshal(deviceByte, device)
 						device.Status = device.GetStatus()
@@ -112,6 +117,11 @@ var devicesCmd = &cobra.Command{
 			} else {
 				fmt.Println("no device connected")
 				os.Exit(0)
+			}
+		}
+		if len(todosErrores) > 0 {
+			for _, e := range todosErrores {
+				fmt.Fprintf(os.Stderr, "%+v\n", e)
 			}
 		}
 		return nil
