@@ -26,8 +26,12 @@ import (
 var isJson, isDetail, isFormat bool
 var udid string
 
+var strExeccutable string = (func() string {
+	exe, _ := os.Executable()
+	return exe
+})()
 var rootCmd = &cobra.Command{
-	Use:   "sib",
+	Use:   strExeccutable,
 	Short: "Bridge of iOS Devices",
 	Long: `
    ▄▄▄▄      ▄▄▄▄    ▄▄▄   ▄▄   ▄▄▄▄▄▄      ▄▄▄▄
