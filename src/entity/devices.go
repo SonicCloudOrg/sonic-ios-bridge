@@ -21,8 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-
-	"github.com/Masterminds/semver"
 )
 
 type DeviceList struct {
@@ -80,17 +78,4 @@ func (deviceList DeviceList) ToJson() string {
 func (deviceList DeviceList) ToFormat() string {
 	result, _ := json.MarshalIndent(deviceList, "", "\t")
 	return string(result)
-}
-
-type DevMode struct {
-	Device
-	DevModeStatus string `json:"status,omitempty"`
-}
-
-func (devmode DevMode) CanCheck() (bool, error) {
-	v, err := semver.NewVersion(devmode.DeviceDetail.ProductVersion)
-	if err != nil {
-		return false, err
-	}
-	return v.Major() >= 16, nil
 }
