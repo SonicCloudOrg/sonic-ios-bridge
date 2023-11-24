@@ -1,3 +1,6 @@
 .idea/
 dist/
 .sib/
+sonic-ios-bridge.exe
+sonic-ios-bridge
+vendor/
