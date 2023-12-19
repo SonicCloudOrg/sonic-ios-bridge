@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/Masterminds/semver v1.5.0
-	github.com/SonicCloudOrg/sonic-gidevice v0.7.6
+	github.com/SonicCloudOrg/sonic-gidevice v0.7.7
 	github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7
 	github.com/gin-gonic/gin v1.8.1
 	github.com/google/gopacket v1.1.19
