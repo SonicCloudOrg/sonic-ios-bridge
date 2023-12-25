@@ -111,7 +111,7 @@ var devicesCmd = &cobra.Command{
 					data := util.ResultData(device)
 					fmt.Println(util.Format(data, isFormat, isDetail))
 				} else {
-					fmt.Println("device no found")
+					fmt.Println("device not found")
 					os.Exit(0)
 				}
 			} else {

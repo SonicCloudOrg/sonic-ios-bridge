@@ -19,11 +19,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/spf13/cobra"
-	"os"
-	"path/filepath"
 )
 
 var crashCmd = &cobra.Command{
@@ -38,7 +39,7 @@ var crashCmd = &cobra.Command{
 		if !filepath.IsAbs(crashOutputPath) {
 			var err error
 			if crashOutputPath, err = filepath.Abs(crashOutputPath); err != nil {
-				fmt.Println("path no found!")
+				fmt.Println("path not found!")
 				os.Exit(0)
 			}
 		}

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"golang.org/x/xerrors"
@@ -15,7 +14,6 @@ var devmodeConfirmCmd = &cobra.Command{
 	Short: "Confirm enabling of Developer Mode",
 	Long:  "Confirm enabling of Developer Mode",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		util.InitLogger()
 		if bPreCheckIOSVer {
 			if bCan, eCan := canToggleDevMode(udid); eCan != nil {
 				strErrMsg := fmt.Sprintf("Failed to check device %s iOS version", udid)

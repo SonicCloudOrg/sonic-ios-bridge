@@ -16,7 +16,6 @@ var devmodeListCmd = &cobra.Command{
 	Short: "Print the Developer Mode status of connected devices",
 	Long:  "Print the Developer Mode status of connected devices",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		util.InitLogger()
 		usbMuxClient, err := giDevice.NewUsbmux()
 		if err != nil {
 			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
