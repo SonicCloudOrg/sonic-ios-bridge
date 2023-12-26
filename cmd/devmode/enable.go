@@ -22,7 +22,6 @@ var devmodeEnableCmd = &cobra.Command{
 	Short: "Enable Developer Mode (device will reboot)",
 	Long:  "Enable Developer Mode (device will reboot)",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		//util.InitLogger()
 		errArm := devmodeArmCmd.RunE(cmd, args)
 		if errArm != nil {
 			return errArm

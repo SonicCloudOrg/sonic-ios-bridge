@@ -23,8 +23,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
-	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"io"
 	"io/ioutil"
 	"log"
@@ -36,6 +34,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
+	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 )
 
 const (
@@ -82,7 +83,7 @@ func GetDeviceByUdId(udId string) (device giDevice.Device) {
 			device = list[0]
 		}
 		if device == nil || device.Properties().SerialNumber == "" {
-			fmt.Println("device no found")
+			fmt.Println("device not found")
 			return nil
 		}
 	} else {

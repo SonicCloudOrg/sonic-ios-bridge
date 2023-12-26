@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"golang.org/x/xerrors"
@@ -15,7 +14,6 @@ var devmodeRevealCmd = &cobra.Command{
 	Short: "Reveal the Developer Mode menu on the device",
 	Long:  "Reveal the Developer Mode menu on the device",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		util.InitLogger()
 		if bCan, eCan := canToggleDevMode(udid); eCan != nil {
 			strErrMsg := fmt.Sprintf("Failed to check device %s iOS version", udid)
 			logrus.Warn(strErrMsg)
