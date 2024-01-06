@@ -1,6 +1,7 @@
 package devmode
 
 import (
+	"context"
 	"os"
 	"strings"
 	"sync"
@@ -30,40 +31,44 @@ var devmodeEnableCmd = &cobra.Command{
 			bIsDeviceOnline := true
 			wg := new(sync.WaitGroup)
 			wg.Add(1)
-			shutDownFun, errListen := util.UsbmuxListen(func(gidevice *giDevice.Device, device *entity.Device, e error, cancelFunc func()) {
+			var deviceIdMap = make(map[int]string)
+			shutDownFun := util.UsbmuxListen(func(gidevice *giDevice.Device, device *entity.Device, e error, cancelFunc context.CancelFunc) {
+				if e != nil {
+					logrus.Warnf("Error: %+v", e)
+				}
 				if device == nil {
 					return
 				}
-				funcDone := func() {
-					cancelFunc()
-					bIsDeviceOnline = true
-					logrus.Infof("Device %s is online.", udid)
-					wg.Done()
+				if len(device.SerialNumber) > 0 {
+					deviceIdMap[device.DeviceID] = device.SerialNumber
+				} else {
+					device.SerialNumber = deviceIdMap[device.DeviceID]
+					delete(deviceIdMap, device.DeviceID)
 				}
-				if device.Status == "offline" {
-					bIsDeviceOnline = false
-					logrus.Infof("Device %s is offline.", udid)
-				} else if !bIsDeviceOnline && device.Status == "online" {
-					if device.SerialNumber == udid {
-						funcDone()
+				if device.SerialNumber == udid {
+					logrus.Infof("Device %s is %s.", device.SerialNumber, device.Status)
+					if device.Status == "offline" {
+						bIsDeviceOnline = false
+					} else if !bIsDeviceOnline && device.Status == "online" { // transition from offline to online
+						if cancelFunc != nil {
+							cancelFunc()
+						}
+						bIsDeviceOnline = true
+						wg.Done()
 						return
 					}
-					detail, _ := entity.GetDetail(*gidevice)
-					if detail != nil && detail.UniqueDeviceID == udid {
-						funcDone()
-						return
-					}
+				} else {
+					logrus.Debugf("Device %s is %s.", device.SerialNumber, device.Status)
 				}
 			})
-			if errListen != nil {
-				return errListen
-			}
-			go func() {
+			go (func(cancelFunc *context.CancelFunc) { // timer to cancel listening
 				time.Sleep(time.Duration(intEnableWaitTimeout) * time.Second)
 				logrus.Warnf("Timeout waiting for device %s to reboot.", udid)
-				shutDownFun()
+				if cancelFunc != nil {
+					(*cancelFunc)()
+				}
 				wg.Done()
-			}()
+			})(&shutDownFun)
 			wg.Wait()
 			if bIsDeviceOnline && bAutoConfirm {
 				bPreCheckIOSVer = false
