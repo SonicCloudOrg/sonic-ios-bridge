@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	stdlog "log"
 	"os"
 	"regexp"
@@ -55,6 +56,10 @@ func (LogrusWriter) Write(data []byte) (int, error) {
 	if strings.HasSuffix(logmessage, "\n") {
 		logmessage = logmessage[:len(logmessage)-1]
 	}
-	logrus.Infof("[gousb] %s", logmessage)
+	if logmessage == "handle_events: error: libusb: interrupted [code -10]" { // this annoying message
+		logrus.Debugf("[gousb] %s", logmessage)
+	} else { // other standard log module output
+		fmt.Print(string(data))
+	}
 	return len(logmessage), nil
 }
