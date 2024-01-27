@@ -26,7 +26,7 @@ func UsbmuxListen(cbOnData func(gidevice *giDevice.Device, device *entity.Device
 	mylatch := latch.NewCountDownLatch()
 	mylatch.Add(2)
 	go (func() {
-		backoffAlgorithm := backoff.NewExponentialBackOff()
+		backoffAlgorithm := backoff.NewConstantBackOff(30 * time.Second)
 		bIsOk := true
 		backoff.RetryNotify(func() error {
 			if mylatch.Counter() <= 0 {
@@ -59,7 +59,7 @@ func UsbmuxListen(cbOnData func(gidevice *giDevice.Device, device *entity.Device
 		logrus.Trace("end health check")
 	})()
 	go (func(funcStop *context.CancelFunc) {
-		backoffAlgorithm := backoff.NewExponentialBackOff()
+		backoffAlgorithm := backoff.NewConstantBackOff(30 * time.Second)
 		bIsOk := true
 		backoff.RetryNotify(func() error {
 			if mylatch.Counter() <= 1 { // 'read channel input' go routine is stopped
