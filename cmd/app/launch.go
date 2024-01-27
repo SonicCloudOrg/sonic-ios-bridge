@@ -66,11 +66,11 @@ var launchCmd = &cobra.Command{
 func myHelpFunc(cmd *cobra.Command, args []string) {
 	fmt.Printf(`%s
  
- Usage:
-   %s -- [arguments [arguments ...]]
+Usage:
+  %s -- [arguments [arguments ...]]
  
- Flags:
- %s`, cmd.Long, cmd.UseLine(), cmd.Flags().FlagUsages())
+Flags:
+%s`, cmd.Long, cmd.UseLine(), cmd.Flags().FlagUsages())
 }
 
 func initAppLaunch() {

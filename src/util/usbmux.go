@@ -26,12 +26,18 @@ func UsbmuxListen(cbOnData func(gidevice *giDevice.Device, device *entity.Device
 	mylatch := latch.NewCountDownLatch()
 	mylatch.Add(2)
 	go (func() {
+		goroutineId := GoRoutineID()
+		logger := logrus.WithFields(logrus.Fields{
+			"goroutine":     goroutineId,
+			"goroutineName": "healthCheck",
+		})
 		backoffAlgorithm := backoff.NewConstantBackOff(30 * time.Second)
 		bIsOk := true
 		backoff.RetryNotify(func() error {
 			if mylatch.Counter() <= 0 {
 				return nil
 			}
+			logger.Debug("Connecting to usbmux...")
 			usbMuxClient, err := giDevice.NewUsbmux()
 			if err != nil {
 				return NewErrorPrint(ErrConnect, "usbMux", err)
@@ -44,27 +50,34 @@ func UsbmuxListen(cbOnData func(gidevice *giDevice.Device, device *entity.Device
 				if _, errBuid := usbMuxClient.ReadBUID(); errBuid != nil {
 					return errBuid
 				}
-				logrus.Debug("usbmux health check success")
+				logger.Debug("usbmux health check success")
 				if !bIsOk { // transition from not OK to OK
-					logrus.Trace("Reset health check backoff algorithm")
+					logger.Trace("Reset health check backoff algorithm")
 					backoffAlgorithm.Reset()
 					bIsOk = true
 				}
 			}
 		}, backoffAlgorithm, func(err error, d time.Duration) {
 			bIsOk = false
-			logrus.Warnf("usbmux health check error: %+v", err)
+			logger.Warnf("usbmux health check error: %+v", err)
 			healthCheck <- false
+			logger.Debugf("next retry health check in %s", d.String())
 		})
-		logrus.Trace("end health check")
+		logger.Trace("end health check")
 	})()
 	go (func(funcStop *context.CancelFunc) {
+		goroutineId := GoRoutineID()
+		logger := logrus.WithFields(logrus.Fields{
+			"goroutine":     goroutineId,
+			"goroutineName": "usbmuxListen",
+		})
 		backoffAlgorithm := backoff.NewConstantBackOff(30 * time.Second)
 		bIsOk := true
 		backoff.RetryNotify(func() error {
 			if mylatch.Counter() <= 1 { // 'read channel input' go routine is stopped
 				return nil
 			}
+			logger.Debug("Connecting to usbmux...")
 			usbMuxClient, err := giDevice.NewUsbmux()
 			if err != nil {
 				return NewErrorPrint(ErrConnect, "usbMux", err)
@@ -74,34 +87,40 @@ func UsbmuxListen(cbOnData func(gidevice *giDevice.Device, device *entity.Device
 			if errListen != nil {
 				return NewErrorPrint(ErrSendCommand, string(libimobiledevice.MessageTypeListen), errListen)
 			}
-			logrus.Info("Start listening...")
+			logger.Info("Start listening...")
 			<-healthCheck // empty out the channel
 			if !bIsOk {   // transition from not OK to OK
-				logrus.Trace("Reset usbmux listen backoff algorithm")
+				logger.Trace("Reset usbmux listen backoff algorithm")
 				backoffAlgorithm.Reset()
 				bIsOk = true
 			}
 			for range healthCheck {
-				logrus.Info("Cancel listening")
+				logger.Info("Cancel listening")
 				(*funcStop) = nil
 				return fmt.Errorf("usbmux listening is cancelled")
 			}
 			return nil
 		}, backoffAlgorithm, func(err error, d time.Duration) {
 			bIsOk = false
-			logrus.Warnf("usbmux listening error: %+v", err)
+			logger.Warnf("usbmux listening error: %+v", err)
+			logger.Debugf("next retry listening in %s", d.String())
 		})
 		mylatch.Done()
-		logrus.Trace("end usbmux listen")
+		logger.Trace("end usbmux listen")
 	})(&funcCancelListen)
 	go (func(funcStop *context.CancelFunc) {
+		goroutineId := GoRoutineID()
+		logger := logrus.WithFields(logrus.Fields{
+			"goroutine":     goroutineId,
+			"goroutineName": "loopRead",
+		})
 		numOnlineDevices := 0
 	loopRead:
 		for {
 			select {
 			case d, ok := <-usbmuxInput:
 				if !ok { // channel is closed
-					logrus.Info("usbmux input channel is closed")
+					logger.Info("usbmux input channel is closed")
 					break loopRead
 				}
 				if d == nil {
@@ -128,12 +147,12 @@ func UsbmuxListen(cbOnData func(gidevice *giDevice.Device, device *entity.Device
 				if cbOnData != nil {
 					cbOnData(&d, ptrEntityDevice, errDec, _fStop)
 				}
-				logrus.Debugf("Number of online devices= %d", numOnlineDevices)
+				logger.Debugf("Number of online devices= %d", numOnlineDevices)
 				if numOnlineDevices <= 0 {
-					logrus.Info("No devices are online")
+					logger.Info("No devices are online")
 				}
 			case <-sigTerm:
-				logrus.Info("Stop listening")
+				logger.Info("Stop listening")
 				if funcStop != nil {
 					(*funcStop)()
 				}
@@ -142,7 +161,7 @@ func UsbmuxListen(cbOnData func(gidevice *giDevice.Device, device *entity.Device
 			}
 		}
 		mylatch.Done()
-		logrus.Trace("end reading channel input")
+		logger.Trace("end reading channel input")
 	})(&funcCancelListen)
 	return funcCancelListen
 }
