@@ -86,10 +86,17 @@ func (LogrusWriter) Write(data []byte) (int, error) {
 	if strings.HasSuffix(logmessage, "\n") {
 		logmessage = logmessage[:len(logmessage)-1]
 	}
-	if logmessage == "handle_events: error: libusb: interrupted [code -10]" {  // handle this annoying message
+	if logmessage == "handle_events: error: libusb: interrupted [code -10]" {
 		logrus.Debug(logmessage)
 	} else {
 		fmt.Printf("%s", string(data))
 	}
 	return len(logmessage), nil
+}
+
+func GetGoRoutineLogger(name string) *logrus.Entry {
+	return logrus.WithFields(logrus.Fields{
+		"goroutine":     GoRoutineID(),
+		"goroutineName": name,
+	})
 }

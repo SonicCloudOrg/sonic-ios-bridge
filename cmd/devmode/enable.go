@@ -60,11 +60,11 @@ var devmodeEnableCmd = &cobra.Command{
 				} else {
 					logrus.Debugf("Device %s is %s.", device.SerialNumber, device.Status)
 				}
-			})
+			}, true)
 			go (func(cancelFunc *context.CancelFunc) { // timer to cancel listening
 				time.Sleep(time.Duration(intEnableWaitTimeout) * time.Second)
 				logrus.Warnf("Timeout waiting for device %s to reboot.", udid)
-				if cancelFunc != nil {
+				if cancelFunc != nil && *cancelFunc != nil {
 					(*cancelFunc)()
 				}
 				wg.Done()
@@ -85,7 +85,7 @@ var devmodeEnableCmd = &cobra.Command{
 
 func initDevModeEnableCmd() {
 	devmodeRootCMD.AddCommand(devmodeEnableCmd)
-	devmodeEnableCmd.Flags().StringVarP(&udid, "udid", "u", "", "device's serialNumber")
+	devmodeEnableCmd.Flags().StringVarP(&udid, "udid", "u", "", "target specific device by UDID")
 	devmodeEnableCmd.MarkFlagRequired("udid")
 	devmodeEnableCmd.Flags().BoolVar(&bWaitReboot, "wait", false, "wait for reboot to complete")
 	devmodeEnableCmd.Flags().IntVar(&intEnableWaitTimeout, "wait-timeout", 60, "wait timeout in seconds")

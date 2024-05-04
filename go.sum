@@ -98,8 +98,6 @@ github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdko
 github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d/go.mod h1:HI8ITrYtUY+O+ZhtlqUnD8+KwNPOyugEhfP9fdUIaEQ=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.7 h1:oWNtc5j0ke/VmDVaXYZOR5JAQ8Cr12Fo1UrMq51lVM4=
-github.com/SonicCloudOrg/sonic-gidevice v0.7.7/go.mod h1:SEquP5doc1Xa9Y0556SJBpFg7Pex+jXk+y4XQ4i0yxo=
 github.com/SonicCloudOrg/sonic-gidevice v0.7.8 h1:lF8OEuEBIHnqBNq4SGNETwTbUphOrk4OThDPQKrCT3Y=
 github.com/SonicCloudOrg/sonic-gidevice v0.7.8/go.mod h1:SEquP5doc1Xa9Y0556SJBpFg7Pex+jXk+y4XQ4i0yxo=
 github.com/SonicCloudOrg/sonic-ios-webkit-adapter v0.0.7 h1:s4OTcJ0VG4mg3501Ec+aSR6gQ8eTWz26fdgCUjxlmJQ=

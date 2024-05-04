@@ -50,6 +50,7 @@ var listenCmd = &cobra.Command{
 				device.SerialNumber = deviceIdMap[device.DeviceID]
 				delete(deviceIdMap, device.DeviceID)
 			}
+			logrus.Debugf("Device %s is %s", device.SerialNumber, device.Status)
 			if device.Status == "online" {
 				if isDetail {
 					detail, err1 := entity.GetDetail(*gidevice)
@@ -62,7 +63,7 @@ var listenCmd = &cobra.Command{
 			}
 			data := util.ResultData(device)
 			fmt.Println(util.Format(data, isFormat, isDetail))
-		})
+		}, true)
 		wg.Wait()
 		return nil
 	},
