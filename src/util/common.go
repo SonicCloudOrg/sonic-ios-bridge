@@ -53,7 +53,7 @@ var versionMap = map[string]string{
 	"12.5": "12.4",
 }
 
-var urlList = [...]string{"https://tool.appetizer.io/JinjunHan", "https://code.aliyun.com/hanjinjun", "https://github.com/JinjunHan"}
+var urlList = [...]string{"https://github.com/JinjunHan"}
 
 func GetDeviceByUdId(udId string) (device giDevice.Device) {
 	remoteList, err2 := ReadRemote()
