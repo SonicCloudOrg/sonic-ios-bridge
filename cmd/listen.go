@@ -18,14 +18,14 @@
 package cmd
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"os"
-	"os/signal"
+	"sync"
 
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/util"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -34,47 +34,37 @@ var listenCmd = &cobra.Command{
 	Short: "Listener for devices status",
 	Long:  "Listener for devices status",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		usbMuxClient, err := giDevice.NewUsbmux()
-		if err != nil {
-			return util.NewErrorPrint(util.ErrConnect, "usbMux", err)
-		}
-		model := make(chan giDevice.Device)
-		shutDownFun, err2 := usbMuxClient.Listen(model)
-		if err2 != nil {
-			return util.NewErrorPrint(util.ErrSendCommand, "listen", err2)
-		}
-
-		shutDown := make(chan os.Signal, 1)
-		signal.Notify(shutDown, os.Interrupt, os.Kill)
 		var deviceIdMap = make(map[int]string)
-		for {
-			select {
-			case d := <-model:
-				deviceByte, _ := json.Marshal(d.Properties())
-				device := &entity.Device{}
-				json.Unmarshal(deviceByte, device)
-				if len(device.SerialNumber) > 0 {
-					deviceIdMap[device.DeviceID] = device.SerialNumber
-				} else {
-					device.SerialNumber = deviceIdMap[device.DeviceID]
-					delete(deviceIdMap, device.DeviceID)
-				}
-				device.Status = device.GetStatus()
-				if device.Status == "online" && isDetail {
-					detail, err1 := entity.GetDetail(d)
+		wg := new(sync.WaitGroup)
+		wg.Add(1)
+		util.UsbmuxListen(func(gidevice *giDevice.Device, device *entity.Device, e error, cancelFunc context.CancelFunc) {
+			if e != nil {
+				logrus.Warnf("Error: %+v", e)
+			}
+			if device == nil {
+				return
+			}
+			if len(device.SerialNumber) > 0 {
+				deviceIdMap[device.DeviceID] = device.SerialNumber
+			} else {
+				device.SerialNumber = deviceIdMap[device.DeviceID]
+				delete(deviceIdMap, device.DeviceID)
+			}
+			logrus.Debugf("Device %s is %s", device.SerialNumber, device.Status)
+			if device.Status == "online" {
+				if isDetail {
+					detail, err1 := entity.GetDetail(*gidevice)
 					if err1 != nil {
-						fmt.Fprintf(os.Stderr, "%+v\n", err1)
+						logrus.Warnf("Error: %+v", err1)
 					} else {
 						device.DeviceDetail = *detail
 					}
 				}
-				data := util.ResultData(device)
-				fmt.Println(util.Format(data, isFormat, isDetail))
-			case <-shutDown:
-				shutDownFun()
-				return nil
 			}
-		}
+			data := util.ResultData(device)
+			fmt.Println(util.Format(data, isFormat, isDetail))
+		}, true)
+		wg.Wait()
 		return nil
 	},
 }
