@@ -22,7 +22,7 @@
 </p>
 
 ## Document
-[Sonic Official Website](https://sonic-cloud.cn/sib/re-sib.html)
+[Sonic Official Website](https://soniccloudorg.github.io/sib/re-sib.html)
 
 ## Usage
 
@@ -60,7 +60,7 @@ sib battery
 sib info
 ...
 ```
-👉[ (Recommend) Click Here to Get More!](https://sonic-cloud.cn/sib/re-sib.html)
+👉[ (Recommend) Click Here to Get More!](https://soniccloudorg.github.io/sib/re-sib.html)
 
 
 ## Sponsors
