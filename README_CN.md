@@ -21,7 +21,7 @@
 </p>
 
 ### 官方文档
-[Sonic Official Website](https://sonic-cloud.cn/sib/re-sib.html)
+[Sonic Official Website](https://soniccloudorg.github.io/sib/re-sib.html)
 
 ## 使用方法
 
@@ -60,7 +60,7 @@ sib battery
 sib info
 ...
 ```
-👉[ (推荐) 点击这里查看更多!](https://sonic-cloud.cn/sib/re-sib.html)
+👉[ (推荐) 点击这里查看更多!](https://soniccloudorg.github.io/sib/re-sib.html)
 
 ## 赞助商
 
