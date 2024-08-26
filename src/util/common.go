@@ -20,6 +20,7 @@ package util
 import (
 	"archive/zip"
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,12 +32,15 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	giDevice "github.com/SonicCloudOrg/sonic-gidevice"
 	"github.com/SonicCloudOrg/sonic-ios-bridge/src/entity"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -83,11 +87,11 @@ func GetDeviceByUdId(udId string) (device giDevice.Device) {
 			device = list[0]
 		}
 		if device == nil || device.Properties().SerialNumber == "" {
-			fmt.Println("device not found")
+			//fmt.Println("device not found")
 			return nil
 		}
 	} else {
-		fmt.Println("no device connected")
+		logrus.Debug("No device connected")
 		return nil
 	}
 	return
@@ -336,5 +340,24 @@ func StartProxy() func(listener net.Listener, port int, device giDevice.Device) 
 				}(lConn, rConn)
 			}(accept)
 		}
+	}
+}
+
+func GoRoutineID() int { // https://stackoverflow.com/a/75362272/12857692
+	buf := make([]byte, 32)
+	n := runtime.Stack(buf, false)
+	buf = buf[:n]
+	_, buf, ok := bytes.Cut(buf, []byte("goroutine "))
+	if !ok {
+		return 0
+	}
+	i := bytes.IndexByte(buf, ' ')
+	if i < 0 {
+		return 0
+	}
+	if id, e := strconv.Atoi(string(buf[:i])); e == nil {
+		return id
+	} else {
+		return 0
 	}
 }
